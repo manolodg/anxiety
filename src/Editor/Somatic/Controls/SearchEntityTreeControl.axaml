@@ -1,0 +1,5 @@
+<ctrl:SearchTreeControl xmlns="https://github.com/avaloniaui"
+						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+						xmlns:ctrl="using:Somatic.Controls"
+						x:Class="Somatic.Controls.SearchEntityTreeControl">
+</ctrl:SearchTreeControl>

@@ -44,6 +44,7 @@ namespace Somatic {
 
             // Servicios --------------------------------------------------------------------------
             services.AddSingleton<ISerializeService, SerializeService>();
+            services.AddSingleton<ILocalizationService, LocalizationService>();
             // -------------------------------------------------------------------------- Servicios
         }
 #endregion

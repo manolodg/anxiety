@@ -6,5 +6,7 @@
 
     <Application.Styles>
         <FluentTheme />
+		
+		<StyleInclude Source="/Controls/Styles/SearchTextBox.axaml"/>
     </Application.Styles>
 </Application>

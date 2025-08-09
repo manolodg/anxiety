@@ -8,7 +8,7 @@ namespace Somatic.Model {
     public abstract partial class BaseEntity : ObservableObject {
 #region Propiedades
         /// <summary>Nombre de la entidad.</summary>
-        [JsonProperty] [ObservableProperty] private string _name;
+        [JsonProperty] [ObservableProperty] private string _name = null!;
         /// <summary>Indica si la entidad esta o no activa.</summary>
         [JsonProperty] [ObservableProperty] private bool _isActive;
 

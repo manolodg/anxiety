@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:cnv="using:Somatic.Converters"
+			 xmlns:m="using:Somatic.Controls.Model"
+			 x:Class="Somatic.Controls.SearchTreeControl"
+			 x:Name="Root">
+	<UserControl.Resources>
+		<cnv:SingleItemConverter x:Key="SingleItemConverter"/>
+	</UserControl.Resources>
+	
+	<Grid>
+		<Grid RowDefinitions="Auto,*">
+			<TextBox Grid.Row="0"
+					 BorderThickness="0"
+					 Classes="searchButton clearButton"
+					 Text="{Binding SearchText, ElementName=Root}"
+					 Watermark="{Binding SearchWatermark, ElementName=Root}"/>
+
+			<TreeView Grid.Row="1"
+					  Name="MainTreeView"
+					  ItemsSource="{Binding RootNode, ElementName=Root, Converter={StaticResource SingleItemConverter}}"
+					  SelectedItem="{Binding SelectedNode, ElementName=Root}"
+					  IsVisible="{Binding RootNode, ElementName=Root, Converter={x:Static ObjectConverters.IsNotNull}}"
+					  Margin="0,10,0,0">
+				<TreeView.ItemTemplate>
+					<TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="m:TreeNode">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="{Binding Name}"
+									   IsVisible="{Binding !IsEditing}"
+									   VerticalAlignment="Center"
+									   PointerPressed="OnNodePointerPressed"
+									   DoubleTapped="OnNodeDoubleTapped"/>
+							<TextBox Name="EditTextBox"
+									 Text="{Binding Name}"
+									 IsVisible="{Binding IsEditing}"
+									 VerticalAlignment="Center"
+									 LostFocus="OnEditTextBoxLostFocus">
+								<TextBox.KeyBindings>
+									<KeyBinding Gesture="Enter"
+												Command="{Binding StopEditingCommand, ElementName=Root}"
+												CommandParameter="{Binding}"/>
+									<KeyBinding Gesture="Escape"
+												Command="{Binding StopEditingCommand, ElementName=Root}"
+												CommandParameter="{Binding}"/>
+								</TextBox.KeyBindings>
+							</TextBox>
+						</StackPanel>
+					</TreeDataTemplate>
+				</TreeView.ItemTemplate>
+
+				<TreeView.Styles>
+					<Style Selector="TreeViewItem">
+						<Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" x:DataType="m:TreeNode"/>
+						<Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" x:DataType="m:TreeNode"/>
+					</Style>
+				</TreeView.Styles>
+			</TreeView>
+		</Grid>
+	</Grid>
+</UserControl>
