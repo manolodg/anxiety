@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Somatic.Controls.VectorControl"
+			 x:Name="Root">
+	<UserControl.Styles>
+		<Style Selector="TextBox.vector-component">
+			<Setter Property="Margin" Value="2"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid>
+						<!-- Borde principal del TextBox -->
+						<Border Name="PART_BorderElement"
+								Background="{TemplateBinding Background}"
+								BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}"
+								Padding="{TemplateBinding Padding}"
+								CornerRadius="3">
+							<!-- ScrollViewer interno (parte estándar de TextBox) -->
+							<ScrollViewer Name="PART_ScrollViewer"
+										  HorizontalScrollBarVisibility="Hidden"
+										  VerticalScrollBarVisibility="Hidden"
+										  IsTabStop="False">
+								<!-- Presentación del texto -->
+								<TextPresenter Name="PART_TextPresenter"
+											   Text="{TemplateBinding Text}"
+											   HorizontalAlignment="Center"
+											   CaretBrush="{TemplateBinding CaretBrush}"
+											   SelectionBrush="{TemplateBinding SelectionBrush}"
+											   TextAlignment="{TemplateBinding TextAlignment}"
+											   TextWrapping="{TemplateBinding TextWrapping}"
+											   PasswordChar="{TemplateBinding PasswordChar}"
+											   RevealPassword="{TemplateBinding RevealPassword}"
+											   SelectionStart="{TemplateBinding SelectionStart}"
+											   SelectionEnd="{TemplateBinding SelectionEnd}"/>
+							</ScrollViewer>
+						</Border>
+
+						<!-- Watermark en esquina superior derecha -->
+						<TextBlock Name="WatermarkText"
+								   Text="{TemplateBinding Watermark}"
+								   FontSize="9"
+								   FontWeight="Normal"
+								   Foreground="Gray"
+								   HorizontalAlignment="Left"
+								   VerticalAlignment="Top"
+								   Margin="2"
+								   IsHitTestVisible="False"
+								   ZIndex="1"/>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<!-- FOCUS -->
+		<Style Selector="TextBox.vector-component:focus /template/ Border#PART_BorderElement">
+			<Setter Property="BorderBrush" Value="#0078D4"/>
+			<Setter Property="BorderThickness" Value="2"/>
+		</Style>
+		<!-- POINTEROVER -->
+		<Style Selector="TextBox.vector-component:pointerover /template/ Border#PART_BorderElement">
+			<Setter Property="BorderBrush" Value="#106EBE"/>
+		</Style>
+		<!-- INVALID -->
+		<Style Selector="TextBox.vector-component:invalid /template/ Border#PART_BorderElement">
+			<Setter Property="BorderBrush" Value="#E74C3C"/>
+			<Setter Property="BorderThickness" Value="2"/>
+		</Style>
+		<Style Selector="TextBox.vector-component:invalid /template/ TextBlock#WatermarkText">
+			<Setter Property="Foreground" Value="#E74C3C"/>
+		</Style>
+	</UserControl.Styles>
+
+	<Grid ColumnDefinitions="*,*,*" Name="ComponentsPanel">
+		<TextBox Grid.Column="0" Name="XColumn" Text="{Binding XText, ElementName=Root}" Watermark="X" Classes="vector-component" IsEnabled="{Binding !IsReadOnly, ElementName=Root}"/>
+		<TextBox Grid.Column="1" Name="YColumn" Text="{Binding YText, ElementName=Root}" Watermark="Y" Classes="vector-component" IsEnabled="{Binding !IsReadOnly, ElementName=Root}"/>
+		<TextBox Grid.Column="2" Name="ZColumn" Text="{Binding ZText, ElementName=Root}" Watermark="Z" Classes="vector-component" IsEnabled="{Binding !IsReadOnly, ElementName=Root}"/>
+	</Grid>
+</UserControl>

@@ -61,6 +61,96 @@ namespace Somatic.Assets.Languages {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Eliminar.
+        /// </summary>
+        internal static string CompCtrl_delete {
+            get {
+                return ResourceManager.GetString("CompCtrl_delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Desplegar.
+        /// </summary>
+        internal static string CompCtrl_deploy {
+            get {
+                return ResourceManager.GetString("CompCtrl_deploy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Bajar.
+        /// </summary>
+        internal static string CompCtrl_down {
+            get {
+                return ResourceManager.GetString("CompCtrl_down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Bloquear.
+        /// </summary>
+        internal static string CompCtrl_lock {
+            get {
+                return ResourceManager.GetString("CompCtrl_lock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Replegar.
+        /// </summary>
+        internal static string CompCtrl_retract {
+            get {
+                return ResourceManager.GetString("CompCtrl_retract", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Desbloquear.
+        /// </summary>
+        internal static string CompCtrl_unlock {
+            get {
+                return ResourceManager.GetString("CompCtrl_unlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Subir.
+        /// </summary>
+        internal static string CompCtrl_up {
+            get {
+                return ResourceManager.GetString("CompCtrl_up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Selección de Carpeta.
+        /// </summary>
+        internal static string FldCtrl_tooltip {
+            get {
+                return ResourceManager.GetString("FldCtrl_tooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Seleccione una Carpeta....
+        /// </summary>
+        internal static string FoldCtrl_choose {
+            get {
+                return ResourceManager.GetString("FoldCtrl_choose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Componente Script.
+        /// </summary>
+        internal static string Script_title {
+            get {
+                return ResourceManager.GetString("Script_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Buscar....
         /// </summary>
         internal static string search {
@@ -102,6 +192,42 @@ namespace Somatic.Assets.Languages {
         internal static string SETC_renamescene {
             get {
                 return ResourceManager.GetString("SETC_renamescene", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Posición.
+        /// </summary>
+        internal static string Transform_position {
+            get {
+                return ResourceManager.GetString("Transform_position", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Rotación.
+        /// </summary>
+        internal static string Transform_rotation {
+            get {
+                return ResourceManager.GetString("Transform_rotation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Escala.
+        /// </summary>
+        internal static string Transform_scale {
+            get {
+                return ResourceManager.GetString("Transform_scale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Componente Transformación.
+        /// </summary>
+        internal static string Transform_title {
+            get {
+                return ResourceManager.GetString("Transform_title", resourceCulture);
             }
         }
     }

@@ -1,0 +1,264 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:ctrl="using:Somatic.Controls"
+             x:Class="Somatic.Controls.ComponentControl"
+			 xmlns:ext="using:Somatic.Extensions"
+			 x:Name="Root">
+	<UserControl.Resources>
+		<LinearGradientBrush x:Key="DropIndicatorColor"
+							 StartPoint="0%, 50%"
+							 EndPoint="100%, 50%">
+			<GradientStops>
+				<GradientStop Color="#007ACC" Offset="0"/>
+				<GradientStop Color="#40A9FF" Offset="0.5"/>
+				<GradientStop Color="#007ACC" Offset="1"/>
+			</GradientStops>
+		</LinearGradientBrush>
+	</UserControl.Resources>
+	
+	<UserControl.Styles>
+		<!-- Contenedor del componente -->
+		<Style Selector="Border.component-container">
+			<Setter Property="BoxShadow" Value="0 2 4 0 #40000000"/>
+		</Style>
+		<Style Selector="Border.component-container:pointerover">
+			<Setter Property="BoxShadow" Value="0 4 12 0 #30000000"/>
+			<Style.Animations>
+				<Animation Duration="0:0:0.2" FillMode="Forward">
+					<KeyFrame Cue="0%">
+						<Setter Property="BoxShadow" Value="0 2 4 0 #40000000"/>
+					</KeyFrame>
+					<KeyFrame Cue="100%">
+						<Setter Property="BoxShadow" Value="0 4 12 0 #30000000"/>
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
+		
+		<!-- Botón de la barra de título -->
+		<Style Selector="Button.header-button">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="CornerRadius" Value="4"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Padding" Value="2"/>
+		</Style>
+		<Style Selector="Button.header-button:pointerover">
+			<Setter Property="Background" Value="#E0E0E0"/>
+		</Style>
+		<Style Selector="Button.header-button:pressed">
+			<Setter Property="Background" Value="#D0D0D0"/>
+		</Style>
+
+		<!-- Estilos para MenuFlyout -->
+		<Style Selector="MenuFlyout MenuItem">
+			<Setter Property="Padding" Value="12,8"/>
+			<Setter Property="FontSize" Value="13"/>
+		</Style>
+		<Style Selector="MenuFlyout MenuItem:pointerover">
+			<Setter Property="Background" Value="#F0F0F0"/>
+		</Style>
+		
+		<!-- Animación expansión / contracción -->
+		<Style Selector="#Root:is(ctrl|ComponentControl)[IsExpanded=False] PathIcon#PART_ExpandIcon">
+			<Style.Animations>
+				<Animation Duration="0:0:0.3" FillMode="Forward" Easing="CubicEaseOut">
+					<KeyFrame Cue="0%">
+						<Setter Property="RotateTransform.Angle" Value="0"/>
+					</KeyFrame>
+					<KeyFrame Cue="100%">
+						<Setter Property="RotateTransform.Angle" Value="180"/>
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
+		<Style Selector="#Root:is(ctrl|ComponentControl)[IsExpanded=False] Border#PART_Content">
+			<Style.Animations>
+				<Animation Duration="0:0:0.3" FillMode="Forward" Easing="CubicEaseOut">
+					<KeyFrame Cue="0%">
+						<Setter Property="MaxHeight" Value="1000"/>
+					</KeyFrame>
+					<KeyFrame Cue="100%">
+						<Setter Property="MaxHeight" Value="0"/>
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
+		<Style Selector="#Root:is(ctrl|ComponentControl)[IsExpanded=True] PathIcon#PART_ExpandIcon">
+			<Style.Animations>
+				<Animation Duration="0:0:0.3" FillMode="Forward">
+					<KeyFrame Cue="0%">
+						<Setter Property="RotateTransform.Angle" Value="180"/>
+					</KeyFrame>
+					<KeyFrame Cue="100%">
+						<Setter Property="RotateTransform.Angle" Value="0"/>
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
+		<Style Selector="#Root:is(ctrl|ComponentControl)[IsExpanded=True] Border#PART_Content">
+			<Style.Animations>
+				<Animation Duration="0:0:0.3" FillMode="Forward">
+					<KeyFrame Cue="0%">
+						<Setter Property="MaxHeight" Value="0"/>
+					</KeyFrame>
+					<KeyFrame Cue="100%">
+						<Setter Property="MaxHeight" Value="1000"/>
+					</KeyFrame>
+				</Animation>
+			</Style.Animations>
+		</Style>
+	</UserControl.Styles>
+
+	<!-- Todo el componente -->
+	<Border Classes="component-container"
+			Background="{DynamicResource ComponentControlBackground}"
+			BorderBrush="{DynamicResource ComponentControlBorderBrush}"
+			BorderThickness="2" CornerRadius="2" Margin="2">
+		<StackPanel>
+			<Border Name="PART_DropBefore" Opacity="0"
+					Height="4"
+					Background="{DynamicResource DropIndicatorColor}"
+					CornerRadius="2"
+					BoxShadow="0 2 8 0 #4000A9FF"
+					Margin="4,2"/>
+			
+			<!-- Barra de título -->
+			<Border Name="TitleBar"
+					Background="{DynamicResource ComponentHeaderBackground}"
+					BorderBrush="{DynamicResource ComponentControlBorderBrush}"
+					BorderThickness="0,0,0,2"
+					Cursor="Hand">
+				<Grid ColumnDefinitions="auto,auto,*,auto">
+					<!-- Candado -->
+					<Button Grid.Column="0"
+							Classes="header-button"
+							Click="ToggleLocked">
+						<StackPanel>
+							<PathIcon Foreground="{DynamicResource TextControlForeground}"
+									  Height="10" Width="10"
+									  Data="{DynamicResource lock_icon}"
+									  IsVisible="{Binding IsLocked, ElementName=Root}"/>
+							<PathIcon Foreground="{DynamicResource TextControlForeground}"
+									  Height="10" Width="10"
+									  Data="{DynamicResource unlock_icon}"
+									  IsVisible="{Binding !IsLocked, ElementName=Root}"/>
+						</StackPanel>
+					</Button>
+					<!-- Contracción -->
+					<Button Grid.Column="1"
+							Classes="header-button"
+							Click="ToggleExpanded">
+						<PathIcon Name="PART_ExpandIcon"
+								  Foreground="{DynamicResource TextControlForeground}"
+								  Height="10" Width="10"
+								  Data="{StaticResource arrow_up_bracket_icon}"/>
+					</Button>
+					<!-- Título -->
+					<TextBlock Grid.Column="2"
+							   Text="{Binding Title, ElementName=Root}"
+							   FontWeight="Bold"
+							   FontSize="12"
+							   VerticalAlignment="Center"
+							   Margin="4,0"/>
+					<!-- Menú -->
+					<Button Grid.Column="4" 
+							Classes="header-button">
+						<Button.Flyout>
+							<MenuFlyout>
+								<!-- Subir el componente -->
+								<MenuItem Header="{ext:TranslateMarkup CompCtrl_up}"
+										  Command="{Binding UpCommand, ElementName=Root}">
+									<MenuItem.Icon>
+										<PathIcon Foreground="{DynamicResource TextControlForeground}"
+												  Height="16" Width="16"
+												  Data="{StaticResource up_arrow_icon}"/>
+									</MenuItem.Icon>
+								</MenuItem>
+								<!-- Bajar el componente -->
+								<MenuItem Header="{ext:TranslateMarkup CompCtrl_down}"
+										  Command="{Binding DownCommand, ElementName=Root}">
+									<MenuItem.Icon>
+										<PathIcon Foreground="{DynamicResource TextControlForeground}"
+												  Height="16" Width="16"
+												  Data="{StaticResource down_arrow_icon}"/>
+									</MenuItem.Icon>
+								</MenuItem>
+								<Separator/>
+								<!-- Despliegue y retracción -->
+								<MenuItem Header="{ext:TranslateMarkup CompCtrl_lock}"
+										  IsVisible="{Binding !IsLocked, ElementName=Root}"
+										  Click="ToggleLocked">
+									<MenuItem.Icon>
+										<PathIcon Foreground="{DynamicResource TextControlForeground}"
+												  Height="16" Width="16"
+												  Data="{StaticResource lock_icon}"/>
+									</MenuItem.Icon>
+								</MenuItem>
+								<MenuItem Header="{ext:TranslateMarkup CompCtrl_unlock}"
+										  IsVisible="{Binding IsLocked, ElementName=Root}"
+										  Click="ToggleLocked">
+									<MenuItem.Icon>
+										<PathIcon Foreground="{DynamicResource TextControlForeground}"
+												  Height="16" Width="16"
+												  Data="{StaticResource unlock_icon}"/>
+									</MenuItem.Icon>
+								</MenuItem>
+								<!-- Despliegue y retracción -->
+								<MenuItem Header="{ext:TranslateMarkup CompCtrl_retract}"
+										  IsVisible="{Binding IsExpanded, ElementName=Root}"
+										  Click="ToggleExpanded">
+									<MenuItem.Icon>
+										<PathIcon Foreground="{DynamicResource TextControlForeground}"
+												  Height="16" Width="16"
+												  Data="{StaticResource arrow_up_bracket_icon}"/>
+									</MenuItem.Icon>
+								</MenuItem>
+								<MenuItem Header="{ext:TranslateMarkup CompCtrl_deploy}"
+										  IsVisible="{Binding !IsExpanded, ElementName=Root}"
+										  Click="ToggleExpanded">
+									<MenuItem.Icon>
+										<PathIcon Foreground="{DynamicResource TextControlForeground}"
+												  Height="16" Width="16"
+												  Data="{StaticResource arrow_up_bracket_icon}">
+											<PathIcon.RenderTransform>
+												<RotateTransform Angle="180"/>
+											</PathIcon.RenderTransform>
+										</PathIcon>
+									</MenuItem.Icon>
+								</MenuItem>
+								<Separator/>
+								<!-- Borrar el componente -->
+								<MenuItem Header="{ext:TranslateMarkup CompCtrl_delete}"
+										  Command="{Binding RemoveCommand, ElementName=Root}">
+									<MenuItem.Icon>
+										<PathIcon Foreground="{DynamicResource TextControlForeground}"
+												  Height="16" Width="16"
+												  Data="{StaticResource trash_icon}"/>
+									</MenuItem.Icon>
+								</MenuItem>
+							</MenuFlyout>
+						</Button.Flyout>
+						
+						<PathIcon Foreground="{DynamicResource TextControlForeground}"
+								  Height="10" Width="10"
+								  Data="{StaticResource menu_icon}"/>
+					</Button>
+				</Grid>
+			</Border>
+			<!-- Contenido del componente -->
+			<Border Name="PART_Content"
+					Padding="12"
+					Background="{DynamicResource ComponentBodyBackground}">
+				<ContentPresenter Content="{Binding InnerContent, ElementName=Root}"/>
+			</Border>
+
+			<Border Name="PART_DropAfter" Opacity="0"
+					Height="4"
+					Background="{DynamicResource DropIndicatorColor}"
+					CornerRadius="2"
+					BoxShadow="0 2 8 0 #4000A9FF"
+					Margin="4,2"/>
+		</StackPanel>
+	</Border>
+</UserControl>

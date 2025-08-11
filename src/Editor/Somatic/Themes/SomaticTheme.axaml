@@ -1,0 +1,63 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:ctrl="using:Somatic.Controls">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBlock Text="Tema Default"/>
+					
+					<ctrl:ComponentControl/>
+				</StackPanel>
+			</ThemeVariantScope>
+			
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBlock Text="Tema Light"/>
+
+					<ctrl:ComponentControl/>
+				</StackPanel>
+			</ThemeVariantScope>
+			
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBlock Text="Tema Dark"/>
+
+					<ctrl:ComponentControl/>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<ResourceDictionary.ThemeDictionaries>
+		<!-- Default ========================================================== -->
+		<ResourceDictionary x:Key="Default">
+			<!-- Component Control ____________________________________________ -->
+			<SolidColorBrush x:Key="ComponentControlBackground" Color="#FFFFFF"/>
+			<SolidColorBrush x:Key="ComponentControlBorderBrush" Color="#E0E0E0"/>
+			<SolidColorBrush x:Key="ComponentHeaderBackground" Color="#F5F5F5"/>
+			<SolidColorBrush x:Key="ComponentBodyBackground" Color="#FFFFFF"/>
+			<!-- ____________________________________________ Component Control -->
+		</ResourceDictionary>
+
+		<!-- Light ============================================================ -->
+		<ResourceDictionary x:Key="Light">
+			<!-- Component Control ____________________________________________ -->
+			<SolidColorBrush x:Key="ComponentControlBackground" Color="#FFFFFF"/>
+			<SolidColorBrush x:Key="ComponentControlBorderBrush" Color="#E0E0E0"/>
+			<SolidColorBrush x:Key="ComponentHeaderBackground" Color="#F5F5F5"/>
+			<SolidColorBrush x:Key="ComponentBodyBackground" Color="#FFFFFF"/>
+			<!-- ____________________________________________ Component Control -->
+		</ResourceDictionary>
+
+		<!-- Dark ============================================================= -->
+		<ResourceDictionary x:Key="Dark">
+			<!-- Component Control ____________________________________________ -->
+			<SolidColorBrush x:Key="ComponentControlBackground" Color="DarkGray"/>
+			<SolidColorBrush x:Key="ComponentControlBorderBrush" Color="#808080"/>
+			<SolidColorBrush x:Key="ComponentHeaderBackground" Color="#101010"/>
+			<SolidColorBrush x:Key="ComponentBodyBackground" Color="DarkGray"/>
+			<!-- ____________________________________________ Component Control -->
+		</ResourceDictionary>
+	</ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

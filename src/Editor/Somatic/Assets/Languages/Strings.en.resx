@@ -112,4 +112,46 @@
   <data name="SETC_renamescene" xml:space="preserve">
     <value>Rename scene</value>
   </data>
+  <data name="CompCtrl_up" xml:space="preserve">
+    <value>Up</value>
+  </data>
+  <data name="CompCtrl_down" xml:space="preserve">
+    <value>Down</value>
+  </data>
+  <data name="CompCtrl_lock" xml:space="preserve">
+    <value>Lock</value>
+  </data>
+  <data name="CompCtrl_unlock" xml:space="preserve">
+    <value>Unlock</value>
+  </data>
+  <data name="CompCtrl_retract" xml:space="preserve">
+    <value>Retract</value>
+  </data>
+  <data name="CompCtrl_deploy" xml:space="preserve">
+    <value>Deploy</value>
+  </data>
+  <data name="CompCtrl_delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Transform_position" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="Transform_rotation" xml:space="preserve">
+    <value>Rotation</value>
+  </data>
+  <data name="Transform_scale" xml:space="preserve">
+    <value>Scale</value>
+  </data>
+  <data name="Transform_title" xml:space="preserve">
+    <value>Transform Component</value>
+  </data>
+  <data name="Script_title" xml:space="preserve">
+    <value>Script Component</value>
+  </data>
+  <data name="FoldCtrl_choose" xml:space="preserve">
+    <value>Choose a Folder...</value>
+  </data>
+  <data name="FldCtrl_tooltip" xml:space="preserve">
+    <value>Browse Folder</value>
+  </data>
 </root>

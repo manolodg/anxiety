@@ -1,0 +1,22 @@
+<ctrl:ComponentControl xmlns="https://github.com/avaloniaui"
+					   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					   xmlns:ctrl="using:Somatic.Controls"
+					   xmlns:ext="using:Somatic.Extensions"
+					   xmlns:m="using:Somatic.Model"
+					   x:DataType="m:TransformComponent"
+					   x:Class="Somatic.Views.TransformComponentView"
+					   x:Name="Root"
+					   Title="{Binding Name}">
+	<ctrl:ComponentControl.InnerContent>
+		<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+			<TextBlock Grid.Column="0" Grid.Row="0" Text="{ext:TranslateMarkup Transform_position}" FontWeight="Bold" VerticalAlignment="Center" Margin="2"/>
+			<ctrl:VectorControl Grid.Column="1" Grid.Row="0" Vector="{Binding Position}" IsReadOnly="{Binding IsLocked, ElementName=Root}"/>
+
+			<TextBlock Grid.Column="0" Grid.Row="1" Text="{ext:TranslateMarkup Transform_rotation}" FontWeight="Bold" VerticalAlignment="Center" Margin="2"/>
+			<ctrl:VectorControl Grid.Column="1" Grid.Row="1" Vector="{Binding Rotation}" IsReadOnly="{Binding IsLocked, ElementName=Root}"/>
+
+			<TextBlock Grid.Column="0" Grid.Row="2" Text="{ext:TranslateMarkup Transform_scale}" FontWeight="Bold" VerticalAlignment="Center" Margin="2"/>
+			<ctrl:VectorControl Grid.Column="1" Grid.Row="2" Vector="{Binding Scale}" IsReadOnly="{Binding IsLocked, ElementName=Root}"/>
+		</Grid>
+	</ctrl:ComponentControl.InnerContent>
+</ctrl:ComponentControl>

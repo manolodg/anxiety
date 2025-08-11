@@ -1,13 +1,22 @@
-
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		xmlns:ctrl="using:Somatic.Controls"
-        x:Class="Somatic.Views.MainWindow"
-		x:Name="Root"
+		xmlns:idc="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
+		xmlns:vm="using:Somatic.ViewModels"
+        Width="800" Height="600" WindowStartupLocation="CenterScreen"
+		x:DataType="vm:MainWindowViewModel"
+		x:Class="Somatic.Views.MainWindow"
         Title="Somatic">
-	<StackPanel>
-		<Button Content="Serializar"
-				Click="Button_Click"/>
-		<ctrl:SearchEntityTreeControl x:Name="EntityTree"/>
-	</StackPanel>
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+
+	<DockPanel>
+		<Menu Name="MainMenu" DockPanel.Dock="Top"/>
+
+		<Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" Padding="5">
+			<StackPanel Name="ToolBar" Orientation="Horizontal" Height="32"/>
+		</Border>
+
+		<idc:DockControl Name="MainDockControl" Layout="{Binding Layout}"/>
+	</DockPanel>
 </Window>

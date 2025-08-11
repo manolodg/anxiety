@@ -117,4 +117,60 @@
     <value>Renombrar escena</value>
     <comment>SearchEntityTreeControl - Rename Scene</comment>
   </data>
+  <data name="CompCtrl_up" xml:space="preserve">
+    <value>Subir</value>
+    <comment>ComponentControl - Up</comment>
+  </data>
+  <data name="CompCtrl_down" xml:space="preserve">
+    <value>Bajar</value>
+    <comment>ComponentControl - Down</comment>
+  </data>
+  <data name="CompCtrl_lock" xml:space="preserve">
+    <value>Bloquear</value>
+    <comment>ComponentControl - Lock</comment>
+  </data>
+  <data name="CompCtrl_unlock" xml:space="preserve">
+    <value>Desbloquear</value>
+    <comment>ComponentControl - Unlock</comment>
+  </data>
+  <data name="CompCtrl_retract" xml:space="preserve">
+    <value>Replegar</value>
+    <comment>ComponentControl - Retract</comment>
+  </data>
+  <data name="CompCtrl_deploy" xml:space="preserve">
+    <value>Desplegar</value>
+    <comment>ComponentControl - Deploy</comment>
+  </data>
+  <data name="CompCtrl_delete" xml:space="preserve">
+    <value>Eliminar</value>
+    <comment>ComponentControl - Delete</comment>
+  </data>
+  <data name="Transform_position" xml:space="preserve">
+    <value>Posición</value>
+    <comment>TransformComponentView - Position</comment>
+  </data>
+  <data name="Transform_rotation" xml:space="preserve">
+    <value>Rotación</value>
+    <comment>TransformComponentView - Rotation</comment>
+  </data>
+  <data name="Transform_scale" xml:space="preserve">
+    <value>Escala</value>
+    <comment>TransformComponentView - Scale</comment>
+  </data>
+  <data name="Transform_title" xml:space="preserve">
+    <value>Componente Transformación</value>
+    <comment>TransformComponentView - Title</comment>
+  </data>
+  <data name="Script_title" xml:space="preserve">
+    <value>Componente Script</value>
+    <comment>ScriptComponentView - Title</comment>
+  </data>
+  <data name="FoldCtrl_choose" xml:space="preserve">
+    <value>Seleccione una Carpeta...</value>
+    <comment>FolderPickerControl - Choose</comment>
+  </data>
+  <data name="FldCtrl_tooltip" xml:space="preserve">
+    <value>Selección de Carpeta</value>
+    <comment>FolderPickerControl - ToolTip</comment>
+  </data>
 </root>

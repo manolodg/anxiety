@@ -1,8 +1,8 @@
 using Avalonia.Controls;
 
 namespace Somatic.Views {
-    public partial class MainWindow : Window {
-        public MainWindow() {
+    public partial class InformationView : UserControl {
+        public InformationView() {
             InitializeComponent();
         }
     }

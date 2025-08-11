@@ -1,7 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Dock.Model.Controls;
+using Dock.Model.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Somatic.Extensions;
+using Somatic.Model;
 using Somatic.Services;
+using Somatic.ViewModels;
+using Somatic.Views;
 using System;
 using System.IO;
 
@@ -42,6 +47,29 @@ namespace Somatic {
             services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
             services.AddAutoMapper(x => x.AddMaps((typeof(Program).Assembly)));
             // ---------------------------------------------------------------------- Configuración
+
+            // AvaloniaUI -------------------------------------------------------------------------
+            services.AddSingleton<IFactory, MainDockFactory>();
+            services.AddSingleton<IRootDock>(x => {
+                IFactory factory = x.GetRequiredService<IFactory>();
+                IRootDock layout = factory.CreateLayout()!;
+                factory.InitLayout(layout);
+
+                return layout;
+            });
+            // ------------------------------------------------------------------------- AvaloniaUI
+
+            // View -------------------------------------------------------------------------------
+            services.AddSingleton<MainWindow>();
+            // ------------------------------------------------------------------------------- View
+
+            // ViewModel --------------------------------------------------------------------------
+            services.AddSingleton<MainWindowViewModel>();
+
+            services.AddSingleton<InformationViewModel>();
+            services.AddSingleton<SolutionExplorerViewModel>();
+            services.AddSingleton<LoggerViewModel>();
+            // -------------------------------------------------------------------------- ViewModel
 
             // Servicios --------------------------------------------------------------------------
             services.AddSingleton<ISerializeService, SerializeService>();

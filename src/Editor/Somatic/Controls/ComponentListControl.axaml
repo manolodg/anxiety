@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Somatic.ViewModels"
+			 xmlns:m="using:Somatic.Model"
+			 xmlns:view="using:Somatic.Views"
+			 x:DataType="vm:InformationViewModel"
+             x:Class="Somatic.Controls.ComponentListControl">
+	<ScrollViewer>
+		<Grid>
+			<ItemsControl Name="PART_ItemsControl"
+						  ItemsSource="{Binding Components}"
+						  Background="Transparent"
+						  BorderThickness="0">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<StackPanel/>
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<Border Background="Transparent"
+								Margin="0">
+							<ContentControl Content="{Binding}" Margin="4,0">
+								<ContentControl.DataTemplates>
+									<!-- TranformComponent -->
+									<DataTemplate DataType="m:TransformComponent">
+										<view:TransformComponentView InformationViewModel="{Binding $parent[UserControl].DataContext}"/>
+									</DataTemplate>
+									<!-- ScriptComponent -->
+									<DataTemplate DataType="m:ScriptComponent">
+										<view:ScriptComponentView InformationViewModel="{Binding $parent[UserControl].DataContext}"/>
+									</DataTemplate>
+								</ContentControl.DataTemplates>
+							</ContentControl>
+						</Border>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+			
+			<Grid Name="PART_Overlay" RowDefinitions="auto"/>
+		</Grid>
+	</ScrollViewer>
+</UserControl>

@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:ext="using:Somatic.Extensions"
+             x:Class="Somatic.Controls.FolderPickerControl"
+			 x:Name="Root">
+	<UserControl.Styles>
+		<Style Selector="#Root:pointerover /template/ Border#PART_Border">
+			<Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrushPointerOver}"/>
+		</Style>
+		
+		<Style Selector="#Root /template/ Button#PART_BrowseButton:pointerover">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPointerOver}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}"/>
+		</Style>
+
+		<Style Selector="#Root /template/ Button#PART_BrowseButton:pressed">
+			<Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}"/>
+			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPressed}"/>
+		</Style>
+
+		<Style Selector="#Root:error /template/ TextBox#PART_TextBox">
+			<Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
+		</Style>
+	</UserControl.Styles>
+	
+	<Border MinHeight="32"
+		    MinWidth="200"
+		    Background="{DynamicResource TextControlBackground}"
+		    BorderBrush="{DynamicResource TextcontrolBorderBrush}"
+		    BorderThickness="0"
+		    CornerRadius="4">
+		<DataValidationErrors>
+			<Panel>
+				<Grid ColumnDefinitions="*,auto">
+					<TextBox Name="PART_TextBox"
+							 Grid.Column="0"
+							 Background="Transparent"
+							 Margin="0 0 5 0"
+							 Watermark="{Binding Watermark, ElementName=Root}"
+							 Text="{Binding SelectedPath, ElementName=Root}"
+							 VerticalAlignment="Center"
+							 TextChanged="OnTextBoxTextChanged"
+							 KeyDown="OnTextBoxKeyDown"
+							 LostFocus="OnTextBoxLostFocus"/>
+					<Button Name="PART_BrowseButton"
+							Grid.Column="1"
+							ToolTip.Tip="{ext:TranslateMarkup FldCtrl_tooltip}"
+							Width="32" Height="32"
+							Padding="4"
+							Background="Transparent"
+							VerticalAlignment="Top"
+							Click="OnBrowseButtonClick">
+						<Path Width="16" Height="16"
+							  Fill="{DynamicResource TextControlForeground}"
+							  Stretch="UniformToFill"
+							  Data="{StaticResource open_folder_icon}"/>
+					</Button>
+				</Grid>
+
+				<Popup Name="PART_Popup"
+					   IsOpen="{Binding IsDropdownOpen, ElementName=Root}"
+					   PlacementTarget="{Binding ElementName=Root}"
+					   Placement="Bottom"
+					   PlacementAnchor="Bottom"
+					   PlacementGravity="Bottom"
+					   WindowManagerAddShadowHint="False"
+					   IsLightDismissEnabled="True"
+					   Opened="OnPopupOpened"
+					   Closed="OnPopupClosed">
+					<Border Background="{DynamicResource ComboBoxDropDownBackground}"
+							BorderBrush="{DynamicResource ComboBoxDropDownBorderBrush}"
+							BorderThickness="1"
+							CornerRadius="4"
+							MaxHeight="200"
+							MinWidth="{Binding MinWidth, ElementName=Root}">
+						<ListBox Name="PART_SuggestionsList"
+								 BorderThickness="0"
+								 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+								 ScrollViewer.VerticalScrollBarVisibility="Auto"
+								 SelectionChanged="OnSuggestionsListSelectionChanged"
+								 DoubleTapped="OnSuggestionsListDoubleTapped">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding}"
+											   Padding="8,4"
+											   TextTrimming="CharacterEllipsis"
+											   ToolTip.Tip="{Binding}"/>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</Border>
+				</Popup>
+			</Panel>
+		</DataValidationErrors>
+	</Border>
+</UserControl>
