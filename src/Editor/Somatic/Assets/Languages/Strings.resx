@@ -173,4 +173,24 @@
     <value>Selección de Carpeta</value>
     <comment>FolderPickerControl - ToolTip</comment>
   </data>
+  <data name="Logg_clear" xml:space="preserve">
+    <value>Limpiar</value>
+    <comment>LoggerView - Clear</comment>
+  </data>
+  <data name="Logg_info" xml:space="preserve">
+    <value>Info</value>
+    <comment>LoggerView - Info</comment>
+  </data>
+  <data name="Logg_warn" xml:space="preserve">
+    <value>Aviso</value>
+    <comment>LoggerView - Warning</comment>
+  </data>
+  <data name="Logg_error" xml:space="preserve">
+    <value>Error</value>
+    <comment>LoggerView - Error</comment>
+  </data>
+  <data name="Logg_title" xml:space="preserve">
+    <value>Logger</value>
+    <comment>LoggerView - Title</comment>
+  </data>
 </root>

@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Somatic.ViewModels"
+			 xmlns:cnv="using:Somatic.Converters"
+			 xmlns:ext="using:Somatic.Extensions"
+			 x:DataType="vm:LoggerViewModel"
+             x:Class="Somatic.Views.LoggerView"
+			 PointerEntered="OnDockControlPointerEntered">
+	<UserControl.DataContext>
+		<vm:LoggerViewModel/>
+	</UserControl.DataContext>
+
+	<UserControl.Resources>
+		<cnv:MessageTypeToColorConverter x:Key="ColorConverter"/>
+	</UserControl.Resources>
+
+	<StackPanel>
+		<Border Height="32" VerticalAlignment="Top">
+			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="4,0" VerticalAlignment="Center">
+				<Button Content="{ext:TranslateMarkup Logg_clear}" Click="Button_Click" Focusable="False"/>
+				<ToggleButton x:Name="toggleInfo" IsChecked="True" Content="{ext:TranslateMarkup Logg_info}" Margin="1,0" Click="ToggleButton_Click"/>
+				<ToggleButton x:Name="toggleWarn" IsChecked="True" Content="{ext:TranslateMarkup Logg_warn}" Margin="1,0" Click="ToggleButton_Click" Background="#ffffbb22"/>
+				<ToggleButton x:Name="toggleError" IsChecked="True" Content="{ext:TranslateMarkup Logg_error}" Margin="1,0" Click="ToggleButton_Click" Background="#ffff4456"/>
+			</StackPanel>
+		</Border>
+
+		<ScrollViewer x:Name="ConsoleScrollViewer"
+					  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+			<ItemsControl ItemsSource="{Binding Messages}">
+				<ItemsControl.ItemTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="{Binding MessageType}" Margin="5,0" Width="80" Foreground="{Binding MessageType, Converter={StaticResource ColorConverter}}"/>
+							<TextBlock Text="{Binding Time, StringFormat=hh:mm:ss}" Margin="5,0" Foreground="{Binding MessageType, Converter={StaticResource ColorConverter}}"/>
+							<TextBlock Text="{Binding Message}" TextWrapping="Wrap" Foreground="{Binding MessageType, Converter={StaticResource ColorConverter}}"/>
+						</StackPanel>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+	</StackPanel>
+</UserControl>

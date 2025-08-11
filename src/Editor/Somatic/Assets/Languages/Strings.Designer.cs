@@ -142,6 +142,51 @@ namespace Somatic.Assets.Languages {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Limpiar.
+        /// </summary>
+        internal static string Logg_clear {
+            get {
+                return ResourceManager.GetString("Logg_clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Error.
+        /// </summary>
+        internal static string Logg_error {
+            get {
+                return ResourceManager.GetString("Logg_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Info.
+        /// </summary>
+        internal static string Logg_info {
+            get {
+                return ResourceManager.GetString("Logg_info", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Logger.
+        /// </summary>
+        internal static string Logg_title {
+            get {
+                return ResourceManager.GetString("Logg_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Aviso.
+        /// </summary>
+        internal static string Logg_warn {
+            get {
+                return ResourceManager.GetString("Logg_warn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Componente Script.
         /// </summary>
         internal static string Script_title {

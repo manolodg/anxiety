@@ -154,4 +154,19 @@
   <data name="FldCtrl_tooltip" xml:space="preserve">
     <value>Browse Folder</value>
   </data>
+  <data name="Logg_clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Logg_info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Logg_warn" xml:space="preserve">
+    <value>Warn</value>
+  </data>
+  <data name="Logg_error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Logg_title" xml:space="preserve">
+    <value>Logger</value>
+  </data>
 </root>
