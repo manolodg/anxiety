@@ -12,6 +12,20 @@ namespace Somatic.Controls.Model {
 #endregion
 
 #region Métodos
+        /// <summary>Clona este objeto como <see cref="TreeNode"/>.</summary>
+        /// <returns>Nodo clonado.</returns>
+        public override TreeNode Clone() {
+            return new EntityTreeNode {
+                Name = this.Name,
+                IsExpanded = this.IsExpanded,
+                IsSelected = false,
+                IsEditing = false,
+                Entity = this.Entity,
+                Scene = this.Scene,
+                Type = this.Type
+            };
+        }
+
         /// <summary>Se produce cuando cambia cualquier propiedad.</summary>
         protected override void OnPropertyChanged(PropertyChangedEventArgs e) {
             if (e.PropertyName == nameof(Name) && Entity != null) Entity.Name = Name;

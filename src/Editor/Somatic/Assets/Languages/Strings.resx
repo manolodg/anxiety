@@ -101,4 +101,20 @@
     <value>Buscar...</value>
     <comment>Buscar</comment>
   </data>
+  <data name="SETC_addentity" xml:space="preserve">
+    <value>Añadir entidad</value>
+    <comment>SearchEntityTreeControl - Add Entity</comment>
+  </data>
+  <data name="SETC_removeentity" xml:space="preserve">
+    <value>Eliminar entidad</value>
+    <comment>SearchEntityTreeControl - Remove Entity</comment>
+  </data>
+  <data name="SETC_renameentity" xml:space="preserve">
+    <value>Renombrar entidad</value>
+    <comment>SearchEntityTreeControl - Rename Entity</comment>
+  </data>
+  <data name="SETC_renamescene" xml:space="preserve">
+    <value>Renombrar escena</value>
+    <comment>SearchEntityTreeControl - Rename Scene</comment>
+  </data>
 </root>

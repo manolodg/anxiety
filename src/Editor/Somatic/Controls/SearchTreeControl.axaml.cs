@@ -21,10 +21,13 @@ namespace Somatic.Controls {
         /// <summary>Texto que se utiliza como Watermark.</summary>
         public static readonly StyledProperty<string> SearchWatermarkProperty = AvaloniaProperty.Register<SearchTreeControl, string>(nameof(SearchWatermark), Framework.ServiceProvider?.GetRequiredService<ILocalizationService>().GetString("search") ?? "Buscar...");
 
-        /// <summary>Nodo raíz del arbol.</summary>
+        /// <summary>Nodo raíz del arbol (objetos originales).</summary>
         public static readonly StyledProperty<TreeNode?> RootNodeProperty = AvaloniaProperty.Register<SearchTreeControl, TreeNode?>(nameof(RootNode));
         /// <summary>Nodo actualmente seleccionado del arbol.</summary>
         public static readonly StyledProperty<TreeNode?> SelectedNodeProperty = AvaloniaProperty.Register<SearchTreeControl, TreeNode?>(nameof(SelectedNode));
+
+        /// <summary>Nodo buscado según el filtro de búsqueda.</summary>
+        public static readonly StyledProperty<TreeNode?> SearchedNodeProperty = AvaloniaProperty.Register<SearchTreeControl, TreeNode?>(nameof(SearchedNode));
 #endregion
 
 #region Propiedades
@@ -49,6 +52,12 @@ namespace Somatic.Controls {
             get => GetValue(SelectedNodeProperty);
             set => SetValue(SelectedNodeProperty, value);
         }
+
+        /// <summary>Nodo buscado según el filtro de búsqueda.</summary>
+        public TreeNode? SearchedNode {
+            get => GetValue(SearchedNodeProperty);
+            set => SetValue(SearchedNodeProperty, value);
+        }
 #endregion
 
 #region Constructor
@@ -68,8 +77,10 @@ namespace Somatic.Controls {
         /// <summary>Maneja la selección de un nodo seleccionandolo.</summary>
         /// <param name="node">Nodo a seleccionar</param>
         [RelayCommand]
-        private void NodeSelected(TreeNode node) {
-            foreach (TreeNode child in RootNode!.Children) {
+        protected void NodeSelected(TreeNode node) {
+            if (SelectedNode != null) SelectedNode.IsEditing = false;
+
+            foreach (TreeNode child in SearchedNode!.Children) {
                 RecursiveDeselection(child);
             }
 
@@ -79,23 +90,58 @@ namespace Somatic.Controls {
         /// <summary>Inicia el modo de edición para el nodo seleccionado.</summary>
         /// <param name="node"><see cref="TreeNode"/> a poner en modo de edición.</param>
         [RelayCommand]
-        private void StartEditing(TreeNode node) {
-            foreach (TreeNode child in RootNode!.Children) {
+        protected void StartEditing(TreeNode node) {
+            foreach (TreeNode child in SearchedNode!.Children) {
                 StopEditingRecursive(child);
             }
 
             node.IsEditing = true; ;
             SelectedNode = node;
+            Dispatcher.UIThread.Post(() => { FocusEditingTextBox(); }, DispatcherPriority.Background);
         }
         /// <summary>Para el modo de edición del nodo especificado.</summary>
         /// <param name="node">Nodo sobre el que hemos de parar el modo de edición.</param>
         [RelayCommand]
-        private void StopEditing(TreeNode node) {
+        protected void StopEditing(TreeNode node) {
             node.IsEditing = false;
             NodeSelected(node);
         }
     #endregion
 
+    #region Métodos
+        /// <summary>Se realiza el filtrado según cabien las propiedades.</summary>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change) {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == SearchTextProperty) {
+                OnSearchTextChanged(change.NewValue as string ?? string.Empty);
+            } else if (change.Property == RootNodeProperty) {
+                OnSearchTextChanged(string.Empty);
+            }
+        }
+
+        /// <summary>Realiza la busqueda de la cadena dentro de las entidades.</summary>
+        private void OnSearchTextChanged(string searchText) {
+            if (RootNode == null) return;
+
+            SearchedNode = RecursiveSearch(RootNode, searchText.ToLower());
+
+            TreeNode? RecursiveSearch(TreeNode node, string search) {
+                TreeNode? cloned = null;
+
+                if (string.IsNullOrEmpty(search) || node.Name.ToLower().Contains(search)) cloned = node.Clone();
+
+                foreach (TreeNode child in node.Children) {
+                    TreeNode? clonedChild = RecursiveSearch(child, search);
+                    if (clonedChild != null) {
+                        if (cloned == null) cloned = node.Clone();
+                        cloned.Children.Add(clonedChild);
+                    }
+                }
+
+                return cloned;
+            }
+        }
         /// <summary>Deselecciona el nodo especificado y todos sus descendentes.</summary>
         /// <param name="node">Nodo desde el que comenzamos la deselección.</param>
         private void RecursiveDeselection(TreeNode node) {
@@ -150,6 +196,11 @@ namespace Somatic.Controls {
                 StopEditing(node);
             }
         }
+        /// <summary>Quitamos la edición por si está marcada ahora mismo.</summary>
+        private void OnSearchBoxGotFocus(object? sender, RoutedEventArgs e) {
+            if (SelectedNode != null) StopEditing(SelectedNode);
+        }
+    #endregion
 #endregion
     }
 }

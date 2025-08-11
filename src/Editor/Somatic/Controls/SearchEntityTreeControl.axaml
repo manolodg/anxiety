@@ -1,5 +1,45 @@
 <ctrl:SearchTreeControl xmlns="https://github.com/avaloniaui"
 						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 						xmlns:ctrl="using:Somatic.Controls"
-						x:Class="Somatic.Controls.SearchEntityTreeControl">
+						xmlns:m="using:Somatic.Controls.Model"
+						xmlns:ext="using:Somatic.Extensions"
+						x:DataType="m:EntityTreeNode"
+						x:Class="Somatic.Controls.SearchEntityTreeControl"
+						x:Name="Root">
+	<ctrl:SearchTreeControl.Styles>
+		<Style Selector="StackPanel#PART_SearchTreeStackPanel[Tag=Scene]">
+			<Setter Property="ContextMenu">
+				<Setter.Value>
+					<ContextMenu>
+						<MenuItem Header="{ext:TranslateMarkup SETC_addentity}"/>
+						<Separator/>
+						<MenuItem Header="{ext:TranslateMarkup SETC_renamescene}"
+								  Command="{Binding StartEditingCommand, ElementName=Root}"
+								  CommandParameter="{Binding}"/>
+					</ContextMenu>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style Selector="PathIcon#PART_Icon[Tag=Scene]">
+			<Setter Property="Data" Value="{DynamicResource folder_icon}"/>
+		</Style>
+		
+		<Style Selector="StackPanel#PART_SearchTreeStackPanel[Tag=Entity]">
+			<Setter Property="ContextMenu">
+				<Setter.Value>
+					<ContextMenu>
+						<MenuItem Header="{ext:TranslateMarkup SETC_addentity}"/>
+						<MenuItem Header="{ext:TranslateMarkup SETC_removeentity}"/>
+						<Separator/>
+						<MenuItem Header="{ext:TranslateMarkup SETC_renameentity}"
+								  Command="{Binding StartEditingCommand, ElementName=Root}"
+								  CommandParameter="{Binding}"/>
+					</ContextMenu>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<Style Selector="PathIcon#PART_Icon[Tag=Entity]">
+			<Setter Property="Data" Value="{DynamicResource box_icon}"/>
+		</Style>
+	</ctrl:SearchTreeControl.Styles>
 </ctrl:SearchTreeControl>

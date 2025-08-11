@@ -16,6 +16,14 @@ namespace Somatic.Controls.Model {
         [ObservableProperty] private bool _isSelected = false;
         /// <summary>Indica si el nodo esta o no siendo editado (el nombre).</summary>
         [ObservableProperty] private bool _isEditing = false;
+        /// <summary>Nombre del tipo de datos que contiene.</summary>
+        [ObservableProperty] private string _type = null!;
+#endregion
+
+#region Métodos
+        /// <summary>Clona el nodo actual sin tener en cuenta sus hijos.</summary>
+        /// <returns>Nodo clonado.</returns>
+        public abstract TreeNode Clone();
 #endregion
     }
 }

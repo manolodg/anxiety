@@ -1,0 +1,54 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Spacing="5">
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource magnify_icon}"/><TextBlock Text="magnify_icon"/></StackPanel>
+
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource folder_icon}"/><TextBlock Text="folder_icon"/></StackPanel>
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource open_folder_icon}"/><TextBlock Text="open_folder_icon"/></StackPanel>
+
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource box_icon}"/><TextBlock Text="box_icon"/></StackPanel>
+			
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource up_arrow_icon}"/><TextBlock Text="up_arrow_icon"/></StackPanel>
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource down_arrow_icon}"/><TextBlock Text="down_arrow_icon"/></StackPanel>
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource right_arrow_icon}"/><TextBlock Text="right_arrow_icon"/></StackPanel>
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource left_arrow_icon}"/><TextBlock Text="left_arrow_icon"/></StackPanel>
+																		
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource arrow_up_bracket_icon}"/><TextBlock Text="arrow_up_bracket_icon"/></StackPanel>
+																		
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource menu_icon}"/><TextBlock Text="menu_icon"/></StackPanel>
+																		
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource lock_icon}"/><TextBlock Text="lock_icon"/></StackPanel>
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource unlock_icon}"/><TextBlock Text="unlock_icon"/></StackPanel>
+																		
+			
+			<StackPanel Orientation="Horizontal" Spacing="10"><PathIcon Margin="2" Data="{StaticResource trash_icon}"/><TextBlock Text="trash_icon"/></StackPanel>
+		</StackPanel>
+	</Design.PreviewWith>
+	
+	<Style>
+		<Style.Resources>
+			<StreamGeometry x:Key="magnify_icon">M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z</StreamGeometry>
+			
+			<StreamGeometry x:Key="folder_icon">M128 464L512 464C520.8 464 528 456.8 528 448L528 208C528 199.2 520.8 192 512 192L362.7 192C345.4 192 328.5 186.4 314.7 176L276.3 147.2C273.5 145.1 270.2 144 266.7 144L128 144C119.2 144 112 151.2 112 160L112 448C112 456.8 119.2 464 128 464zM512 512L128 512C92.7 512 64 483.3 64 448L64 160C64 124.7 92.7 96 128 96L266.7 96C280.5 96 294 100.5 305.1 108.8L343.5 137.6C349 141.8 355.8 144 362.7 144L512 144C547.3 144 576 172.7 576 208L576 448C576 483.3 547.3 512 512 512z</StreamGeometry>
+			<StreamGeometry x:Key="open_folder_icon">M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z</StreamGeometry>
+
+			<StreamGeometry x:Key="box_icon">M13.5 10.421V5.475l-2 .714V8.25a.75.75 0 0 1-1.5 0V6.725l-2.25.804v6.088l4.777-1.792a1.5 1.5 0 0 0 .973-1.404m-2.254-5.734l1.6-.571a1.5 1.5 0 0 0-.175-.104L9.499 2.427a1.5 1.5 0 0 0-1.197-.063l-.941.353l3.724 1.862c.06.03.113.066.16.108ZM5.444 3.435l3.878 1.94l-2.273.811l-3.805-1.903c.072-.042.149-.078.23-.109zm.806 4.029L2.5 5.589v5.057a1.5 1.5 0 0 0 .83 1.341l2.92 1.46zM1 5.579c0-.436.094-.856.266-1.236a.752.752 0 0 1 .2-.37c.342-.54.855-.968 1.48-1.203L7.777.96a3 3 0 0 1 2.394.125l3.172 1.586A3 3 0 0 1 15 5.354v5.067a3 3 0 0 1-1.947 2.809l-4.828 1.81a3 3 0 0 1-2.395-.125l-3.172-1.586A3 3 0 0 1 1 10.646z</StreamGeometry>
+			
+			<StreamGeometry x:Key="up_arrow_icon">M214.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 141.2 160 448c0 17.7 14.3 32 32 32s32-14.3 32-32l0-306.7L329.4 246.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-160-160z</StreamGeometry>
+			<StreamGeometry x:Key="down_arrow_icon">M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z</StreamGeometry>
+			<StreamGeometry x:Key="right_arrow_icon">M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z</StreamGeometry>
+			<StreamGeometry x:Key="left_arrow_icon">M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z</StreamGeometry>
+
+			<StreamGeometry x:Key="arrow_up_bracket_icon">M246.6 9.4c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 109.3 192 320c0 17.7 14.3 32 32 32s32-14.3 32-32l0-210.7 73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64c0 53 43 96 96 96l256 0c53 0 96-43 96-96l0-64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64c0 17.7-14.3 32-32 32L96 448c-17.7 0-32-14.3-32-32l0-64z</StreamGeometry>
+			
+			<StreamGeometry x:Key="menu_icon">M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z</StreamGeometry>
+			
+			<StreamGeometry x:Key="lock_icon">M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z</StreamGeometry>
+			<StreamGeometry x:Key="unlock_icon">M352 144c0-44.2 35.8-80 80-80s80 35.8 80 80l0 48c0 17.7 14.3 32 32 32s32-14.3 32-32l0-48C576 64.5 511.5 0 432 0S288 64.5 288 144l0 48L64 192c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-32 0 0-48z</StreamGeometry>
+
+
+			<StreamGeometry x:Key="trash_icon">M135.2 17.7C140.6 6.8 151.7 0 163.8 0L284.2 0c12.1 0 23.2 6.8 28.6 17.7L320 32l96 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 96C14.3 96 0 81.7 0 64S14.3 32 32 32l96 0 7.2-14.3zM32 128l384 0 0 320c0 35.3-28.7 64-64 64L96 512c-35.3 0-64-28.7-64-64l0-320zm96 64c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16l0 224c0 8.8 7.2 16 16 16s16-7.2 16-16l0-224c0-8.8-7.2-16-16-16z</StreamGeometry>
+		</Style.Resources>
+	</Style>
+</Styles>

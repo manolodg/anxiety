@@ -29,8 +29,18 @@ namespace Somatic.Views {
                                 new TransformComponent {
                                     Name = "Transform Component",
                                     IsActive = true,
-                                    Order = 1,
-
+                                    Order = 1
+                                }
+                            }
+                        },
+                        new Entity {
+                            Name = "Entidad 2",
+                            IsActive = true,
+                            Components = {
+                                new TransformComponent {
+                                    Name = "Transform Component",
+                                    IsActive = true,
+                                    Order = 1
                                 }
                             }
                         }

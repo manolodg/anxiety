@@ -68,5 +68,41 @@ namespace Somatic.Assets.Languages {
                 return ResourceManager.GetString("search", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Añadir entidad.
+        /// </summary>
+        internal static string SETC_addentity {
+            get {
+                return ResourceManager.GetString("SETC_addentity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Eliminar entidad.
+        /// </summary>
+        internal static string SETC_removeentity {
+            get {
+                return ResourceManager.GetString("SETC_removeentity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Renombrar entidad.
+        /// </summary>
+        internal static string SETC_renameentity {
+            get {
+                return ResourceManager.GetString("SETC_renameentity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Renombrar escena.
+        /// </summary>
+        internal static string SETC_renamescene {
+            get {
+                return ResourceManager.GetString("SETC_renamescene", resourceCulture);
+            }
+        }
     }
 }

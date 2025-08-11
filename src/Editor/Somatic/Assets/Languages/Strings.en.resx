@@ -100,4 +100,16 @@
   <data name="search" xml:space="preserve">
     <value>Search...</value>
   </data>
+  <data name="SETC_addentity" xml:space="preserve">
+    <value>Add entity</value>
+  </data>
+  <data name="SETC_removeentity" xml:space="preserve">
+    <value>Remove entity</value>
+  </data>
+  <data name="SETC_renameentity" xml:space="preserve">
+    <value>Rename entity</value>
+  </data>
+  <data name="SETC_renamescene" xml:space="preserve">
+    <value>Rename scene</value>
+  </data>
 </root>

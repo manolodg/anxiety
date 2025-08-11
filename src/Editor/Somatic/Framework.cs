@@ -40,6 +40,7 @@ namespace Somatic {
         public static void ConfigureServices(ServiceCollection services) {
             // Configuración ----------------------------------------------------------------------
             services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
+            services.AddAutoMapper(x => x.AddMaps((typeof(Program).Assembly)));
             // ---------------------------------------------------------------------- Configuración
 
             // Servicios --------------------------------------------------------------------------
