@@ -1,0 +1,200 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <!-- Add Controls for Previewer Here -->
+    </Border>
+  </Design.PreviewWith>
+
+	<Style Selector="TreeView">
+		<Setter Property="Background" Value="{DynamicResource BgPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
+		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+		<Setter Property="MaxHeight" Value="250"/>
+		<Setter Property="Padding" Value="4"/>
+	</Style>
+
+	<!-- TreeViewItem -->
+	<Style Selector="TreeViewItem">
+		<Setter Property="Background" Value="Transparent"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="Padding" Value="2"/>
+		<Setter Property="MinHeight" Value="22"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<StackPanel>
+					<!-- Header del TreeViewItem con líneas de conexión -->
+					<Border Name="PART_Header"
+                            Background="Transparent"
+                            Padding="2"
+                            MinHeight="22"
+                            Cursor="Hand">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<!-- Espacio para las líneas de conexión -->
+								<ColumnDefinition Width="Auto"/>
+								<!-- Expander -->
+								<ColumnDefinition Width="16"/>
+								<!-- Contenido -->
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+
+							<!-- Canvas para las líneas de conexión del árbol -->
+							<Canvas Grid.Column="0"
+                                    Width="16"
+                                    Height="22"
+                                    Name="PART_TreeLines">
+								<!-- Línea vertical (para conectar con hermanos) -->
+								<Path Name="PART_VerticalLine"
+                                      Data="M8,0 L8,22"
+                                      Stroke="{DynamicResource BorderColor}"
+                                      StrokeThickness="1"
+                                      StrokeDashArray="1,1"/>
+								<!-- Línea horizontal (para conectar con el contenido) -->
+								<Path Name="PART_HorizontalLine"
+                                      Data="M8,11 L16,11"
+                                      Stroke="{DynamicResource BorderColor}"
+                                      StrokeThickness="1"
+                                      StrokeDashArray="1,1"/>
+								<!-- Línea vertical corta (solo hasta el medio si es el último) -->
+								<Path Name="PART_VerticalShortLine"
+                                      Data="M8,0 L8,11"
+                                      Stroke="{DynamicResource BorderColor}"
+                                      StrokeThickness="1"
+                                      StrokeDashArray="1,1"
+                                      IsVisible="False"/>
+							</Canvas>
+
+							<!-- Expander Button -->
+							<ToggleButton Grid.Column="1"
+                                        Name="PART_Expander"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        BorderThickness="0"
+                                        Width="16"
+                                        Height="16"
+                                        Cursor="Hand"
+                                        Focusable="False"
+                                        IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+								<Path Name="ExpanderPath"
+                                      Fill="{DynamicResource TextSecondary}"
+                                      Stroke="{DynamicResource TextSecondary}"
+                                      StrokeThickness="1"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Data="M2,6 L6,2 L6,10 Z"
+                                      RenderTransformOrigin="0.5,0.5">
+									<Path.RenderTransform>
+										<RotateTransform Angle="0"/>
+									</Path.RenderTransform>
+									<Path.Transitions>
+										<Transitions>
+											<TransformOperationsTransition Property="RenderTransform" Duration="{DynamicResource TransitionDuration}"/>
+											<BrushTransition Property="Fill" Duration="{DynamicResource TransitionDuration}"/>
+										</Transitions>
+									</Path.Transitions>
+								</Path>
+							</ToggleButton>
+
+							<!-- Content -->
+							<ContentPresenter Grid.Column="2"
+                                            Name="PART_HeaderPresenter"
+                                            Content="{TemplateBinding Header}"
+                                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                            VerticalAlignment="Center"/>
+						</Grid>
+					</Border>
+
+					<!-- Children Container -->
+					<ItemsPresenter Name="PART_ItemsPresenter"
+                                  Margin="16,0,0,0"
+                                  IsVisible="{TemplateBinding IsExpanded}"/>
+				</StackPanel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<!-- TreeViewItem Header hover -->
+	<Style Selector="TreeViewItem /template/ Border#PART_Header:pointerover">
+		<Setter Property="Background" Value="{DynamicResource OverlayHover}"/>
+	</Style>
+
+	<!-- TreeViewItem Selected -->
+	<Style Selector="TreeViewItem:selected /template/ Border#PART_Header">
+		<Setter Property="Background" Value="{DynamicResource AccentBlue}"/>
+	</Style>
+
+	<Style Selector="TreeViewItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TextOnAccent}"/>
+	</Style>
+
+	<Style Selector="TreeViewItem:selected:pointerover /template/ Border#PART_Header">
+		<Setter Property="Background" Value="{DynamicResource AccentBlueHover}"/>
+	</Style>
+
+	<!-- Expander cuando está expandido -->
+	<Style Selector="TreeViewItem:expanded /template/ Path#ExpanderPath">
+		<Setter Property="RenderTransform" Value="rotate(90deg)"/>
+	</Style>
+
+	<Style Selector="TreeViewItem /template/ ToggleButton#PART_Expander:pointerover Path#ExpanderPath">
+		<Setter Property="Fill" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="Stroke" Value="{DynamicResource TextPrimary}"/>
+	</Style>
+
+	<!-- Ocultar expander para items sin hijos -->
+	<Style Selector="TreeViewItem:empty /template/ ToggleButton#PART_Expander">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<!-- Líneas del árbol para items que NO son los últimos -->
+	<Style Selector="TreeViewItem:not(:last-child) /template/ Path#PART_VerticalLine">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+
+	<Style Selector="TreeViewItem:not(:last-child) /template/ Path#PART_VerticalShortLine">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<!-- Líneas del árbol para el ÚLTIMO item (solo línea corta) -->
+	<Style Selector="TreeViewItem:last-child /template/ Path#PART_VerticalLine">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<Style Selector="TreeViewItem:last-child /template/ Path#PART_VerticalShortLine">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+
+	<!-- Línea horizontal siempre visible -->
+	<Style Selector="TreeViewItem /template/ Path#PART_HorizontalLine">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+
+	<!-- Estilo especial para el TreeViewItem raíz (sin líneas superiores) -->
+	<Style Selector="TreeView > TreeViewItem:first-child /template/ Path#PART_VerticalLine">
+		<Setter Property="Data" Value="M8,11 L8,22"/>
+	</Style>
+
+	<Style Selector="TreeView > TreeViewItem:first-child /template/ Path#PART_VerticalShortLine">
+		<Setter Property="Data" Value="M8,11 L8,11"/>
+	</Style>
+
+	<!-- Si es el primer Y último item raíz (no hay líneas verticales) -->
+	<Style Selector="TreeView > TreeViewItem:first-child:last-child /template/ Path#PART_VerticalLine">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+	<Style Selector="TreeView > TreeViewItem:first-child:last-child /template/ Path#PART_VerticalShortLine">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+</Styles>

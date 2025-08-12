@@ -1,0 +1,100 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Height="600" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<CheckBox Content="Texto"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<CheckBox Content="Texto"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<CheckBox Content="Texto"/>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="CheckBox">
+		<Setter Property="Background" Value="{DynamicResource BgPrimary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="Padding" Value="4,0,0,0"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Cursor" Value="Hand"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<!-- CheckBox Border -->
+	<Style Selector="CheckBox /template/ Border#NormalRectangle">
+		<Setter Property="Background" Value="{DynamicResource BgPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
+		<Setter Property="Width" Value="14"/>
+		<Setter Property="Height" Value="14"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="CheckBox:pointerover /template/ Border#NormalRectangle">
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderHover}"/>
+	</Style>
+
+	<Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+		<Setter Property="Background" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentBlue}"/>
+	</Style>
+
+	<Style Selector="CheckBox:checked:pointerover /template/ Border#NormalRectangle">
+		<Setter Property="Background" Value="{DynamicResource AccentBlueHover}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentBlueHover}"/>
+	</Style>
+
+	<Style Selector="CheckBox:disabled">
+		<Setter Property="Opacity" Value="0.6"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextDisabled}"/>
+		<Setter Property="Cursor" Value="Arrow"/>
+	</Style>
+
+	<!-- CheckBox CheckMark -->
+	<Style Selector="CheckBox /template/ Path#CheckMark">
+		<Setter Property="Data" Value="M2,6 L6,10 L14,2"/>
+		<Setter Property="Fill" Value="Transparent"/>
+		<Setter Property="Stretch" Value="Uniform"/>
+		<Setter Property="Width" Value="10"/>
+		<Setter Property="Height" Value="10"/>
+		<Setter Property="Stroke" Value="{DynamicResource TextOnAccent}"/>
+		<Setter Property="StrokeThickness" Value="2"/>
+		<Setter Property="Opacity" Value="0"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="CheckBox:checked /template/ Path#CheckMark">
+		<Setter Property="Opacity" Value="1"/>
+	</Style>
+</Styles>

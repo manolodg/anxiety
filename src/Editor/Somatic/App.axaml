@@ -13,6 +13,21 @@
 
 		<StyleInclude Source="/Themes/Icons.axaml"/>
 		
+		<StyleInclude Source="/Themes/TextBox.axaml"/>
+		<StyleInclude Source="/Themes/NumericUpDown.axaml"/>
+		<StyleInclude Source="/Themes/ComboBox.axaml"/>
+		<StyleInclude Source="/Themes/Slider.axaml"/>
+		<StyleInclude Source="/Themes/CheckBox.axaml"/>
+		<StyleInclude Source="/Themes/RadioButton.axaml"/>
+		<StyleInclude Source="/Themes/Button.axaml"/>
+		<StyleInclude Source="/Themes/ToggleButton.axaml"/>
+		<!--<StyleInclude Source="/Themes/Window.axaml"/>-->
+		<StyleInclude Source="/Themes/TextBlock.axaml"/>
+		<StyleInclude Source="/Themes/ListBox.axaml"/>
+		<StyleInclude Source="/Themes/TreeView.axaml"/>
+		<StyleInclude Source="/Themes/ScrollBar.axaml"/>
+		<StyleInclude Source="/Themes/ProgressBar.axaml"/>
+		
 		<StyleInclude Source="/Controls/Styles/SearchTextBox.axaml"/>
     </Application.Styles>
 	

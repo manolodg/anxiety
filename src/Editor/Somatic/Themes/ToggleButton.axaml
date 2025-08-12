@@ -1,0 +1,63 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Height="600" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<ToggleButton Content="Uno"/>
+					<ToggleButton Content="Dos"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<ToggleButton Content="Uno"/>
+					<ToggleButton Content="Dos"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<ToggleButton Content="Uno"/>
+					<ToggleButton Content="Dos"/>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="ToggleButton">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
+		<Setter Property="Padding" Value="{DynamicResource ButtonPadding}"/>
+		<Setter Property="MinHeight" Value="{DynamicResource ControlHeightNormal}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Cursor" Value="Hand"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="ToggleButton:pointerover">
+		<Setter Property="Background" Value="{DynamicResource BgAccent}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderHover}"/>
+	</Style>
+
+	<Style Selector="ToggleButton:checked">
+		<Setter Property="Background" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
+	</Style>
+
+	<Style Selector="ToggleButton:checked:pointerover">
+		<Setter Property="Background" Value="{DynamicResource AccentBlueHover}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentBlueHover}"/>
+	</Style>
+</Styles>

@@ -1,0 +1,101 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Height="600" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<RadioButton Content="uno" GroupName="radio"/>
+					<RadioButton Content="dos" GroupName="radio"/>
+					<RadioButton Content="tres" GroupName="radio"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<RadioButton Content="uno" GroupName="radio"/>
+					<RadioButton Content="dos" GroupName="radio"/>
+					<RadioButton Content="tres" GroupName="radio"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<RadioButton Content="uno" GroupName="radio"/>
+					<RadioButton Content="dos" GroupName="radio"/>
+					<RadioButton Content="tres" GroupName="radio"/>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="RadioButton">
+		<Setter Property="Background" Value="{DynamicResource BgPrimary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="Padding" Value="4,0,0,0"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Cursor" Value="Hand"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<!-- RadioButton Border -->
+	<Style Selector="RadioButton /template/ Ellipse#BackgroundEllipse">
+		<Setter Property="Fill" Value="{DynamicResource BgPrimary}"/>
+		<Setter Property="Stroke" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="StrokeThickness" Value="1"/>
+		<Setter Property="Width" Value="14"/>
+		<Setter Property="Height" Value="14"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Fill" Duration="{DynamicResource TransitionDuration}"/>
+				<BrushTransition Property="Stroke" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="RadioButton:pointerover /template/ Ellipse#BackgroundEllipse">
+		<Setter Property="Stroke" Value="{DynamicResource BorderHover}"/>
+	</Style>
+
+	<Style Selector="RadioButton:checked /template/ Ellipse#BackgroundEllipse">
+		<Setter Property="Fill" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="Stroke" Value="{DynamicResource AccentBlue}"/>
+	</Style>
+
+	<Style Selector="RadioButton:checked:pointerover /template/ Ellipse#BackgroundEllipse">
+		<Setter Property="Fill" Value="{DynamicResource AccentBlueHover}"/>
+		<Setter Property="Stroke" Value="{DynamicResource AccentBlueHover}"/>
+	</Style>
+
+	<Style Selector="RadioButton:disabled">
+		<Setter Property="Opacity" Value="0.6"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextDisabled}"/>
+		<Setter Property="Cursor" Value="Arrow"/>
+	</Style>
+
+	<!-- RadioButton CheckMark -->
+	<Style Selector="RadioButton /template/ Ellipse#CheckOuterEllipse">
+		<Setter Property="Fill" Value="{DynamicResource TextOnAccent}"/>
+		<Setter Property="Width" Value="6"/>
+		<Setter Property="Height" Value="6"/>
+		<Setter Property="Opacity" Value="0"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="RadioButton:checked /template/ Ellipse#CheckOuterEllipse">
+		<Setter Property="Opacity" Value="1"/>
+	</Style>
+</Styles>

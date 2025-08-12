@@ -1,0 +1,190 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Height="600" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<Button Content="Botón"/>
+					<Button Content="Botón" IsEnabled="False"/>
+					<Button Content="Botón" Classes="primary"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<Button Content="Botón"/>
+					<Button Content="Botón" IsEnabled="False"/>
+					<Button Content="Botón" Classes="primary"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<Button Content="Botón"/>
+					<Button Content="Botón" IsEnabled="False"/>
+					<Button Content="Botón" Classes="primary"/>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="Button">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
+		<Setter Property="Padding" Value="{DynamicResource ButtonPadding}"/>
+		<Setter Property="MinHeight" Value="{DynamicResource ControlHeightNormal}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+		<Setter Property="FontWeight" Value="Normal"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Cursor" Value="Hand"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+				<TransformOperationsTransition Property="RenderTransform" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Panel>
+					<Border Name="PART_Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+						<ContentPresenter Name="PART_ContentPresenter"
+                                        Content="{TemplateBinding Content}"
+                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+					</Border>
+				</Panel>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<!-- Estados de interacción del botón -->
+	<Style Selector="Button:pointerover /template/ Border#PART_Border">
+		<Setter Property="Background" Value="{DynamicResource BgAccent}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderHover}"/>
+		<Setter Property="BoxShadow" Value="{DynamicResource ShadowNormal}"/>
+	</Style>
+
+	<Style Selector="Button:pressed">
+		<Setter Property="RenderTransform" Value="translateY(1px)"/>
+	</Style>
+
+	<Style Selector="Button:pressed /template/ Border#PART_Border">
+		<Setter Property="BoxShadow" Value="none"/>
+	</Style>
+
+	<Style Selector="Button:disabled">
+		<Setter Property="Opacity" Value="0.6"/>
+		<Setter Property="Cursor" Value="Arrow"/>
+	</Style>
+
+	<Style Selector="Button:disabled /template/ Border#PART_Border">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+	</Style>
+
+	<Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+		<Setter Property="TextBlock.Foreground" Value="{DynamicResource TextDisabled}"/>
+	</Style>
+
+	<Style Selector="Button:focus-visible">
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderFocus}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource FocusBorderThickness}"/>
+	</Style>
+
+	<!-- Botón Primario -->
+	<Style Selector="Button.primary">
+		<Setter Property="Background" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
+	</Style>
+
+	<Style Selector="Button.primary:pointerover /template/ Border#PART_Border">
+		<Setter Property="Background" Value="{DynamicResource AccentBlueHover}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentBlueHover}"/>
+	</Style>
+
+	<Style Selector="Button.primary:pressed /template/ Border#PART_Border">
+		<Setter Property="Background" Value="{DynamicResource AccentBluePressedBrush}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentBluePressedBrush}"/>
+	</Style>
+
+	<!-- Botón Pequeño -->
+	<Style Selector="Button.small">
+		<Setter Property="Padding" Value="{DynamicResource ButtonPaddingSmall}"/>
+		<Setter Property="MinHeight" Value="{DynamicResource ControlHeightSmall}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeXS}"/>
+	</Style>
+
+	<!-- Botón de Acento Verde -->
+	<Style Selector="Button.success">
+		<Setter Property="Background" Value="{DynamicResource AccentGreen}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentGreen}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
+	</Style>
+
+	<!-- Botón de Acento Rojo -->
+	<Style Selector="Button.danger">
+		<Setter Property="Background" Value="{DynamicResource AccentRed}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentRed}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
+	</Style>
+
+	<!-- Botón de Acento Naranja -->
+	<Style Selector="Button.warning">
+		<Setter Property="Background" Value="{DynamicResource AccentOrange}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource AccentOrange}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
+	</Style>
+
+	<!-- Botón Fantasma/Outline -->
+	<Style Selector="Button.outline">
+		<Setter Property="Background" Value="Transparent"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+	</Style>
+
+	<Style Selector="Button.outline:pointerover /template/ Border#PART_Border">
+		<Setter Property="Background" Value="{DynamicResource OverlayHover}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderHover}"/>
+	</Style>
+
+	<!-- Botón Sin Borde -->
+	<Style Selector="Button.ghost">
+		<Setter Property="Background" Value="Transparent"/>
+		<Setter Property="BorderBrush" Value="Transparent"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+	</Style>
+
+	<Style Selector="Button.ghost:pointerover /template/ Border#PART_Border">
+		<Setter Property="Background" Value="{DynamicResource OverlayHover}"/>
+	</Style>
+
+	<Style Selector="Button.ghost:pressed /template/ Border#PART_Border">
+		<Setter Property="Background" Value="{DynamicResource OverlayPressed}"/>
+	</Style>
+
+	<!-- Botón de Icono (cuadrado) -->
+	<Style Selector="Button.icon">
+		<Setter Property="Width" Value="{DynamicResource ControlHeightNormal}"/>
+		<Setter Property="Height" Value="{DynamicResource ControlHeightNormal}"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+	</Style>
+
+	<Style Selector="Button.icon.small">
+		<Setter Property="Width" Value="{DynamicResource ControlHeightSmall}"/>
+		<Setter Property="Height" Value="{DynamicResource ControlHeightSmall}"/>
+	</Style>
+</Styles>

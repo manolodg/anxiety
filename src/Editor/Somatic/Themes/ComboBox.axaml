@@ -1,0 +1,135 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Height="600" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<ComboBox Width="400"/>
+					<ComboBox Width="400" SelectedIndex="0">
+						<ComboBoxItem Content="Uno"/>
+						<ComboBoxItem Content="Dos"/>
+					</ComboBox>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<ComboBox Width="400"/>
+					<ComboBox Width="400" SelectedIndex="0">
+						<ComboBoxItem Content="Uno"/>
+						<ComboBoxItem Content="Dos"/>
+					</ComboBox>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<ComboBox Width="400"/>
+					<ComboBox Width="400" SelectedIndex="0">
+						<ComboBoxItem Content="Uno"/>
+						<ComboBoxItem Content="Dos"/>
+					</ComboBox>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="ComboBox">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
+		<Setter Property="Padding" Value="{DynamicResource InputPadding}"/>
+		<Setter Property="MinHeight" Value="{DynamicResource ControlHeightNormal}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+		<Setter Property="HorizontalContentAlignment" Value="Left"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="ComboBox:pointerover">
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderHover}"/>
+	</Style>
+
+	<Style Selector="ComboBox:focus">
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderFocus}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource FocusBorderThickness}"/>
+	</Style>
+
+	<Style Selector="ComboBox:disabled">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextDisabled}"/>
+		<Setter Property="Opacity" Value="0.6"/>
+	</Style>
+
+	<!-- Dropdown toggle button -->
+	<Style Selector="ComboBox /template/ ToggleButton#PART_DropDownToggle">
+		<Setter Property="Background" Value="Transparent"/>
+		<Setter Property="BorderBrush" Value="Transparent"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+		<Setter Property="Padding" Value="0"/>
+		<Setter Property="Width" Value="24"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Foreground" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="ComboBox /template/ ToggleButton#PART_DropDownToggle:pointerover">
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+	</Style>
+
+	<!-- ComboBox Popup -->
+	<Style Selector="ComboBox /template/ Popup">
+		<Setter Property="Placement" Value="Bottom"/>
+		<Setter Property="PlacementGravity" Value="Bottom"/>
+		<Setter Property="IsLightDismissEnabled" Value="True"/>
+	</Style>
+
+	<!-- ComboBox Items -->
+	<Style Selector="ComboBoxItem">
+		<Setter Property="Background" Value="Transparent"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="Padding" Value="{DynamicResource InputPadding}"/>
+		<Setter Property="MinHeight" Value="{DynamicResource ControlHeightNormal}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+		<Setter Property="HorizontalContentAlignment" Value="Left"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="ComboBoxItem:pointerover">
+		<Setter Property="Background" Value="{DynamicResource OverlayHover}"/>
+	</Style>
+
+	<Style Selector="ComboBoxItem:selected">
+		<Setter Property="Background" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
+	</Style>
+
+	<Style Selector="ComboBoxItem:selected:pointerover">
+		<Setter Property="Background" Value="{DynamicResource AccentBlueHover}"/>
+	</Style>
+
+	<!-- ListBox para el dropdown del ComboBox -->
+	<Style Selector="ComboBox /template/ Border#PART_PopupBorder">
+		<Setter Property="Background" Value="{DynamicResource BgPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
+		<Setter Property="BoxShadow" Value="{DynamicResource ShadowHover}"/>
+		<Setter Property="MaxHeight" Value="200"/>
+	</Style>
+</Styles>

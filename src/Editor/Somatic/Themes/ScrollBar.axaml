@@ -1,0 +1,62 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <!-- Add Controls for Previewer Here -->
+    </Border>
+  </Design.PreviewWith>
+
+	<Style Selector="ScrollBar">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="ScrollBar:vertical">
+		<Setter Property="Width" Value="8"/>
+		<Setter Property="Opacity" Value="0.6"/>
+	</Style>
+
+	<Style Selector="ScrollBar:horizontal">
+		<Setter Property="Height" Value="8"/>
+		<Setter Property="Opacity" Value="0.6"/>
+	</Style>
+
+	<Style Selector="ScrollBar:pointerover">
+		<Setter Property="Opacity" Value="1"/>
+	</Style>
+
+	<!-- ScrollBar Track -->
+	<Style Selector="ScrollBar /template/ Border#PART_Track">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="CornerRadius" Value="4"/>
+	</Style>
+
+	<!-- ScrollBar Thumb -->
+	<Style Selector="ScrollBar /template/ Thumb">
+		<Setter Property="Background" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="CornerRadius" Value="4"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="ScrollBar /template/ Thumb:pointerover">
+		<Setter Property="Background" Value="{DynamicResource BorderHover}"/>
+	</Style>
+
+	<Style Selector="ScrollBar /template/ Thumb:pressed">
+		<Setter Property="Background" Value="{DynamicResource BorderActive}"/>
+	</Style>
+
+	<!-- ScrollBar Buttons (ocultos en estilo Blender) -->
+	<Style Selector="ScrollBar /template/ RepeatButton">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+
+</Styles>

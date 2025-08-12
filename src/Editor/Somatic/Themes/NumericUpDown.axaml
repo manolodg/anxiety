@@ -1,0 +1,69 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Height="600" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<NumericUpDown Value="1.000"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<NumericUpDown Value="1.000"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<NumericUpDown Value="1.000"/>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="NumericUpDown">
+		<Setter Property="Background" Value="{DynamicResource BgPrimary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
+		<Setter Property="Padding" Value="{DynamicResource InputPadding}"/>
+		<Setter Property="MinHeight" Value="{DynamicResource ControlHeightNormal}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown:focus">
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderFocus}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource FocusBorderThickness}"/>
+	</Style>
+
+	<Style Selector="NumericUpDown:pointerover">
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderHover}"/>
+	</Style>
+
+	<!-- Spinner buttons del NumericUpDown -->
+	<Style Selector="NumericUpDown /template/ RepeatButton">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeXS}"/>
+		<Setter Property="Width" Value="18"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="NumericUpDown /template/ RepeatButton:pointerover">
+		<Setter Property="Background" Value="{DynamicResource BgAccent}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+	</Style>
+</Styles>

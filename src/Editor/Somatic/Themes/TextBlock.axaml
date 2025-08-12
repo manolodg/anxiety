@@ -1,0 +1,47 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Height="600" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBlock Text="Hola mundo"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBlock Text="Hola mundo"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBlock Text="Hola mundo"/>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="TextBlock">
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeBase}"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+
+	<!-- TextBlock secundario -->
+	<Style Selector="TextBlock.secondary">
+		<Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeSM}"/>
+	</Style>
+
+	<!-- TextBlock pequeño -->
+	<Style Selector="TextBlock.small">
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeXS}"/>
+	</Style>
+
+	<!-- TextBlock grande -->
+	<Style Selector="TextBlock.large">
+		<Setter Property="FontSize" Value="{DynamicResource FontSizeLG}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+	</Style>
+</Styles>

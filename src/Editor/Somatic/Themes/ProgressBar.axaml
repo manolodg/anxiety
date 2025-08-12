@@ -1,0 +1,36 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <!-- Add Controls for Previewer Here -->
+    </Border>
+  </Design.PreviewWith>
+
+	<Style Selector="ProgressBar">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="CornerRadius" Value="3"/>
+		<Setter Property="Height" Value="6"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Value" Duration="{DynamicResource TransitionDurationSlow}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="ProgressBar /template/ Border#PART_Track">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="CornerRadius" Value="3"/>
+	</Style>
+
+	<Style Selector="ProgressBar /template/ Border#PART_Indicator">
+		<Setter Property="Background" Value="{DynamicResource AccentBlue}"/>
+		<Setter Property="CornerRadius" Value="3"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Width" Duration="{DynamicResource TransitionDurationSlow}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+</Styles>

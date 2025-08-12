@@ -1,0 +1,71 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<StackPanel Width="400" Height="600" Spacing="10">
+			<ThemeVariantScope RequestedThemeVariant="Default">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBox Watermark="Watermark"/>
+					<TextBox Text="Text"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Light">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBox Watermark="Watermark"/>
+					<TextBox Text="Text"/>
+				</StackPanel>
+			</ThemeVariantScope>
+
+			<ThemeVariantScope RequestedThemeVariant="Dark">
+				<StackPanel Spacing="10" Background="{DynamicResource SystemRegionBrush}">
+					<TextBox Watermark="Watermark"/>
+					<TextBox Text="Text"/>
+				</StackPanel>
+			</ThemeVariantScope>
+		</StackPanel>
+	</Design.PreviewWith>
+
+	<Style Selector="TextBox">
+		<Setter Property="Background" Value="{DynamicResource BgPrimary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource BorderThickness}"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
+		<Setter Property="Padding" Value="{DynamicResource InputPadding}"/>
+		<Setter Property="MinHeight" Value="{DynamicResource ControlHeightNormal}"/>
+		<Setter Property="FontSize" Value="{DynamicResource RontSizeSM}"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="CaretBrush" Value="{DynamicResource TextPrimary}"/>
+		<Setter Property="SelectionBrush" Value="{DynamicResource SelectionBackground}"/>
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+				<BrushTransition Property="Background" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+	
+	<Style Selector="TextBox:focus">
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderFocus}"/>
+		<Setter Property="BorderThickness" Value="{DynamicResource FocusBorderThickness}"/>
+	</Style>
+
+	<Style Selector="TextBox:disabled">
+		<Setter Property="Background" Value="{DynamicResource BgTertiary}"/>
+		<Setter Property="Foreground" Value="{DynamicResource TextDisabled}"/>
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+		<Setter Property="Opacity" Value="0.6"/>
+	</Style>
+
+	<Style Selector="TextBox:pointerover">
+		<Setter Property="BorderBrush" Value="{DynamicResource BorderHover}"/>
+	</Style>
+
+	<Style Selector="TextBox /template/ Border#PART_BorderElement">
+		<Setter Property="Transitions">
+			<Transitions>
+				<BrushTransition Property="BorderBrush" Duration="{DynamicResource TransitionDuration}"/>
+			</Transitions>
+		</Setter>
+	</Style>
+</Styles>
