@@ -71,6 +71,10 @@ namespace Somatic {
             services.AddSingleton<LoggerViewModel>();
             // -------------------------------------------------------------------------- ViewModel
 
+            // Model ------------------------------------------------------------------------------
+            services.AddSingleton<Project, MockupProject>();
+            // ------------------------------------------------------------------------------ Model
+
             // Servicios --------------------------------------------------------------------------
             services.AddSingleton<ISerializeService, SerializeService>();
             services.AddSingleton<ILocalizationService, LocalizationService>();

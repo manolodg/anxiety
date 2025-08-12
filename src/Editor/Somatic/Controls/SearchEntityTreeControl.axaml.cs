@@ -1,9 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using Somatic.Controls.Model;
 using Somatic.Model;
+using Somatic.ViewModels;
 using System.Linq;
 
 namespace Somatic.Controls {
@@ -31,29 +30,40 @@ namespace Somatic.Controls {
             InitializeComponent();
 
             if (Design.IsDesignMode) {
-                EntityTreeNode root = new EntityTreeNode {
-                    Name = "Raíz",
-                    Type = "Scene"
+                DataContext = new SolutionExplorerViewModel {
+                    Project = new Project {
+                        ActiveScene = new Scene {
+                            Name = "Escena"
+                        }
+                    }
                 };
-                EntityTreeNode node1 = new EntityTreeNode {
-                    Name = "Nodo 1",
-                    Type = "Entity"
-                };
-                EntityTreeNode node2 = new EntityTreeNode {
-                    Name = "Nodo 2",
-                    Type = "Entity"
-                };
-                root.Children.Add(node1);
-                root.Children.Add(node2);
 
-                EntityTreeNode node11 = new EntityTreeNode {
-                    Name = "Nodo 11",
-                    Type = "Entity"
-                };
-                node1.Children.Add(node11);
+                var entities = (DataContext as SolutionExplorerViewModel)!.Project.ActiveScene.Entities;
+                var entity1 = new Entity { Name = "Entidad raíz 1" };
+                var entity11 = new Entity { Name = "Entidad hija 1 de 1" };
+                var entity12 = new Entity { Name = "Entidad hija 2 de 1" };
+                entity1.Children.Add(entity11);
+                entity1.Children.Add(entity12);
 
-                RootNode = root;
+                var entity2 = new Entity { Name = "Entidad raíz 2" };
+                var entity21 = new Entity { Name = "Entidad hija 1 de 2" };
+                entity2.Children.Add(entity21);
+
+                var entity211 = new Entity { Name = "Entidad nieta 1 de 2" };
+                entity21.Children.Add(entity211);
+
+                entities.Add(entity1);
+                entities.Add(entity2);
             }
+
+            this.DataContextChanged += (s, e) => {
+                CreateRootEntity((DataContext as SolutionExplorerViewModel)!.Project);
+            };
+            this.PropertyChanged += (s, e) => {
+                if (e.Property == SelectedNodeProperty) {
+                    (DataContext as SolutionExplorerViewModel)!.SelectedTreeNode = SelectedNode as EntityTreeNode;
+                }
+            };
         }
 #endregion
 
@@ -62,7 +72,7 @@ namespace Somatic.Controls {
         /// <param name="project">Proyecto que proporciona los datos.</param>
         private void CreateRootEntity(Project? project) {
             EntityTreeNode tmp = new EntityTreeNode {
-                Name = project!.Name,
+                Name = project!.ActiveScene.Name,
                 IsExpanded = true,
                 IsSelected = true,
                 Scene = project.ActiveScene,
