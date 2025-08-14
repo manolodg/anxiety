@@ -201,4 +201,32 @@
     <value>Error al cargar el archivo de configuración</value>
     <comment>MessageBox - Not Config</comment>
   </data>
+  <data name="Rule_folderexists" xml:space="preserve">
+    <value>La carpeta ya existe</value>
+    <comment>Rule - Folder Exists</comment>
+  </data>
+  <data name="Rule_nomatch" xml:space="preserve">
+    <value>Hay caracteres no válidos</value>
+    <comment>Rule - No Match</comment>
+  </data>
+  <data name="Rule_mandatory" xml:space="preserve">
+    <value>Este campo es obligatorio</value>
+    <comment>Rule - Mandatory</comment>
+  </data>
+  <data name="Rule_exists" xml:space="preserve">
+    <value>El proyecto ya existe</value>
+    <comment>Rule - Exists</comment>
+  </data>
+  <data name="Msg_notwrite" xml:space="preserve">
+    <value>No se ha podido guardar la configuración</value>
+    <comment>MessageBox - Not Write</comment>
+  </data>
+  <data name="Msg_notfolder" xml:space="preserve">
+    <value>No se encuentra la carpeta:</value>
+    <comment>MessageBox - Not Folder</comment>
+  </data>
+  <data name="Msg_badfile" xml:space="preserve">
+    <value>Ha habido un problema con el archivo:</value>
+    <comment>MessageBox - Bad File</comment>
+  </data>
 </root>

@@ -10,10 +10,17 @@ using System.Collections.Generic;
 using System.IO;
 
 namespace Somatic.Services {
+    /// <summary>Servicio para la gestión de los proyectos.</summary>
     public class ProjectService(ISerializeService serialize, ILogger<ProjectService> logger, IConfigurationService config, Project project, IMapper mapper, ILocalizationService localization) : IProjectService {
+#region Constantes
+        /// <summary>Nombre del archivo de la plantilla.</summary>
         private const string TemplateFile = "template.soma";
+        /// <summary>Extensión del proyecto.</summary>
         private const string Extension = ".soma";
+#endregion
 
+#region Métodos
+        /// <summary>Obtiene las plantillas disponibles en la aplicación.</summary>
         public TemplateProject[] GetTemplates() {
             List<TemplateProject> resultado = [];
 
@@ -31,7 +38,7 @@ namespace Somatic.Services {
 
             return resultado.ToArray();
         }
-
+        /// <summary>Crea un proyecto según los datos proporcionados en el formulario.</summary>
         public void CreateProject(CreateProjectViewModel vm) {
             try {
                 if (!Path.EndsInDirectorySeparator(vm.Path)) vm.Path += Path.DirectorySeparatorChar;
@@ -70,7 +77,7 @@ namespace Somatic.Services {
                 logger.LogError(ex, "No se ha podido crear el proyecto");
             }
         }
-
+        /// <summary>Carga un proyecto concreto indicado en pantallla.</summary>
         public bool LoadProject(ProjectData projectData) {
             string path = $"{projectData.Path}{projectData.Name}{Extension}";
             if (!Directory.Exists(projectData.Path)) {
@@ -98,7 +105,7 @@ namespace Somatic.Services {
 
             return true;
         }
-
+        /// <summary>Guarda un proyecto.</summary>
         public bool SaveProject() {
             try {
                 serialize.ToFile<Project>(project, Path.GetFullPath(Path.Combine(project.Path, $"{project.Name}{Extension}")));
@@ -109,6 +116,8 @@ namespace Somatic.Services {
             }
         }
 
+        /// <summary>Realiza la clonación de un proyecto.</summary>
         private void AssignProject(Project origin) => mapper.Map(origin, project);
+#endregion
     }
 }

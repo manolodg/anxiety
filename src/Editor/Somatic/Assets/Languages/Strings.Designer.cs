@@ -187,6 +187,15 @@ namespace Somatic.Assets.Languages {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Ha habido un problema con el archivo:.
+        /// </summary>
+        internal static string Msg_badfile {
+            get {
+                return ResourceManager.GetString("Msg_badfile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Error al cargar el archivo de configuración.
         /// </summary>
         internal static string Msg_notconfig {
@@ -196,11 +205,65 @@ namespace Somatic.Assets.Languages {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se encuentra la carpeta:.
+        /// </summary>
+        internal static string Msg_notfolder {
+            get {
+                return ResourceManager.GetString("Msg_notfolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se ha podido guardar la configuración.
+        /// </summary>
+        internal static string Msg_notwrite {
+            get {
+                return ResourceManager.GetString("Msg_notwrite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Nueva Entidad.
         /// </summary>
         internal static string NewEntity {
             get {
                 return ResourceManager.GetString("NewEntity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El proyecto ya existe.
+        /// </summary>
+        internal static string Rule_exists {
+            get {
+                return ResourceManager.GetString("Rule_exists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a La carpeta ya existe.
+        /// </summary>
+        internal static string Rule_folderexists {
+            get {
+                return ResourceManager.GetString("Rule_folderexists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Este campo es obligatorio.
+        /// </summary>
+        internal static string Rule_mandatory {
+            get {
+                return ResourceManager.GetString("Rule_mandatory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Hay caracteres no válidos.
+        /// </summary>
+        internal static string Rule_nomatch {
+            get {
+                return ResourceManager.GetString("Rule_nomatch", resourceCulture);
             }
         }
         

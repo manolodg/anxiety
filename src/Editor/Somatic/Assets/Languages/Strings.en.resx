@@ -175,4 +175,25 @@
   <data name="Msg_notconfig" xml:space="preserve">
     <value>Error loading config file</value>
   </data>
+  <data name="Rule_folderexists" xml:space="preserve">
+    <value>Folder exists</value>
+  </data>
+  <data name="Rule_nomatch" xml:space="preserve">
+    <value>There're no valid chars</value>
+  </data>
+  <data name="Rule_mandatory" xml:space="preserve">
+    <value>This field is mandatory</value>
+  </data>
+  <data name="Rule_exists" xml:space="preserve">
+    <value>Project exists</value>
+  </data>
+  <data name="Msg_notwrite" xml:space="preserve">
+    <value>Config wasn't save</value>
+  </data>
+  <data name="Msg_notfolder" xml:space="preserve">
+    <value>Folder not found:</value>
+  </data>
+  <data name="Msg_badfile" xml:space="preserve">
+    <value>There's a problem with the file:</value>
+  </data>
 </root>

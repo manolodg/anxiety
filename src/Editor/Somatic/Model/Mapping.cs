@@ -6,6 +6,7 @@ namespace Somatic.Model {
         /// <summary>Se realiza la configuración de los mapeos.</summary>
         public Mapping() {
             // Clonado ----------------------------------------------------------------------------
+            CreateMap<Project, Project>();
             // ---------------------------------------------------------------------------- Clonado
         }
     }
