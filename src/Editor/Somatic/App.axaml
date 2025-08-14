@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:local="using:Somatic"
              x:Class="Somatic.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Light">
 	<Application.DataTemplates>
 		<local:ViewLocator/>
 	</Application.DataTemplates>
@@ -18,10 +18,12 @@
 		<StyleInclude Source="/Themes/ComboBox.axaml"/>
 		<StyleInclude Source="/Themes/Slider.axaml"/>
 		<StyleInclude Source="/Themes/CheckBox.axaml"/>
+		<!--
 		<StyleInclude Source="/Themes/RadioButton.axaml"/>
 		<StyleInclude Source="/Themes/Button.axaml"/>
 		<StyleInclude Source="/Themes/ToggleButton.axaml"/>
-		<!--<StyleInclude Source="/Themes/Window.axaml"/>-->
+		<StyleInclude Source="/Themes/Window.axaml"/>
+		-->
 		<StyleInclude Source="/Themes/TextBlock.axaml"/>
 		<StyleInclude Source="/Themes/ListBox.axaml"/>
 		<StyleInclude Source="/Themes/TreeView.axaml"/>

@@ -12,8 +12,6 @@ namespace Somatic.Model {
         /// <summary>Indica si la entidad esta o no activa.</summary>
         [JsonProperty] [ObservableProperty] private bool _isActive;
 
-        /// <summary>Entidad padre en case de que la tenga.</summary>
-        [JsonProperty] public BaseEntity? Parent { get; set; }
         /// <summary>Componentes que contiene esta entidad.</summary>
         [JsonProperty] public ObservableCollection<BaseComponent> Components { get; } = [];
         /// <summary>Entidades hijas.</summary>

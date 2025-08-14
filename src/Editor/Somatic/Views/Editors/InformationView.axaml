@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:vm="using:Somatic.ViewModels"
 			 xmlns:ctrl="using:Somatic.Controls"
+			 xmlns:ext="using:Somatic.Extensions"
 			 x:DataType="vm:InformationViewModel"
              x:Class="Somatic.Views.InformationView">
 	<UserControl.DataContext>
@@ -14,8 +15,10 @@
 			<Grid Grid.Row="0" ColumnDefinitions="auto,*" Margin="0,0,0,8">
 				<CheckBox Grid.Column="0"
 						  Content="¿Activo?"
+						  IsChecked="{Binding Node.Entity.IsActive}"
 						  Margin="0,0,8,0"/>
 				<TextBox Grid.Column="1"
+						 Text="{Binding Node.Name}"
 						 Watermark="Nombre"/>
 			</Grid>
 			

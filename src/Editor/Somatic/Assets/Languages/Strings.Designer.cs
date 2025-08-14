@@ -187,6 +187,24 @@ namespace Somatic.Assets.Languages {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error al cargar el archivo de configuración.
+        /// </summary>
+        internal static string Msg_notconfig {
+            get {
+                return ResourceManager.GetString("Msg_notconfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Nueva Entidad.
+        /// </summary>
+        internal static string NewEntity {
+            get {
+                return ResourceManager.GetString("NewEntity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Componente Script.
         /// </summary>
         internal static string Script_title {

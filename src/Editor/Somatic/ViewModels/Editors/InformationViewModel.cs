@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Dock.Model.Mvvm.Controls;
 using Somatic.Controls;
+using Somatic.Controls.Model;
 using Somatic.Model;
 using System.Collections.ObjectModel;
 
@@ -13,6 +14,8 @@ namespace Somatic.ViewModels {
 
         /// <summary>Componentes que se gestionan.</summary>
         [ObservableProperty] private ObservableCollection<BaseComponent> _components = [];
+        /// <summary>Indica el nodo seleccionado.</summary>
+        [ObservableProperty] private EntityTreeNode? _node = null!;
 #endregion
 
 #region Métodos

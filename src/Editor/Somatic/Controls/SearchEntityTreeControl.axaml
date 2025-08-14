@@ -7,11 +7,14 @@
 						x:Class="Somatic.Controls.SearchEntityTreeControl"
 						x:Name="Root">
 	<ctrl:SearchTreeControl.Styles>
+		<!-- Menu Contextural - Scene _____________________________________________________________ -->
 		<Style Selector="StackPanel#PART_SearchTreeStackPanel[Tag=Scene]">
 			<Setter Property="ContextMenu">
 				<Setter.Value>
 					<ContextMenu>
-						<MenuItem Header="{ext:TranslateMarkup SETC_addentity}"/>
+						<MenuItem Header="{ext:TranslateMarkup SETC_addentity}"
+								  Command="{Binding AddEntityCommand, ElementName=Root}"
+								  CommandParameter="{Binding}"/>
 						<Separator/>
 						<MenuItem Header="{ext:TranslateMarkup SETC_renamescene}"
 								  Command="{Binding StartEditingCommand, ElementName=Root}"
@@ -23,12 +26,16 @@
 		<Style Selector="PathIcon#PART_Icon[Tag=Scene]">
 			<Setter Property="Data" Value="{DynamicResource folder_icon}"/>
 		</Style>
-		
+		<!-- ______________________________________________________________ Menu Contextual - Scene -->
+
+		<!-- Menu Contextual - Entity _____________________________________________________________ -->
 		<Style Selector="StackPanel#PART_SearchTreeStackPanel[Tag=Entity]">
 			<Setter Property="ContextMenu">
 				<Setter.Value>
 					<ContextMenu>
-						<MenuItem Header="{ext:TranslateMarkup SETC_addentity}"/>
+						<MenuItem Header="{ext:TranslateMarkup SETC_addentity}"
+								  Command="{Binding AddEntityCommand, ElementName=Root}"
+								  CommandParameter="{Binding}"/>
 						<MenuItem Header="{ext:TranslateMarkup SETC_removeentity}"/>
 						<Separator/>
 						<MenuItem Header="{ext:TranslateMarkup SETC_renameentity}"
@@ -41,5 +48,6 @@
 		<Style Selector="PathIcon#PART_Icon[Tag=Entity]">
 			<Setter Property="Data" Value="{DynamicResource box_icon}"/>
 		</Style>
+		<!-- _____________________________________________________________ Menu Contextual - Entity -->
 	</ctrl:SearchTreeControl.Styles>
 </ctrl:SearchTreeControl>

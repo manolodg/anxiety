@@ -169,4 +169,10 @@
   <data name="Logg_title" xml:space="preserve">
     <value>Logger</value>
   </data>
+  <data name="NewEntity" xml:space="preserve">
+    <value>New Entity</value>
+  </data>
+  <data name="Msg_notconfig" xml:space="preserve">
+    <value>Error loading config file</value>
+  </data>
 </root>

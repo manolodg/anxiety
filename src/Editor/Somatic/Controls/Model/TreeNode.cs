@@ -8,6 +8,9 @@ namespace Somatic.Controls.Model {
         /// <summary>Nodos hijo que tiene este nodo.</summary>
         public ObservableCollection<TreeNode> Children { get; } = [];
 
+        /// <summary>Nodo raíz original.</summary>
+        public TreeNode? Original { get; set; }
+
         /// <summary>Nombre que aparece en el arbol.</summary>
         [ObservableProperty] private string _name = null!;
         /// <summary>Indica si el nodo esta o no expandido.</summary>

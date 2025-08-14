@@ -1,0 +1,49 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Somatic.ViewModels"
+        x:DataType="vm:DialogViewModel"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        Width="800" Height="600" WindowStartupLocation="CenterScreen" Title="{Binding CurrentPage.Title}"
+        x:Class="Somatic.Views.DialogView"
+		FontSize="14"
+		SystemDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
+
+	<Grid RowDefinitions="30, *">
+		<Grid Grid.Row="0" x:Name="TitleBar"
+			  ColumnDefinitions="Auto, *, Auto">
+			<Image Grid.Column="0" 
+				   Width="16" Height="16" 
+				   Margin="10,0,0,0" 
+				   Source="avares://Somatic/Assets/Images/icono.ico"/>
+
+			<TextBlock Grid.Column="1" 
+					   Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
+					   Margin="10,0,0,0"
+					   VerticalAlignment="Center"
+					   Foreground="{DynamicResource TitleBarForegroundBrush}"/>
+
+			<Button Grid.Column="2" x:Name="PART_CloseButton"
+					Background="{DynamicResource MainBackgrounBrush}"
+					BorderBrush="{DynamicResource MainBackgrounBrush}"
+					Foreground="{DynamicResource TextControlForeground}"
+					Theme="{StaticResource FluentCaptionButton}"
+					Click="CloseButton_Click"
+					AutomationProperties.Name="Close">
+				
+				<Viewbox Width="11" Margin="2">
+					<Path Stretch="UniformToFill"
+						  Fill="{DynamicResource TextControlForeground}"
+						  Data="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />
+				</Viewbox>
+			</Button>
+		</Grid>
+
+		<Grid Grid.Row="1" Background="{DynamicResource MainBackgrounBrush}" x:Name="ContentWindow"/>
+		<ContentControl Grid.Row="1" Content="{Binding CurrentPage}"/>
+	</Grid>
+</Window>

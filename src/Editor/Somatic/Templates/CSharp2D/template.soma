@@ -1,0 +1,7 @@
+{
+    "Name": "C# 2D",
+    "Description": "Motor C# en 2D",
+    "Folders": [ ".soma", "Assets", "Assets\\Scenes", "Scripts" ],
+    "EngineType": "Cpp",
+    "EngineMode": "Type2D"
+}

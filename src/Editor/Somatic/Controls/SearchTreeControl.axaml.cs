@@ -121,7 +121,7 @@ namespace Somatic.Controls {
         }
 
         /// <summary>Realiza la busqueda de la cadena dentro de las entidades.</summary>
-        private void OnSearchTextChanged(string searchText) {
+        protected void OnSearchTextChanged(string searchText) {
             if (RootNode == null) return;
 
             SearchedNode = RecursiveSearch(RootNode, searchText.ToLower());
@@ -142,6 +142,22 @@ namespace Somatic.Controls {
                 return cloned;
             }
         }
+        /// <summary>Realiza la búsqueda de un nodo mediante el original.</summary>
+        /// <param name="original">Nodo original sobre el que buscar.</param>
+        protected void SelectNodeByOriginal(TreeNode original) {
+            SelectedNode = SearchRecurvise(SearchedNode!, original);
+
+            TreeNode? SearchRecurvise(TreeNode from, TreeNode search) {
+                foreach (TreeNode child in from.Children) {
+                    if (child.Original == search) return child;
+                    TreeNode? result = SearchRecurvise(child, search);
+                    if (result != null) return result;
+                }
+
+                return null;
+            }
+        }
+
         /// <summary>Deselecciona el nodo especificado y todos sus descendentes.</summary>
         /// <param name="node">Nodo desde el que comenzamos la deselección.</param>
         private void RecursiveDeselection(TreeNode node) {
@@ -169,11 +185,8 @@ namespace Somatic.Controls {
         /// <summary>Encuentra el <see cref="TextBox"/> actualmente visible usado para la edición.</summary>
         /// <returns><see cref="TextBox"/> usado para la edición.</returns>
         private TextBox? FindEditingTextBox() {
-            var treeView = this.FindControl<TreeView>("MainTreeView");
-            if (treeView == null) return null;
-
             // Buscar usando el método de extensión de Avalonia
-            return treeView.GetVisualDescendants()
+            return MainTreeView.GetVisualDescendants()
                 .OfType<TextBox>()
                 .FirstOrDefault(tb => tb.Name == "EditTextBox" && tb.IsVisible);
         }

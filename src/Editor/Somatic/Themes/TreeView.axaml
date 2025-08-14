@@ -13,7 +13,6 @@
 		<Setter Property="CornerRadius" Value="{DynamicResource CornerRadiusSmall}"/>
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
 		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
-		<Setter Property="MaxHeight" Value="250"/>
 		<Setter Property="Padding" Value="4"/>
 	</Style>
 

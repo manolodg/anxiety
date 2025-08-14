@@ -36,6 +36,8 @@
 		<PackageReference Include="Dock.Avalonia" Version="11.3.2" />
 		<PackageReference Include="Dock.Model.Mvvm" Version="11.3.2" />
 		<PackageReference Include="Dock.Serializer" Version="11.3.0.12" />
+		<PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -54,5 +56,32 @@
 	    <Generator>ResXFileCodeGenerator</Generator>
 	    <LastGenOutput>Strings.Designer.cs</LastGenOutput>
 	  </EmbeddedResource>
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <None Update="Templates\CPlusPlus2D\Icon.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Templates\CPlusPlus2D\project.soma">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Templates\CPlusPlus2D\Screenshot.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Templates\CPlusPlus2D\template.soma">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Templates\CSharp2D\Icon.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Templates\CSharp2D\project.soma">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Templates\CSharp2D\Screenshot.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Templates\CSharp2D\template.soma">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>

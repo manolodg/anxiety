@@ -26,6 +26,11 @@ namespace Somatic.Model {
 
         /// <summary>Ruta a los archivos de escena que incluye el proyecto.</summary>
         [JsonProperty] public ObservableCollection<string> ScenePaths { get; } = [];
+        
+        /// <summary>Motor de juego vinculado.</summary>
+        [JsonProperty] public EngineTypes EngineType { get; set; }
+        /// <summary>Modo del motor de juego.</summary>
+        [JsonProperty] public EngineModes EngineMode { get; set; }
 
         /// <summary>Escena que está activa en el proyecto.</summary>
         public Scene ActiveScene { get; set; } = null!;

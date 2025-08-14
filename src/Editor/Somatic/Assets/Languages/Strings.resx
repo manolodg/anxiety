@@ -193,4 +193,12 @@
     <value>Logger</value>
     <comment>LoggerView - Title</comment>
   </data>
+  <data name="NewEntity" xml:space="preserve">
+    <value>Nueva Entidad</value>
+    <comment>New Entity</comment>
+  </data>
+  <data name="Msg_notconfig" xml:space="preserve">
+    <value>Error al cargar el archivo de configuración</value>
+    <comment>MessageBox - Not Config</comment>
+  </data>
 </root>

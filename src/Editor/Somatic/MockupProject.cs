@@ -1,7 +1,10 @@
 ﻿using Somatic.Model;
 
 namespace Somatic {
+    /// <summary>Generación de un proyecto falso para pruebas.</summary>
     public class MockupProject : Project {
+#region Constructores
+        /// <summary>Crea una instancia de la clase.</summary>
         public MockupProject() {
             ActiveScene = new Scene {
                 Name = "Escena"
@@ -17,11 +20,15 @@ namespace Somatic {
             var entity21 = new Entity { Name = "Entidad hija 1 de 2" };
             entity2.Children.Add(entity21);
 
+            var entity3 = new Entity { Name = "Nueva Entidad" };
+
             var entity211 = new Entity { Name = "Entidad nieta 1 de 2" };
             entity21.Children.Add(entity211);
 
             entities.Add(entity1);
             entities.Add(entity2);
+            entities.Add(entity3);
         }
+#endregion
     }
 }

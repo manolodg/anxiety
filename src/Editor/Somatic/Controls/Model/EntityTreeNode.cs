@@ -22,7 +22,8 @@ namespace Somatic.Controls.Model {
                 IsEditing = false,
                 Entity = this.Entity,
                 Scene = this.Scene,
-                Type = this.Type
+                Type = this.Type,
+                Original = this
             };
         }
 
