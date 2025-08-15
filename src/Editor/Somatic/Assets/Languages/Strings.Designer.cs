@@ -61,6 +61,33 @@ namespace Somatic.Assets.Languages {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Aceptar.
+        /// </summary>
+        internal static string Button_accept {
+            get {
+                return ResourceManager.GetString("Button_accept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Cancelar.
+        /// </summary>
+        internal static string Button_cancel {
+            get {
+                return ResourceManager.GetString("Button_cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Portapapeles.
+        /// </summary>
+        internal static string Clip_title {
+            get {
+                return ResourceManager.GetString("Clip_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Eliminar.
         /// </summary>
         internal static string CompCtrl_delete {
@@ -124,6 +151,87 @@ namespace Somatic.Assets.Languages {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Configuración.
+        /// </summary>
+        internal static string CrPr_configuration {
+            get {
+                return ResourceManager.GetString("CrPr_configuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Descripción.
+        /// </summary>
+        internal static string CrPr_description {
+            get {
+                return ResourceManager.GetString("CrPr_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Motor.
+        /// </summary>
+        internal static string CrPr_engine {
+            get {
+                return ResourceManager.GetString("CrPr_engine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Modo del Motor.
+        /// </summary>
+        internal static string CrPr_engineMode {
+            get {
+                return ResourceManager.GetString("CrPr_engineMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Carpeta.
+        /// </summary>
+        internal static string CrPr_folder {
+            get {
+                return ResourceManager.GetString("CrPr_folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Nombre.
+        /// </summary>
+        internal static string CrPr_name {
+            get {
+                return ResourceManager.GetString("CrPr_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Proyecto.
+        /// </summary>
+        internal static string CrPr_project {
+            get {
+                return ResourceManager.GetString("CrPr_project", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Crear Proyecto.
+        /// </summary>
+        internal static string CrPr_title {
+            get {
+                return ResourceManager.GetString("CrPr_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Explorador de Archivos.
+        /// </summary>
+        internal static string FiEx_title {
+            get {
+                return ResourceManager.GetString("FiEx_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Selección de Carpeta.
         /// </summary>
         internal static string FldCtrl_tooltip {
@@ -138,6 +246,33 @@ namespace Somatic.Assets.Languages {
         internal static string FoldCtrl_choose {
             get {
                 return ResourceManager.GetString("FoldCtrl_choose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Activo.
+        /// </summary>
+        internal static string Info_active {
+            get {
+                return ResourceManager.GetString("Info_active", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Nombre.
+        /// </summary>
+        internal static string Info_name {
+            get {
+                return ResourceManager.GetString("Info_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Información.
+        /// </summary>
+        internal static string Info_title {
+            get {
+                return ResourceManager.GetString("Info_title", resourceCulture);
             }
         }
         
@@ -228,6 +363,69 @@ namespace Somatic.Assets.Languages {
         internal static string NewEntity {
             get {
                 return ResourceManager.GetString("NewEntity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a NuevoProyecto.
+        /// </summary>
+        internal static string NewProject {
+            get {
+                return ResourceManager.GetString("NewProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a NuevaEscena.
+        /// </summary>
+        internal static string NewScene {
+            get {
+                return ResourceManager.GetString("NewScene", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Descripción.
+        /// </summary>
+        internal static string OpPr_description {
+            get {
+                return ResourceManager.GetString("OpPr_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Nombre.
+        /// </summary>
+        internal static string OpPr_name {
+            get {
+                return ResourceManager.GetString("OpPr_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Crear Nuevo Proyecto.
+        /// </summary>
+        internal static string OpPr_newProject {
+            get {
+                return ResourceManager.GetString("OpPr_newProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Ruta.
+        /// </summary>
+        internal static string OpPr_path {
+            get {
+                return ResourceManager.GetString("OpPr_path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Abrir Proyecto.
+        /// </summary>
+        internal static string OpPr_Title {
+            get {
+                return ResourceManager.GetString("OpPr_Title", resourceCulture);
             }
         }
         

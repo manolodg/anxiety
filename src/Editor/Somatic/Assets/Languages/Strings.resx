@@ -229,4 +229,92 @@
     <value>Ha habido un problema con el archivo:</value>
     <comment>MessageBox - Bad File</comment>
   </data>
+  <data name="CrPr_project" xml:space="preserve">
+    <value>Proyecto</value>
+    <comment>CreateProjectView - Project</comment>
+  </data>
+  <data name="CrPr_name" xml:space="preserve">
+    <value>Nombre</value>
+    <comment>CreateProjectView - Name</comment>
+  </data>
+  <data name="CrPr_folder" xml:space="preserve">
+    <value>Carpeta</value>
+    <comment>CreateProjectView - Folder</comment>
+  </data>
+  <data name="CrPr_description" xml:space="preserve">
+    <value>Descripción</value>
+    <comment>CreateProjectView - Description</comment>
+  </data>
+  <data name="CrPr_configuration" xml:space="preserve">
+    <value>Configuración</value>
+    <comment>CreateProjectView - Configuration</comment>
+  </data>
+  <data name="CrPr_engine" xml:space="preserve">
+    <value>Motor</value>
+    <comment>CreateProjectView - Engine</comment>
+  </data>
+  <data name="CrPr_engineMode" xml:space="preserve">
+    <value>Modo del Motor</value>
+    <comment>CreateProjectView - Engine Mode</comment>
+  </data>
+  <data name="Button_accept" xml:space="preserve">
+    <value>Aceptar</value>
+    <comment>Button - Accept</comment>
+  </data>
+  <data name="Button_cancel" xml:space="preserve">
+    <value>Cancelar</value>
+    <comment>Button - Cancel</comment>
+  </data>
+  <data name="CrPr_title" xml:space="preserve">
+    <value>Crear Proyecto</value>
+    <comment>CreateProjectView - Title</comment>
+  </data>
+  <data name="NewProject" xml:space="preserve">
+    <value>NuevoProyecto</value>
+    <comment>New Project</comment>
+  </data>
+  <data name="NewScene" xml:space="preserve">
+    <value>NuevaEscena</value>
+    <comment>New Scene</comment>
+  </data>
+  <data name="OpPr_Title" xml:space="preserve">
+    <value>Abrir Proyecto</value>
+    <comment>OpenProjectViewl - Title</comment>
+  </data>
+  <data name="OpPr_newProject" xml:space="preserve">
+    <value>Crear Nuevo Proyecto</value>
+    <comment>OpenProjectView - New Project</comment>
+  </data>
+  <data name="OpPr_name" xml:space="preserve">
+    <value>Nombre</value>
+    <comment>OpenProjectView - Name</comment>
+  </data>
+  <data name="OpPr_path" xml:space="preserve">
+    <value>Ruta</value>
+    <comment>OpenProjectViewl - Path</comment>
+  </data>
+  <data name="OpPr_description" xml:space="preserve">
+    <value>Descripción</value>
+    <comment>OpenProjectViewl - Description</comment>
+  </data>
+  <data name="Clip_title" xml:space="preserve">
+    <value>Portapapeles</value>
+    <comment>ClipboardView - Title</comment>
+  </data>
+  <data name="Info_title" xml:space="preserve">
+    <value>Información</value>
+    <comment>InformationView - Title</comment>
+  </data>
+  <data name="Info_active" xml:space="preserve">
+    <value>Activo</value>
+    <comment>InformationView - Active</comment>
+  </data>
+  <data name="Info_name" xml:space="preserve">
+    <value>Nombre</value>
+    <comment>InformationView - Name</comment>
+  </data>
+  <data name="FiEx_title" xml:space="preserve">
+    <value>Explorador de Archivos</value>
+    <comment>FileExplorerView - Title</comment>
+  </data>
 </root>

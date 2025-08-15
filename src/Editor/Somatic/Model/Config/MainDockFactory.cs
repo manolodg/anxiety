@@ -167,9 +167,9 @@ namespace Somatic.Model {
         private IList<IDockable> CreateOutput() {
             // Salida ---------------------------------------------------------------------------------------------
             return CreateList<IDockable>(
-                //services.GetRequiredService<FileExplorerViewModel>(),
-                services.GetRequiredService<LoggerViewModel>()
-                //services.GetRequiredService<ClipboardViewModel>()
+                services.GetRequiredService<FileExplorerViewModel>(),
+                services.GetRequiredService<LoggerViewModel>(),
+                services.GetRequiredService<ClipboardViewModel>()
                 );
             // --------------------------------------------------------------------------------------------- Salida
         }

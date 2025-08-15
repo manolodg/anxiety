@@ -59,13 +59,7 @@ namespace Somatic.Services {
                 File.Copy(vm.SelectedProject.IconPath, Path.GetFullPath(Path.Combine(dirInfo.FullName, "icon.png")));
                 File.Copy(vm.SelectedProject.ScreenshotPath, Path.GetFullPath(Path.Combine(dirInfo.FullName, "screenshot.png")));
 
-                Project projectLocal = new Project {
-                    Name = vm.Name,
-                    Path = path,
-                    Description = vm.Description,
-                    EngineType = vm.EngineType,
-                    EngineMode = vm.EngineMode
-                };
+                Project projectLocal = new Project(vm.Name, path, vm.Description, vm.EngineType, vm.EngineMode);
                 serialize.ToFile<Project>(projectLocal, Path.GetFullPath(Path.Combine(path, $"{vm.Name}{Extension}")));
 
                 // Dejamos cargado el proyecto que va a funcionar en toda la aplicación

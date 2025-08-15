@@ -36,6 +36,29 @@ namespace Somatic.Model {
         public Scene ActiveScene { get; set; } = null!;
 #endregion
 
+#region Constructores
+        public Project() {
+            ActiveScene = new Scene { Name = "Scene", IsActive = true };
+            ActiveScene.Entities.Add(new Entity { Name = "Entity", IsActive = true});
+        }
+        public Project(string name, string path, string description, EngineTypes type, EngineModes mode) {
+            Name = name;
+            Path = path;
+            Description = description;
+            EngineType = type;
+            EngineMode = mode;
+
+            ActiveScenePath = $"{Path}Assets{System.IO.Path.DirectorySeparatorChar}Scenes{System.IO.Path.DirectorySeparatorChar}{Framework.ServiceProvider!.GetRequiredService<ILocalizationService>().GetString("NewScene")}{Scene.Extension}";
+            ScenePaths.Add(ActiveScenePath);
+
+            ActiveScene = new Scene {
+                Name = Framework.ServiceProvider!.GetRequiredService<ILocalizationService>().GetString("NewScene"),
+                IsActive = true,
+                Path = ActiveScenePath
+            };
+        }
+#endregion
+
 #region Métodos
     #region Serialización
         /// <summary>Realiza la serialización del archivo de escena activo.</summary>

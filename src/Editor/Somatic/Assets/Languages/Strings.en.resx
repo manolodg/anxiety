@@ -196,4 +196,70 @@
   <data name="Msg_badfile" xml:space="preserve">
     <value>There's a problem with the file:</value>
   </data>
+  <data name="CrPr_project" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="CrPr_name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="CrPr_folder" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="CrPr_description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="CrPr_configuration" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="CrPr_engine" xml:space="preserve">
+    <value>Engine</value>
+  </data>
+  <data name="CrPr_engineMode" xml:space="preserve">
+    <value>Engine Mode</value>
+  </data>
+  <data name="Button_accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="Button_cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CrPr_title" xml:space="preserve">
+    <value>Create Project</value>
+  </data>
+  <data name="NewProject" xml:space="preserve">
+    <value>NewProject</value>
+  </data>
+  <data name="NewScene" xml:space="preserve">
+    <value>NewScene</value>
+  </data>
+  <data name="OpPr_Title" xml:space="preserve">
+    <value>Open Project</value>
+  </data>
+  <data name="OpPr_newProject" xml:space="preserve">
+    <value>Create New Project</value>
+  </data>
+  <data name="OpPr_name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="OpPr_path" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="OpPr_description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Clip_title" xml:space="preserve">
+    <value>Clipboard</value>
+  </data>
+  <data name="Info_title" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="Info_active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Info_name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="FiEx_title" xml:space="preserve">
+    <value>File Explorer</value>
+  </data>
 </root>

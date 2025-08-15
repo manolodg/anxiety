@@ -14,12 +14,12 @@
 			  Margin="8">
 			<Grid Grid.Row="0" ColumnDefinitions="auto,*" Margin="0,0,0,8">
 				<CheckBox Grid.Column="0"
-						  Content="¿Activo?"
+						  Content="{ext:TranslateMarkup Info_active}"
 						  IsChecked="{Binding Node.Entity.IsActive}"
 						  Margin="0,0,8,0"/>
 				<TextBox Grid.Column="1"
 						 Text="{Binding Node.Name}"
-						 Watermark="Nombre"/>
+						 Watermark="{ext:TranslateMarkup Info_name}"/>
 			</Grid>
 			
 			<ctrl:ComponentListControl Grid.Row="1"/>

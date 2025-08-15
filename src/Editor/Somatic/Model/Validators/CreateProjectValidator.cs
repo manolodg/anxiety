@@ -4,7 +4,7 @@ using Somatic.ViewModels;
 using System.IO;
 using System.Linq;
 
-namespace Somatic.Models {
+namespace Somatic.Model {
     /// <summary>Configuración de la validación.</summary>
     public class CreateProjectValidator : AbstractValidator<CreateProjectViewModel> {
         /// <summary>Reglas de validación del sistema.</summary>

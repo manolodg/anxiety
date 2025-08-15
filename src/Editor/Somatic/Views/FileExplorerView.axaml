@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Somatic.ViewModels"
+			 xmlns:ctrl="using:Somatic.Controls"
+			 x:DataType="vm:FileExplorerViewModel"
+             x:Class="Somatic.Views.FileExplorerView"
+			 PointerEntered="OnDockControlPointerEntered">
+	<UserControl.DataContext>
+		<vm:FileExplorerViewModel/>
+	</UserControl.DataContext>
+
+	<Grid ColumnDefinitions="300,5,*">
+		<Border Grid.Column="0" BorderThickness="0,0,1,0" MinWidth="200">
+			<Grid RowDefinitions="auto,*">
+				<Border Grid.Row="0" Padding="10,5">
+					<TextBlock Text="{Binding RootPath}" FontSize="10" Foreground="Gray" TextTrimming="CharacterEllipsis"/>
+				</Border>
+				
+				<ctrl:SearchFolderTreeControl DataContext="{Binding}"/>
+			</Grid>
+		</Border>
+	</Grid>
+</UserControl>

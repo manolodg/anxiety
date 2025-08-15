@@ -1,5 +1,6 @@
 ﻿using Dock.Model.Controls;
 using Dock.Model.Core;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Somatic.Extensions;
@@ -66,13 +67,19 @@ namespace Somatic {
             // ViewModel --------------------------------------------------------------------------
             services.AddSingleton<MainWindowViewModel>();
 
+            services.AddSingleton<DialogViewModel>();
+            services.AddTransient<CreateProjectViewModel>();
+            services.AddTransient<OpenProjectViewModel>();
+
             services.AddSingleton<InformationViewModel>();
             services.AddSingleton<SolutionExplorerViewModel>();
             services.AddSingleton<LoggerViewModel>();
+            services.AddSingleton<ClipboardViewModel>();
+            services.AddSingleton<FileExplorerViewModel>();
             // -------------------------------------------------------------------------- ViewModel
 
             // Model ------------------------------------------------------------------------------
-            services.AddSingleton<Project, MockupProject>();
+            services.AddSingleton<Project>();
             // ------------------------------------------------------------------------------ Model
 
             // Servicios --------------------------------------------------------------------------
@@ -81,7 +88,12 @@ namespace Somatic {
             services.AddSingleton<IEntityService, EntityService>();
             services.AddSingleton<IConfigurationService, ConfigurationService>();
             services.AddSingleton<IProjectService, ProjectService>();
+            services.AddSingleton<IUndoRedoService, UndoRedoService>();
             // -------------------------------------------------------------------------- Servicios
+
+            // Validadores ------------------------------------------------------------------------
+            services.AddScoped<IValidator<CreateProjectViewModel>, CreateProjectValidator>();
+            // ------------------------------------------------------------------------ Validadores
         }
 #endregion
     }

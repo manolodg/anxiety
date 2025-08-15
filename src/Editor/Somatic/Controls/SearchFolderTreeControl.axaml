@@ -1,0 +1,22 @@
+<ctrl:SearchTreeControl xmlns="https://github.com/avaloniaui"
+						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+						xmlns:ctrl="using:Somatic.Controls"
+						xmlns:ext="using:Somatic.Extensions"
+						x:Class="Somatic.Controls.SearchFolderTreeControl">
+	<ctrl:SearchTreeControl.Styles>
+		<!-- Menu Contextual - Carpeta __________________________________________________________________ -->
+		<Style Selector="StackPanel#PART_SearchTreeStackPanel">
+			<Setter Property="ContextMenu">
+				<Setter.Value>
+					<ContextMenu>
+						<MenuItem Header="{ext:TranslateMarkup SFTC_addfolder}"/>
+						<MenuItem Header="{ext:TranslateMarkup SFTC_removefolder}"/>
+						<Separator/>
+						<MenuItem Header="{ext:TranslateMarkup SFTC_renamefolder}"/>
+					</ContextMenu>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<!-- __________________________________________________________________ Menu Contextual - Carpeta -->
+	</ctrl:SearchTreeControl.Styles>
+</ctrl:SearchTreeControl>

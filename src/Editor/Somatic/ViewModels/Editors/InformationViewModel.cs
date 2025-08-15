@@ -3,6 +3,7 @@ using Dock.Model.Mvvm.Controls;
 using Somatic.Controls;
 using Somatic.Controls.Model;
 using Somatic.Model;
+using Somatic.Services;
 using System.Collections.ObjectModel;
 
 namespace Somatic.ViewModels {
@@ -16,6 +17,22 @@ namespace Somatic.ViewModels {
         [ObservableProperty] private ObservableCollection<BaseComponent> _components = [];
         /// <summary>Indica el nodo seleccionado.</summary>
         [ObservableProperty] private EntityTreeNode? _node = null!;
+#endregion
+
+#region Campos
+        /// <summary>Servicio de localización.</summary>
+        private readonly ILocalizationService _localizationService = null!;
+#endregion
+
+#region Constructores
+        /// <summary>Crea una instancia de la clase.</summary>
+        public InformationViewModel() { }
+        /// <summary>Crea una instancia de la clase.</summary>
+        public InformationViewModel(ILocalizationService localizationService) {
+            _localizationService = localizationService;
+
+            Title = _localizationService.GetString("Info_title");
+        }
 #endregion
 
 #region Métodos

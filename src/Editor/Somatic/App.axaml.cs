@@ -5,6 +5,7 @@ using Dock.Model.Controls;
 using Dock.Model.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Somatic.Extensions;
+using Somatic.Services;
 using Somatic.ViewModels;
 using Somatic.Views;
 
@@ -20,18 +21,23 @@ namespace Somatic {
                 // Ser realiza el arranque y configuración de la inyección de dependencias.
                 ServiceProvider services = new ServiceCollection().ConfigureServices();
 
-                IRootDock layout = services.GetRequiredService<IRootDock>();
+                desktop.MainWindow = new DialogView(() => {
+                    IRootDock layout = services.GetRequiredService<IRootDock>();
 
-                MainWindow mainWindow = services.GetRequiredService<MainWindow>();
-                mainWindow.DataContext = services.GetRequiredService<MainWindowViewModel>();
-                mainWindow.Show();
-                mainWindow.Focus();
+                    MainWindow mainWindow = services.GetRequiredService<MainWindow>();
+                    mainWindow.DataContext = services.GetRequiredService<MainWindowViewModel>();
+                    mainWindow.Show();
+                    mainWindow.Focus();
 
-                mainWindow.Closing += (_, _) => { if (layout is IDock dock && dock.Close.CanExecute(null)) dock.Close.Execute(null); };
+                    mainWindow.Closing += (_, _) => { if (layout is IDock dock && dock.Close.CanExecute(null)) dock.Close.Execute(null); };
 
-                desktop.MainWindow = mainWindow;
+                    desktop.MainWindow = mainWindow;
 
-                desktop.Exit += (_, _) => { if (layout is IDock dock && dock.Close.CanExecute(null)) dock.Close.Execute(null); };
+                    desktop.Exit += (_, _) => { if (layout is IDock dock && dock.Close.CanExecute(null)) dock.Close.Execute(null); };
+                }) { DataContext = services.GetRequiredService<DialogViewModel>() };
+
+                IConfigurationService service = services.GetRequiredService<IConfigurationService>();
+                ((DialogViewModel)desktop.MainWindow.DataContext).CurrentPage = (service.Projects.Projects.Count != 0) ? services.GetRequiredService<OpenProjectViewModel>() : services.GetRequiredService<CreateProjectViewModel>();
             }
 
             base.OnFrameworkInitializationCompleted();

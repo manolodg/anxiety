@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Somatic.ViewModels"
+			 xmlns:ext="clr-namespace:Somatic.Extensions"
+			 xmlns:control="clr-namespace:Somatic.Controls"
+			 xmlns:model="clr-namespace:Somatic.Model"
+			 x:DataType="vm:CreateProjectViewModel"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Somatic.Views.CreateProjectView">
+	<Design.DataContext>
+		<vm:CreateProjectViewModel/>
+	</Design.DataContext>
+
+	<Grid ColumnDefinitions="*,2*" RowDefinitions="*,auto">
+		<control:SearchControl Grid.Column="0" Grid.Row="0" x:Name="searchableListBox"
+							   SearchWatermark="{ext:TranslateMarkup search}"
+							   ItemsSource="{Binding Templates}"
+							   SelectedItem="{Binding SelectedProject}"
+							   OnSelectionChanged="ListBox_SelectionChanged">
+			<control:SearchControl.ItemTemplate>
+				<DataTemplate x:DataType="model:TemplateProject">
+					<StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<Image Source="{Binding Icon}"/>
+							<Label Content="{Binding Name}" VerticalAlignment="Center"/>
+						</StackPanel>
+						<Label Content="{Binding Description}" FontSize="8"/>
+					</StackPanel>
+				</DataTemplate>
+			</control:SearchControl.ItemTemplate>
+		</control:SearchControl>
+
+		<TabControl Grid.Column="1" IsEnabled="{Binding !!SelectedProject}">
+			<TabItem Header="{ext:TranslateMarkup CrPr_project}">
+				<ScrollViewer VerticalScrollBarVisibility="Auto">
+					<Grid RowDefinitions="auto,auto,auto,auto,*">
+						<Image Source="{Binding #searchableListBox.SelectedItem.(model:TemplateProject).Screenshot}" Height="250"/>
+						<TextBox Grid.Row="1"
+								 Watermark="{ext:TranslateMarkup CrPr_name}"
+								 Text="{Binding Name}"
+								 Margin="0 10 10 0"/>
+						<control:FolderPickerControl Grid.Row="2"
+													 Margin="0 10 10 0"
+													 SelectedPath="{Binding Path, Mode=TwoWay}"
+													 Watermark="{ext:TranslateMarkup CrPr_folder}"
+													 AvailablePaths="{Binding Paths}"/>
+						<TextBox Grid.Row="3"
+								 Watermark="{ext:TranslateMarkup CrPr_description}"
+								 Text="{Binding Description}"
+								 TextWrapping="Wrap"
+								 Height="100"
+								 Margin="0 10 10 0"/>
+					</Grid>
+				</ScrollViewer>
+			</TabItem>
+
+			<TabItem Header="{ext:TranslateMarkup CrPr_configuration}">
+				<ScrollViewer VerticalScrollBarVisibility="Auto">
+					<Grid RowDefinitions="auto,*">
+						<ComboBox x:Name="comboEngine" Grid.Row="0" PlaceholderText="{ext:TranslateMarkup CrPr_engine}" ItemsSource="{Binding EngineTypes}" HorizontalAlignment="Center" Width="200" Margin="0 10 10 0" SelectionChanged="ComboBox_SelectionChanged"/>
+						<ComboBox x:Name="comboMode" Grid.Row="1" PlaceholderText="{ext:TranslateMarkup CrPr_engineMode}" ItemsSource="{Binding EngineModes}" HorizontalAlignment="Center" Width="200" Margin="0 10 10 0" SelectionChanged="ComboBox_SelectionChanged"/>
+					</Grid>
+				</ScrollViewer>
+			</TabItem>
+		</TabControl>
+
+		<StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+			<Button Content="{ext:TranslateMarkup Button_accept}" IsDefault="True"
+					Command="{Binding AcceptCommand}"
+					CommandParameter="{Binding $parent[Window]}"
+					IsEnabled="{Binding !HasErrors}"/>
+			<Button Content="{ext:TranslateMarkup Button_cancel}" IsCancel="True" Margin="10"
+					Command="{Binding CancelCommand}"
+					CommandParameter="{Binding $parent[Window]}"/>
+		</StackPanel>
+	</Grid>
+</UserControl>
