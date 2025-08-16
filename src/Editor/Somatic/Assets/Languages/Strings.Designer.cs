@@ -520,6 +520,33 @@ namespace Somatic.Assets.Languages {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Añadir Carpeta.
+        /// </summary>
+        internal static string SFTC_addfolder {
+            get {
+                return ResourceManager.GetString("SFTC_addfolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Eliminar Carpeta.
+        /// </summary>
+        internal static string SFTC_removefolder {
+            get {
+                return ResourceManager.GetString("SFTC_removefolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Renombrar.
+        /// </summary>
+        internal static string SFTC_renamefolder {
+            get {
+                return ResourceManager.GetString("SFTC_renamefolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Posición.
         /// </summary>
         internal static string Transform_position {

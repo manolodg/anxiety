@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:Somatic.ViewModels"
+			 xmlns:ctrl="using:Somatic.Controls"
+			 xmlns:cm="using:Somatic.Controls.Model"
+			 x:DataType="vm:FileExplorerViewModel"
+             x:Class="Somatic.Views.FileExplorerView"
+			 PointerEntered="OnDockControlPointerEntered">
+	<UserControl.DataContext>
+		<vm:FileExplorerViewModel/>
+	</UserControl.DataContext>
+
+	<Grid ColumnDefinitions="300,5,*">
+		<Border Grid.Column="0" BorderThickness="0,0,1,0" MinWidth="200">
+			<Grid RowDefinitions="auto,*">
+				<Border Grid.Row="0" Padding="10,5">
+					<TextBlock Text="{Binding RootPath}" FontSize="10" Foreground="Gray" TextTrimming="CharacterEllipsis"/>
+				</Border>
+				
+				<ctrl:SearchFolderTreeControl Grid.Row="1" 
+											  DataContext="{Binding}"/>
+			</Grid>
+		</Border>
+
+		<GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch"/>
+
+		<Border Grid.Column="2">
+			<Grid RowDefinitions="auto,*">
+				<Border Grid.Row="0"
+						BorderThickness="0,0,0,1"
+						Padding="10,8">
+					<TextBlock Text="{Binding SelectedPath}"
+							   FontSize="10"
+							   Foreground="Gray"
+							   TextTrimming="CharacterEllipsis"/>
+				</Border>
+
+				<ScrollViewer Grid.Row="1">
+					<ListBox ItemsSource="{Binding FolderItems}"
+							 SelectedItem="{Binding SelectedFile}"
+							 Padding="10">
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<WrapPanel Orientation="Horizontal"/>
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+
+						<ListBox.ItemTemplate>
+							<DataTemplate DataType="{x:Type cm:FileItem}">
+								<Border Padding="8,4" Background="Transparent" CornerRadius="3" Width="150">
+									<StackPanel Orientation="Vertical">
+										<Image Width="32" Height="32" Source="{Binding Icon}" Margin="0,0,8,0"/>
+										<StackPanel HorizontalAlignment="Center">
+											<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+											<StackPanel Orientation="Horizontal" IsVisible="{Binding IsFile}">
+												<TextBlock Text="{Binding Size}" FontSize="10"
+														   Foreground="Gray" Margin="0,0,10,0"/>
+												<TextBlock Text="{Binding LastModified, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
+														   FontSize="10" Foreground="Gray"/>
+											</StackPanel>
+										</StackPanel>
+									</StackPanel>
+								</Border>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+
+						<ListBox.Styles>
+							<Style Selector="ListBoxItem">
+								<Setter Property="Padding" Value="0"/>
+								<Setter Property="Margin" Value="0,1"/>
+							</Style>
+							<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+								<Setter Property="Background" Value="#F0F0F0"/>
+							</Style>
+							<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+								<Setter Property="Background" Value="#E3F2FD"/>
+							</Style>
+						</ListBox.Styles>
+					</ListBox>
+				</ScrollViewer>
+			</Grid>
+		</Border>
+	</Grid>
+</UserControl>

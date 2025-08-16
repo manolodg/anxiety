@@ -6,7 +6,11 @@ namespace Somatic.Model {
     public partial class Entity : BaseEntity {
 #region Constructor
         /// <summary>Añade a la entidad el componente de transformación.</summary>
-        public Entity() {
+        public Entity() { }
+        public Entity(string name, bool isActive) {
+            Name = name;
+            IsActive = isActive;
+
             Components.Add(new TransformComponent());
         }
 #endregion

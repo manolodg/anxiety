@@ -39,7 +39,7 @@ namespace Somatic.Model {
 #region Constructores
         public Project() {
             ActiveScene = new Scene { Name = "Scene", IsActive = true };
-            ActiveScene.Entities.Add(new Entity { Name = "Entity", IsActive = true});
+            ActiveScene.Entities.Add(new Entity("Entity", true));
         }
         public Project(string name, string path, string description, EngineTypes type, EngineModes mode) {
             Name = name;

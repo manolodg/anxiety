@@ -262,4 +262,13 @@
   <data name="FiEx_title" xml:space="preserve">
     <value>File Explorer</value>
   </data>
+  <data name="SFTC_addfolder" xml:space="preserve">
+    <value>Add Folder</value>
+  </data>
+  <data name="SFTC_removefolder" xml:space="preserve">
+    <value>Remove Folder</value>
+  </data>
+  <data name="SFTC_renamefolder" xml:space="preserve">
+    <value>Rename</value>
+  </data>
 </root>

@@ -317,4 +317,16 @@
     <value>Explorador de Archivos</value>
     <comment>FileExplorerView - Title</comment>
   </data>
+  <data name="SFTC_addfolder" xml:space="preserve">
+    <value>Añadir Carpeta</value>
+    <comment>SearchFolderTreeControl - Add Folder</comment>
+  </data>
+  <data name="SFTC_removefolder" xml:space="preserve">
+    <value>Eliminar Carpeta</value>
+    <comment>SearchFolderTreeControl - Remove Folder</comment>
+  </data>
+  <data name="SFTC_renamefolder" xml:space="preserve">
+    <value>Renombrar</value>
+    <comment>SearchFolderTreeControl - Rename Folder</comment>
+  </data>
 </root>

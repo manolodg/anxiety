@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using Somatic.Controls.Model;
 using Somatic.Model;
 using Somatic.ViewModels;
-using System.Linq;
 
 namespace Somatic.Controls {
     /// <summary>Control para el control del arbol de entidades.</summary>
