@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:m="using:Somatic.Controls.Model"
+             x:Class="Somatic.Controls.SearchFileControl"
+			 x:Name="Root">
+	<Grid>
+		<Grid RowDefinitions="Auto,*">
+			<TextBox Grid.Row="0"
+					 BorderThickness="0"
+					 Classes="searchButton clearButton"
+					 Text="{Binding SearchText, ElementName=Root}"
+					 Watermark="{Binding SearchWatermark, ElementName=Root}"/>
+
+			<ListBox Grid.Row="1"
+					 ItemsSource="{Binding Items, ElementName=Root}"
+					 SelectedItem="{Binding SelectedItem, ElementName=Root}"
+					 Padding="10">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel Orientation="Horizontal"/>
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+
+				<ListBox.ItemTemplate>
+					<DataTemplate DataType="{x:Type m:FileItem}">
+						<Border Padding="8,4" Background="Transparent" CornerRadius="3" Width="150">
+							<StackPanel Orientation="Vertical">
+								<Image Width="32" Height="32" Source="{Binding Icon}" Margin="0,0,8,0"/>
+								<StackPanel HorizontalAlignment="Center">
+									<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+									<StackPanel Orientation="Horizontal" IsVisible="{Binding IsFile}">
+										<TextBlock Text="{Binding Size}" FontSize="10"
+												   Foreground="Gray" Margin="0,0,10,0"/>
+										<TextBlock Text="{Binding LastModified, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}"
+												   FontSize="10" Foreground="Gray"/>
+									</StackPanel>
+								</StackPanel>
+							</StackPanel>
+						</Border>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+
+				<ListBox.Styles>
+					<Style Selector="ListBoxItem">
+						<Setter Property="Padding" Value="0"/>
+						<Setter Property="Margin" Value="0,1"/>
+					</Style>
+					<Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+						<Setter Property="Background" Value="#F0F0F0"/>
+					</Style>
+					<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+						<Setter Property="Background" Value="#E3F2FD"/>
+					</Style>
+				</ListBox.Styles>
+			</ListBox>
+		</Grid>
+	</Grid>
+</UserControl>

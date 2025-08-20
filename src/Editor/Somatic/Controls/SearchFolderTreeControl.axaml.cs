@@ -18,7 +18,7 @@ namespace Somatic.Controls {
             };
             this.PropertyChanged += (s, e) => {
                 if (e.Property == SelectedNodeProperty && e.NewValue != null) {
-                    GetFileExplorerViewModel()!.SelectedPath = ((FolderTreeNode)SelectedNode).FullPath;
+                    GetFileExplorerViewModel()!.SelectedNode = (FolderTreeNode?)SelectedNode;
                     GetFileExplorerViewModel()!.LoadFolderContents();
                 }
             };
@@ -30,7 +30,6 @@ namespace Somatic.Controls {
     #endregion
 
         /// <summary>Conversión del DataContext al FileExplorerViewModel.</summary>
-        /// <returns></returns>
         private FileExplorerViewModel? GetFileExplorerViewModel() => DataContext as FileExplorerViewModel;
 
         /// <summary>Creación de la estructura desde el proyecto.</summary>
@@ -60,6 +59,7 @@ namespace Somatic.Controls {
                 foreach (string directory in directories.Where(x => !x.EndsWith(".soma"))) {
                     FolderTreeNode folder = new FolderTreeNode {
                         Name = Path.GetFileName(directory),
+                        IsExpanded = true,
                         FullPath = directory
                     };
 

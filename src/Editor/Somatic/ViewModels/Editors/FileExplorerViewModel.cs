@@ -10,20 +10,35 @@ using System.Collections.ObjectModel;
 using System.IO;
 
 namespace Somatic.ViewModels {
+    /// <summary>Realiza todas las operaciones relacionadas con las carpetas y archivos.</summary>
     public partial class FileExplorerViewModel : Tool {
-        private readonly ILogger<FileExplorerViewModel> _logger;
-        private readonly ILocalizationService _localizationService;
+#region Campos
+        // Servicio para realizar el logging.
+        private readonly ILogger<FileExplorerViewModel> _logger = null!;
+        // Servicio para la traducción.
+        private readonly ILocalizationService _localizationService = null!;
+#endregion
 
+#region Propiedades
+        /// <summary>Ruta raíz para todos sus componentes.</summary>
         [ObservableProperty] private string _rootPath = string.Empty;
-        [ObservableProperty] private string? _selectedPath = string.Empty;
+        /// <summary>Elementos contenidos en la carpeta.</summary>
         [ObservableProperty] private ObservableCollection<FileItem> _folderItems = [];
-        [ObservableProperty] private FileItem? _selectedFile;
 
+        /// <summary>Nodo seleccionado en el árbol de carpetas.</summary>
+        [ObservableProperty] private FolderTreeNode? _selectedNode = null!;
+        /// <summary>Elemento archivo seleccionado.</summary>
+        [ObservableProperty] private FileItem? _selectedFile = null!;
+#endregion
+
+#region Constructores
+        /// <summary>Crea una instancia de la clase.</summary>
         public FileExplorerViewModel() {
             if (Design.IsDesignMode) {
                 RootPath = "D:\\Anxiety";
             }
         }
+        /// <summary>Crea una instancia de la clase.</summary>
         public FileExplorerViewModel(
                 Project project, 
                 ILogger<FileExplorerViewModel> logger, 
@@ -31,17 +46,21 @@ namespace Somatic.ViewModels {
             _logger = logger;
             _localizationService = localizationService;
 
-            Title = localizationService.GetString("FiEx_title");
-            SelectedPath = RootPath = project.Path;
+            Title = _localizationService.GetString("FiEx_title");
+            RootPath = project.Path;
         }
+#endregion
 
+#region Métodos
         public void LoadFolderContents() {
+            if (SelectedNode == null) return;
+
             try {
                 FolderItems.Clear();
 
-                if (!Directory.Exists(SelectedPath) || !IsWithinRootPath(SelectedPath)) return;
+                if (!Directory.Exists(SelectedNode.FullPath) || !IsWithinRootPath(SelectedNode.FullPath)) return;
 
-                string[] directories = Directory.GetDirectories(SelectedPath);
+                string[] directories = Directory.GetDirectories(SelectedNode.FullPath);
                 foreach (string dir in directories) {
                     DirectoryInfo dirInfo = new DirectoryInfo(dir);
                     FolderItems.Add(new FileItem {
@@ -52,7 +71,7 @@ namespace Somatic.ViewModels {
                     });
                 }
 
-                string[] files = Directory.GetFiles(SelectedPath);
+                string[] files = Directory.GetFiles(SelectedNode.FullPath);
                 foreach (string file in files) {
                     FileInfo fileInfo = new FileInfo(file);
                     FolderItems.Add(new FileItem {
@@ -87,5 +106,6 @@ namespace Somatic.ViewModels {
 
             return $"{len:0.##} {sizes[order]}";
         }
+#endregion
     }
 }

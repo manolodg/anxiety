@@ -27,9 +27,8 @@
 		<Border Grid.Column="2">
 			<Grid RowDefinitions="auto,*">
 				<Border Grid.Row="0"
-						BorderThickness="0,0,0,1"
-						Padding="10,8">
-					<TextBlock Text="{Binding SelectedPath}"
+						BorderThickness="0,0,0,1">
+					<TextBlock Text="{Binding SelectedNode.FullPath}"
 							   FontSize="10"
 							   Foreground="Gray"
 							   TextTrimming="CharacterEllipsis"/>
@@ -37,8 +36,7 @@
 
 				<ScrollViewer Grid.Row="1">
 					<ListBox ItemsSource="{Binding FolderItems}"
-							 SelectedItem="{Binding SelectedFile}"
-							 Padding="10">
+							 SelectedItem="{Binding SelectedFile}">
 						<ListBox.ItemsPanel>
 							<ItemsPanelTemplate>
 								<WrapPanel Orientation="Horizontal"/>

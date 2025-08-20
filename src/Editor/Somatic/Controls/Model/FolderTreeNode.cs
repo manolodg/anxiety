@@ -1,11 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Somatic.Model;
-using System;
 
 namespace Somatic.Controls.Model {
     /// <summary>Nodo especifico para el arbol de carpetas.</summary>
     public partial class FolderTreeNode : TreeNode {
+#region Propiedades
+        /// <summary>Ruta completa.</summary>
         [ObservableProperty] private string _fullPath = null!;
+        /// <summary>Archivos contenidos en la carpeta.</summary>
+        [ObservableProperty] private FileItem[] _files = [];
+#endregion
 
 #region Métodos
         /// <summary>Clona este objeto como <see cref="TreeNode"/>.</summary>

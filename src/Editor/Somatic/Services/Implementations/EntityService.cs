@@ -10,7 +10,7 @@ namespace Somatic.Services {
         /// <param name="name">Nombre que recibe la nueva entidad.</param>
         /// <returns>Entidad creada.</returns>
         public Entity CreateEntity(ObservableCollection<BaseEntity> entities, string name) {
-            Entity result = new Entity() { Name = name, IsActive = true };
+            Entity result = new Entity(name, true);
             entities.Add(result);
 
             return result;
