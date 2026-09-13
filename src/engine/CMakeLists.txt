@@ -1,4 +1,5 @@
 add_subdirectory(core)
+add_subdirectory(platform)
 
 # anxiety::main -----------------------------------------------------------------------------------
 #	Con este único target se incluye el motor completo.
@@ -8,4 +9,5 @@ add_subdirectory(core)
 add_library(anxiety_main INTERFACE)
 add_library(anxiety::main ALIAS anxiety_main)
 target_link_libraries(anxiety_main INTERFACE
-	anxiety::core)
+	anxiety::core
+	anxiety::platform)

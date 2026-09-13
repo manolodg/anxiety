@@ -1,6 +1,8 @@
 #include "Engine.h"
 #include "IModule.h"
+#include "IPlatform.h"
 #include "Logger.h"
+#include "PlatformModule.h"
 
 using namespace anxiety;
 
@@ -84,6 +86,13 @@ int main() {
 
 	engine.emplace_module<AutoStopModule>(5.0);		// Se solicitará la parada pasados 5 segundos
 	engine.emplace_module<ClockModule>();
+
+	platform::PlatformModule::Config pal_cfg;
+	pal_cfg.window.title     = "Anxiety - Ejemplo en Ventana";
+	pal_cfg.window.width     = 800;
+	pal_cfg.window.height    = 600;
+	pal_cfg.window.resizable = true;
+	engine.emplace_module<platform::PlatformModule>(pal_cfg);
 
 	if (!engine.init()) { LOG_FATAL(k_category, "El motor no ha podido iniciarse."); return 1; }
 
