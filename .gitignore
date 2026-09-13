@@ -1,0 +1,63 @@
+# Salidas de construcción
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+publish/
+build/
+install/
+out/
+
+# Archivos de caché de CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+_deps/
+cmake-build*/
+
+# Archivos generados por el compilador
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.exp
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.ncb
+*.sdf
+*.VC.db
+*.VC.opendb
+*.iml
+
+# Rider
+*.sln.iml
+
+# Archivos de OS
+.DS_Store
+Thumbs.db
+
+# Construcción con Ninja
+.ninja_deps
+.ninja_log
+build.ninja
+rules.ninja
+
+# Resultado de Tests
+TestResults/
+*.trx
+
+# compile_commands.json (a ignorar globalmente)
+compile_commands.json

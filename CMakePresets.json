@@ -1,0 +1,262 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 25, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "inherits": "base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe"
+      },
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      }
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "Windows Debug (MSVC x64)",
+      "description": "Debug build using MSVC on Windows",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows Release (MSVC x64)",
+      "description": "Release build using MSVC on Windows",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-vs",
+      "displayName": "Windows (Visual Studio, MSVC x64)",
+      "description": "Generates Visual Studio solution/project files (.sln/.vcxproj) for sandbox, src/engine/anxiety and testing/engine/anxiety",
+      "generator": "Visual Studio 18 2026",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "binaryDir": "${sourceDir}/out/build/windows-vs",
+      "installDir": "${sourceDir}/out/install/windows-vs",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+
+    {
+      "name": "linux-base",
+      "hidden": true,
+      "inherits": "base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "linux-debug",
+      "displayName": "Linux Debug (GCC)",
+      "description": "Debug build using GCC on Linux x86-64",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "linux-release",
+      "displayName": "linux Release (GCC)",
+      "description": "Release build using GCC on Linux X86-64",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name": "linux-arm64-base",
+      "hidden": true,
+      "inherits": "base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_SYSTEM_PROCESSOR": "aarch64",
+        "ANXIETY_PLATFORM_RPI": "ON"
+      }
+    },
+    {
+      "name": "linux-arm64-debug",
+      "displayName": "Linux ARM64 Debug (GCC, Raspberry Pi)",
+      "description": "Debug build for Raspberry Pi 4/5 (aarch64) with DRM/KMS backend",
+      "inherits": "linux-arm64-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "linux-arm64-release",
+      "displayName": "linux AMR64 Release (GCC, Raspberry Pi)",
+      "description": "Release build for Raspberry Pi 4/5 (aarch64) with DRM/KMS backend",
+      "inherits": "linux-arm64-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name": "macos-base",
+      "hidden": true,
+      "inherits": "base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "macos-debug",
+      "displayName": "macOS Debug (Clang)",
+      "description": "Debug build using Clang on macOS (Apple Silicon / Intel)",
+      "inherits": "macos-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "macos-release",
+      "displayName": "macOS Release (Clang)",
+      "description": "Release build using Clang on macOS",
+      "inherits": "macos-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name":     "android-arm64-base",
+      "hidden":   true,
+      "inherits": "base",
+      "condition": {
+        "type": "notEquals",
+        "lhs":  "$env{ANDROID_NDK}",
+        "rhs":  ""
+      },
+      "toolchainFile": "$env{ANDROID_NDK}/build/cmake/android.toolchain.cmake",
+      "cacheVariables": {
+        "ANDROID_ABI":                   "arm64-v8a",
+        "ANDROID_PLATFORM":              "android-29",
+        "ANDROID_STL":                   "c++_static",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "OFF"
+      }
+    },
+    {
+      "name":        "android-arm64-debug",
+      "displayName": "Android ARM64 Debug (NDK, API 29)",
+      "description": "Build de depuración para Android arm64-v8a (requiere la variable de entorno ANDROID_NDK)",
+      "inherits":    "android-arm64-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name":        "android-arm64-release",
+      "displayName": "Android ARM64 Release (NDK, API 29)",
+      "description": "Build de release para Android arm64-v8a (requiere la variable de entorno ANDROID_NDK)",
+      "inherits":    "android-arm64-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name":     "quest-arm64-base",
+      "hidden":   true,
+      "inherits": "android-arm64-base",
+      "cacheVariables": {
+        "ANDROID_PLATFORM": "android-32"
+      }
+    },
+    {
+      "name":        "quest-arm64-debug",
+      "displayName": "Quest ARM64 Debug (NDK, API 32)",
+      "description": "Build de depuración para Meta Quest 2/3 arm64-v8a (requiere la variable de entorno ANDROID_NDK)",
+      "inherits":    "quest-arm64-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name":        "quest-arm64-release",
+      "displayName": "Quest ARM64 Release (NDK, API 32)",
+      "description": "Build de release para Meta Quest 2/3 arm64-v8a (requiere la variable de entorno ANDROID_NDK)",
+      "inherits":    "quest-arm64-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    { "name": "windows-debug",         "displayName": "Build Windows Debug",         "configurePreset": "windows-debug",   "configuration": "Debug" },
+    { "name": "windows-release",       "displayName": "Build Windows Release",       "configurePreset": "windows-release", "configuration": "Release" },
+    { "name": "windows-vs-debug",      "displayName": "Build Windows (VS) Debug",    "configurePreset": "windows-vs",      "configuration": "Debug" },
+    { "name": "windows-vs-release",    "displayName": "Build Windows (VS) Release",  "configurePreset": "windows-vs",      "configuration": "Release" },
+    { "name": "linux-debug",           "displayName": "Build Linux Debug",           "configurePreset": "linux-debug" },
+    { "name": "linux-release",         "displayName": "Build Linux Release",         "configurePreset": "linux-release" },
+    { "name": "linux-arm64-debug",     "displayName": "Build RPi Debug",             "configurePreset": "linux-arm64-debug" },
+    { "name": "linux-arm64-release",   "displayName": "Build RPi Release",           "configurePreset": "linux-arm64-release" },
+    { "name": "macos-debug",           "displayName": "Build macOS Debug",           "configurePreset": "macos-debug" },
+    { "name": "macos-release",         "displayName": "Build macOS Release",         "configurePreset": "macos-release" },
+    { "name": "android-arm64-debug",   "displayName": "Build Android ARM64 Debug",   "configurePreset": "android-arm64-debug"   },
+    { "name": "android-arm64-release", "displayName": "Build Android ARM64 Release", "configurePreset": "android-arm64-release" },
+    { "name": "quest-arm64-debug",     "displayName": "Build Quest ARM64 Debug",     "configurePreset": "quest-arm64-debug"     },
+    { "name": "quest-arm64-release",   "displayName": "Build Quest ARM64 Release",   "configurePreset": "quest-arm64-release"   }
+  ],
+
+  "testPresets": [
+    { "name": "windows-debug",   "displayName": "Test Windows Debug",   "configurePreset": "windows-debug",   "output": { "outputOnFailure": true } },
+    { "name": "windows-release", "displayName": "Test Windows Release", "configurePreset": "windows-release", "output": { "outputOnFailure": true } },
+    { "name": "linux-debug",     "displayName": "Test Linux Debug",     "configurePreset": "linux-debug",     "output": { "outputOnFailure": true } },
+    { "name": "linux-release",   "displayName": "Test Linux Release",   "configurePreset": "linux-release",   "output": { "outputOnFailure": true } },
+    { "name": "macos-debug",     "displayName": "Test macOS Debug",     "configurePreset": "macos-debug",     "output": { "outputOnFailure": true } },
+    { "name": "macos-release",   "displayName": "Test macOS Release",   "configurePreset": "macos-release",   "output": { "outputOnFailure": true } }
+  ]
+}
