@@ -81,4 +81,6 @@ endif()
 add_subdirectory(src)                   # Este es el motor de juego Anxiety
 
 add_subdirectory(sandbox)               # Aplicación de pruebas del concepto actual en desarrollo
+
+add_subdirectory(tests)                 # Añade los tests que se hacen para comprobar el sistema
 # =================================================================================================
