@@ -4,6 +4,8 @@
 
 #if defined(ANXIETY_PLATFORM_WINDOWS)
 #include "win32/Win32Platform.h"
+#elif defined(ANXIETY_PLATFORM_LINUX)
+#include "linux/LinuxPlatform.h"
 #endif
 
 namespace anxiety::platform {
@@ -20,6 +22,8 @@ namespace anxiety::platform {
         // Crear el backend de plataforma -----------------------------------------------------------
 #if defined(ANXIETY_PLATFORM_WINDOWS)
         m_platform = std::make_unique<Win32Platform>();
+#elif defined(ANXIETY_PLATFORM_LINUX)
+        m_platform = std::make_unique<LinuxPlatform>();
 #else
         LOG_ERROR(k_category, "No hay backend de plataforma disponible para este SO.");
         return false;

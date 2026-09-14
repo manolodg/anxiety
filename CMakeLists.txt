@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.25)
 project(anxiety
 	VERSION     0.1.0
 	DESCRIPTION "GameEngine AAA modular"
-	LANGUAGES   CXX)
+	LANGUAGES   CXX C)
 
 # Habilite Recarga activa para los compiladores de MSVC si se admiten.
 if (POLICY CMP0141)
