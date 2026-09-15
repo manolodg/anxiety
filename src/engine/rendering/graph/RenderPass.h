@@ -26,10 +26,10 @@ namespace anxiety::rendering::graph {
     // --------------------------------------------------------------------------------------------
     struct RenderPassDesc {
         std::string                                                    name;
-        std::vector<RGTextureHandle>                                   reads;
-        std::vector<RGTextureHandle>                                   writes;
-        std::vector<RGBufferHandle>                                    read_buffers;
-        std::vector<RGBufferHandle>                                    write_buffers;
+        std::vector<RGTextureHandle>                                   reads         = {};
+        std::vector<RGTextureHandle>                                   writes        = {};
+        std::vector<RGBufferHandle>                                    read_buffers  = {};
+        std::vector<RGBufferHandle>                                    write_buffers = {};
         std::function<void(anxiety::rendering::rhi::ICommandBuffer&)>  execute;
     };
 } // namespace anxiety::rendering::graph

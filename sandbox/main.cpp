@@ -11,88 +11,6 @@ static constexpr std::string_view k_category = "sandbox";
 
 // Módulos de ejemplo -----------------------------------------------------------------------------
 
-// Demostración de cadena de dependencias ---------------------------------------------------------
-//
-// Grafo de dependencias declarado:
-//
-//   AutoStop ←── Platform ←── Clock ←── EventBus ←── Input ──────┐
-//                    └────── Physics ─────┼──► Render
-//                                         │
-//                                      AutoStop (detiene el motor tras N fotogramas)
-//
-// Orden de registro (deliberadamente desordenado):
-//   [0] Render, [1] Physics, [2] AutoStop, [3] Input, [4] EventBus, [5] Platform
-//
-// Orden de inicialización resuelto esperado:
-//   AutoStop -> Platform -> Clock -> EventBus -> Rendering -> Physics -> Input -> Render
-//	 (Platform no tiene deps -> se ordena primero; AutoStop no tiene deps -> se ordena último)
-// ------------------------------------------------------------------------------------------------
-
-// EventBusModule ---------------------------------------------------------------------------------
-class EventBusModule final : public IModule {
-public:
-	std::string_view name() const noexcept override { return "EventBus"; }
-
-	std::vector<std::string_view> dependencies() const override { return { "Platform" }; }
-
-	bool on_init(Engine& /*engine*/) override {
-		LOG_INFO("EventBus", "EventBusModule en línea — enrutamiento de eventos listo.");
-		return true;
-	}
-
-	void on_update(float /*dt*/) override {}
-	void on_shutdown() override { LOG_INFO("EventBus", "EventBusModule desconectado."); }
-};
-
-// InputModule ------------------------------------------------------------------------------------
-class InputModule final : public IModule {
-public:
-	std::string_view name() const noexcept override { return "Input"; }
-
-	std::vector<std::string_view> dependencies() const override { return { "EventBus" }; }
-
-	bool on_init(Engine& /*engine*/) override {
-		LOG_INFO("Input", "InputModule en línea — consultando dispositivos.");
-		return true;
-	}
-
-	void on_update(float /*dt*/) override {}
-	void on_shutdown() override { LOG_INFO("Input", "InputModule desconectado."); }
-};
-
-// PhysicsModule ----------------------------------------------------------------------------------
-class PhysicsModule final : public IModule {
-public:
-	std::string_view name() const noexcept override { return "Physics"; }
-
-	std::vector<std::string_view> dependencies() const override { return { "EventBus" }; }
-
-	bool on_init(Engine& /*engine*/) override {
-		LOG_INFO("Physics", "PhysicsModule en línea — simulación lista.");
-		return true;
-	}
-
-	void on_update(float /*dt*/) override {}
-	void on_shutdown() override { LOG_INFO("Physics", "PhysicsModule desconectado."); }
-};
-
-// RenderModule -----------------------------------------------------------------------------------
-class RenderModule final : public IModule {
-public:
-	std::string_view name() const noexcept override { return "Render"; }
-
-	std::vector<std::string_view> dependencies() const override { return { "Input", "Physics" }; }
-
-	bool on_init(Engine& /*engine*/) override {
-		LOG_INFO("Render", "RenderModule en línea — salida de frame lista.");
-		return true;
-	}
-
-	void on_update(float /*dt*/) override {}
-	void on_shutdown() override { LOG_INFO("Render", "RenderModule desconectado."); }
-};
-
-
 // AutoStopModule ---------------------------------------------------------------------------------
 // Solicita el apagado del motor tras 'max_seconds' segundos. Demuestra el concepto de un módulo.
 // ------------------------------------------------------------------------------------------------
@@ -176,15 +94,14 @@ int main() {
 	pal_cfg.window.resizable = true;
 
 	// Orden de registro (desordenado — la ordenación por dependencias lo corregirá):
-	//   Render, Physics, Clock, AutoStop, Input, EventBus, Platform, Rendering
-	engine.emplace_module<RenderModule>();
-	engine.emplace_module<PhysicsModule>();
 	engine.emplace_module<ClockModule>();
 	engine.emplace_module<AutoStopModule>(5.0);		// Se solicitará la parada pasados 5 segundos
-	engine.emplace_module<InputModule>();
-	engine.emplace_module<EventBusModule>();
+	
 	auto& plat_mod = engine.emplace_module<platform::PlatformModule>(pal_cfg);
-	engine.emplace_module<rendering::RenderingModule>(plat_mod);
+	
+	rendering::RenderingModule::Config mod_cfg;
+	mod_cfg.preferred_backend = rendering::rhi::RHIBackend::DirectX11;
+	engine.emplace_module<rendering::RenderingModule>(plat_mod, mod_cfg);
 
 	if (!engine.init()) { LOG_FATAL(k_category, "El motor no ha podido iniciarse."); return 1; }
 

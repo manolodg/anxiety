@@ -51,8 +51,9 @@ namespace anxiety::rendering {
     class RenderingModule final : public IModule {
     public:
         struct Config {
-            bool            debug_layer = false;
-            rhi::ClearColor clear_color = { 0.10f, 0.18f, 0.40f, 1.0f };
+            bool            debug_layer       = false;
+            rhi::ClearColor clear_color       = { 0.39f, 0.58f, 0.93f, 1.0f };
+            rhi::RHIBackend preferred_backend = rhi::RHIBackend::Unknown;
         };
 
         // Modo ventana propia del motor: crea el swapchain automáticamente en on_init() a partir

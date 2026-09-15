@@ -34,9 +34,9 @@ namespace anxiety::rendering::rhi {
 
     // Flags de uso del buffer (combinables) ---------------------------------------------------------
     enum class BufferUsage : uint32_t {
-        None = 0,
-        Vertex = 1 << 0,
-        Index = 1 << 1,
+        None    = 0,
+        Vertex  = 1 << 0,
+        Index   = 1 << 1,
         Uniform = 1 << 2,
         Storage = 1 << 3,
     };
@@ -50,25 +50,24 @@ namespace anxiety::rendering::rhi {
 
     struct BufferDesc {
         uint64_t    size_bytes = 0;
-        BufferUsage usage = BufferUsage::None;
+        BufferUsage usage      = BufferUsage::None;
         const char* debug_name = nullptr;
     };
 
     struct TextureDesc {
         Extent2D    extent;
-        Format      format = Format::Unknown;
-        uint32_t    mip_levels = 1;
-        uint32_t    array_size = 1;
+        Format      format           = Format::Unknown;
+        uint32_t    mip_levels       = 1;
+        uint32_t    array_size       = 1;
         bool        is_render_target = false;
-        bool        is_depth_target = false;
-        const char* debug_name = nullptr;
+        const char* debug_name       = nullptr;
     };
 
     struct SwapchainDesc {
-        void* native_window_handle = nullptr;        // HWND en Win32, Window en X11
+        void*    native_window_handle = nullptr;        // HWND en Win32, Window en X11
         Extent2D extent;
-        uint32_t image_count = 2;
-        Format   format = Format::BGRA8_Unorm;
-        bool     vsync = true;
+        uint32_t image_count          = 2;
+        Format   format               = Format::BGRA8_Unorm;
+        bool     vsync                = true;
     };
 } // namespace anxiety::rendering::rhi

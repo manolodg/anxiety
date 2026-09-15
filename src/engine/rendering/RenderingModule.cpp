@@ -15,21 +15,24 @@ namespace anxiety::rendering {
 
     // Ciclo de vida de IModule ------------------------------------------------------------------------
     bool RenderingModule::on_init(Engine& /*engine*/) {
-        // Crea el dispositivo del backend ---------------------------------------------------------
-#ifdef _WIN32
+        // Dispositivo del backend - seleccionado automáticamente vía RHIFactory --------------------
         {
-            auto dev = std::make_unique<backend::dx12::DX12Device>(m_config.debug_layer);
-            if (!dev->is_valid()) {
-                LOG_FATAL(k_category, "No se pudo crear el dispositivo DirectX 12.");
+            const rhi::RHIBackend sel = rhi::RHIFactory::select_backend(m_config.preferred_backend);
+
+            // OpenGL necesita un contexto de renderizado vinculado a una ventana antes de que
+            // gladLoadGL() pueda cargar los punteros a función. Se pasa el handle de ventana nativo
+            // para que el backend pueda crearlo. DX12, DX11, Vulkan y Metal ignoran este parámetro.
+            void* native_window = nullptr;
+            if (m_platform && (sel == rhi::RHIBackend::OpenGL || sel == rhi::RHIBackend::OpenGLES)) {
+                if (const auto* w = m_platform->window()) native_window = w->native_handle();
+            }
+
+            m_device = rhi::RHIFactory::create_device(sel, m_config.debug_layer, native_window);
+            if (!m_device) {
+                LOG_FATAL(k_category, "No hay ningún backend de renderizado disponible en esta plataforma.");
                 return false;
             }
-            m_device = std::move(dev);
         }
-#else
-        // Linux / otros: backend Vulkan (todavía no implementado).
-        LOG_FATAL(k_category, "No hay ningún backend de renderizado disponible para esta plataforma.");
-        return false;
-#endif
 
         LOGF_INFO(k_category, "Backend: {}.", m_device->backend_name());
 
