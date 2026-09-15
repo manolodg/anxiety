@@ -3,6 +3,7 @@
 #include "IPlatform.h"
 #include "Logger.h"
 #include "PlatformModule.h"
+#include "RenderingModule.h"
 
 using namespace anxiety;
 
@@ -92,7 +93,8 @@ int main() {
 	pal_cfg.window.width     = 800;
 	pal_cfg.window.height    = 600;
 	pal_cfg.window.resizable = true;
-	engine.emplace_module<platform::PlatformModule>(pal_cfg);
+	auto& plat_mod = engine.emplace_module<platform::PlatformModule>(pal_cfg);
+	engine.emplace_module<rendering::RenderingModule>(plat_mod);
 
 	if (!engine.init()) { LOG_FATAL(k_category, "El motor no ha podido iniciarse."); return 1; }
 
