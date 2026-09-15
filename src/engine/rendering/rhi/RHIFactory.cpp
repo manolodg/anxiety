@@ -15,6 +15,10 @@
 #include "backend/dx11/DX11Device.h"
 #endif
 
+#if ANXIETY_BACKEND_VULKAN
+#include "backend/vulkan/VulkanDevice.h"
+#endif
+
 namespace anxiety::rendering::rhi {
     static constexpr std::string_view k_category = "RHIFactory";
 
@@ -27,6 +31,7 @@ namespace anxiety::rendering::rhi {
                 std::transform(val.begin(), val.end(), val.begin(), [](unsigned char c) { return (char)std::tolower(c); });
                 if (val == "dx12" || val == "d3d12")  return RHIBackend::DirectX12;
                 if (val == "dx11" || val == "d3d11")  return RHIBackend::DirectX11;
+                if (val == "vulkan")                  return RHIBackend::Vulkan;
             }
         }
         return RHIBackend::Unknown;
@@ -42,6 +47,9 @@ namespace anxiety::rendering::rhi {
 #endif
 #ifdef ANXIETY_BACKEND_DX11
             case RHIBackend::DirectX11:    return RHIBackend::DirectX11;
+#endif
+#ifdef ANXIETY_BACKEND_VULKAN
+            case RHIBackend::Vulkan:       return RHIBackend::Vulkan;
 #endif
             default:
                 LOGF_WARNING(k_category, "El backend solicitado '{}' no está compilado; se recurre a la selección automática.", backend_name(preferred));
@@ -77,6 +85,17 @@ namespace anxiety::rendering::rhi {
             auto dev = std::make_unique<anxiety::rendering::backend::dx11::DX11Device>(enable_validation);
             if (!dev->is_valid()) {
                 LOGF_ERROR(k_category, "La creación de DX11Device falló.");
+                return nullptr;
+            }
+            return dev;
+        }
+#endif
+
+#ifdef ANXIETY_BACKEND_VULKAN
+        case RHIBackend::Vulkan: {
+            auto dev = std::make_unique<anxiety::rendering::backend::vulkan::VulkanDevice>(enable_validation);
+            if (!dev->is_valid()) {
+                LOGF_ERROR(k_category, "La creación de VulkanDevice falló.");
                 return nullptr;
             }
             return dev;
