@@ -62,6 +62,7 @@ namespace anxiety::rendering {
 
         // IModule --------------------------------------------------------------------------------
         [[nodiscard]] std::string_view              name()         const noexcept override { return "Rendering"; }
+        [[nodiscard]] std::vector<std::string_view> dependencies() const          override { return std::vector<std::string_view>{ "Platform" }; }
 
         [[nodiscard]] bool on_init(Engine& engine) override;
         void               on_update(float dt)     override;

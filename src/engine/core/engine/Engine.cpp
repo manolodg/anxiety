@@ -1,8 +1,9 @@
 #include "Engine.h"
 #include "Logger.h"
+#include "ModuleGraph.h"
 
 #include <chrono>
-#include <format>
+#include <thread>
 
 namespace anxiety {
 	static constexpr std::string_view k_category = "Engine";
@@ -14,21 +15,21 @@ namespace anxiety {
 	// Ciclo de vida ------------------------------------------------------------------------------
 	bool Engine::init() { 
 		if (m_state != EngineState::Uninitialized) {
-			LOG_WARNING(k_category, "init() llamado sobre un Engine ya inicializado - ignorado.");
+			LOG_WARNING(k_category, "init() llamado sobre un Engine ya iniciado - ignorado.");
 			return false;
 		}
 
 		m_state = EngineState::Initializing;
-		LOGF_INFO(k_category, "Inicializando '{}' ({} módulo(s))", m_config.app_name, m_modules.size());
+		LOGF_INFO(k_category, "Iniciado '{}' ({} módulo(s))", m_config.app_name, m_modules.size());
 
 		if (!init_modules()) {
-			LOG_ERROR(k_category, "La inicialización de módulos falló - el motor no arrancará.");
+			LOG_ERROR(k_category, "El iniciado de módulos falló - el motor no arrancará.");
 			m_state = EngineState::Uninitialized;
 			return false;
 		}
 
 		m_state = EngineState::Running;
-		LOG_INFO(k_category, "Engine inicializado correctamente.");
+		LOG_INFO(k_category, "Engine iniciado correctamente.");
 
 		return true;
 	}
@@ -64,6 +65,8 @@ namespace anxiety {
 
 		shutdown_modules();
 
+		m_sorted_order.clear();
+
 		m_state = EngineState::Stopped;
 		LOG_INFO(k_category, "Engine detenido.");
 	}
@@ -84,23 +87,58 @@ namespace anxiety {
 			return;
 		}
 
+		// Impone unicidad de nombre - O(n) sobre un conjunto que siempre es pequeño.
+		for (const auto& existing : m_modules) {
+			if (existing->name() == module->name()) {
+				LOGF_ERROR(k_category, "Ya hay un módulo registrado con el nombre '{}' - rechazado.", module->name());
+				return;
+			}
+		}
+
 		LOGF_INFO(k_category, "Registrando módulo '{}'.", module->name());
 		m_modules.push_back(std::move(module));
 	}
 
+	// init_modules - resolución de dependencias + inicialización ordenada ------------------------
 	bool Engine::init_modules() {
-		for (size_t i = 0; i < m_modules.size(); ++i) {
-			LOGF_INFO(k_category, "Inicializando módulo '{}'.", m_modules[i]->name());
+		m_sorted_order.clear();
 
-			if (!m_modules[i]->on_init(*this)) {
-				LOGF_ERROR(k_category, "El módulo '{}' falló al inicializarse - revirtiendo.", m_modules[i]->name());
+		// Resolver el grafo de dependencias -------------------------------------------------------
+		auto result = ModuleGraph::resolve(m_modules);
+		if (!result.success) {
+			LOGF_ERROR(k_category, "Falló la resolución de dependencias: {}", result.error);
+			return false;
+		}
 
-				// Apaga los módulos que ya se habían inicializado correctamente, en orden inverso.
+		m_sorted_order = std::move(result.order);
+
+		// Registrar en el log el orden resuelto ---------------------------------------------------
+		{
+			std::string order;
+			order.reserve(m_sorted_order.size() * 12);
+			for (size_t i = 0; i < m_sorted_order.size(); ++i) {
+				if (i > 0) order += " -> ";
+				order += m_sorted_order[i]->name();
+			}
+
+			LOGF_INFO(k_category, "Orden de inicialización resuelto: [{}]", order);
+		}
+
+		// Inicializar en el orden ordenado --------------------------------------------------------
+		for (size_t i = 0; i < m_sorted_order.size(); ++i) {
+			IModule* mod = m_sorted_order[i];
+			LOGF_INFO(k_category, "Inicializando módulo '{}'.", mod->name());
+
+			if (!mod->on_init(*this)) {
+				LOGF_ERROR(k_category, "El módulo '{}' no pudo inicializarse - revirtiendo.", mod->name());
+
+				// Desmonta los módulos que ya se habían inicializado, en orden inverso.
 				for (size_t j = i; j-- > 0;) {
-					LOGF_INFO(k_category, "Revirtiendo módulo '{}'.", m_modules[j]->name());
-					m_modules[j]->on_shutdown();
+					LOGF_INFO(k_category, "Revirtiendo módulo '{}'.", m_sorted_order[j]->name());
+					m_sorted_order[j]->on_shutdown();
 				}
 
+				m_sorted_order.clear();
 				return false;
 			}
 		}
@@ -108,15 +146,15 @@ namespace anxiety {
 		return true;
 	}
 
+	// update_modules / shutdown_modules ----------------------------------------------------------
 	void Engine::update_modules(float delta) {
-		for (auto& mod : m_modules) {
+		for (IModule* mod : m_sorted_order) {
 			mod->on_update(delta);
 		}
 	}
 
 	void Engine::shutdown_modules() {
-		// Orden inverso al de registro - último en entrar, primero en salir.
-		for (auto it = m_modules.rbegin(); it != m_modules.rend(); ++it) {
+		for (auto it = m_sorted_order.rbegin(); it != m_sorted_order.rend(); ++it) {
 			LOGF_INFO(k_category, "Apagando módulo '{}'.", (*it)->name());
 			(*it)->on_shutdown();
 		}

@@ -1,5 +1,6 @@
 add_library(anxiety_engine STATIC
-        Engine.cpp)
+    Engine.cpp
+    ModuleGraph.cpp)
 add_library(anxiety::engine ALIAS anxiety_engine)
 
 target_include_directories(anxiety_engine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

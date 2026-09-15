@@ -21,7 +21,7 @@ namespace anxiety::platform {
 	//   Cuando poll_events() señala que la ventana se ha cerrado, on_update() llama
 	//   automáticamente a engine.request_stop().
 	// --------------------------------------------------------------------------------------------
-    class PlatformModule final : public anxiety::IModule {
+    class PlatformModule final : public IModule {
     public:
         struct Config {
             IWindow::Desc window;   // Se ignora en modo headless.

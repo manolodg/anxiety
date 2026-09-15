@@ -30,16 +30,20 @@ namespace anxiety {
 
 	// Engine -------------------------------------------------------------------------------------
 	// Objeto central del runtime. Uso típico:
-	// 
-	//   Engine engine();
-	//   engine.init();
-	//   engine.run();					// bloquea hasta que se llama a request_stop()
-	//									// shutdown() se llama implícitamente al final de run()
 	//
-	// Ciclo de vida de los módulos (por frame):
-	//   orden de init    : orden de registro
-	//   orden de update  : orden de registro
-	//   shutdown         : orden inverso al de registro
+	//   Engine engine({ .app_name = "MyGame", .target_fps = 60 });
+	//   engine.emplace_module<InputModule>();			// depende de EventBus
+	//   engine.emplace_module<EventBusModule>();		// registrado DESPUÉS de Input - pero se inicializa PRIMERO
+	//
+	//   engine.init();									// resuelve dependencias, ordena, inicializa en orden
+	//   engine.run();									// bloquea; cada frame llama a on_update en orden ordenado
+	//
+	// Orden del ciclo de vida de los módulos:
+	//   init     : ordenado topológicamente según las dependencias declaradas
+	//   update   : mismo orden ordenado
+	//   shutdown : orden inverso
+	//
+	// Unicidad: no se pueden registrar dos módulos con el mismo name().
 	// --------------------------------------------------------------------------------------------
 	class Engine {
 	public:
@@ -50,16 +54,17 @@ namespace anxiety {
 		Engine& operator=(const Engine&) = delete;
 
 		// Ciclo de vida --------------------------------------------------------------------------
-		// init() debe llamarse antes de run().
-		// Devuelve false si algún módulo falla al inicializarse (los módulos ya iniciados se
-		// apagan antes de devolver el resultado).
+		// Resuelve el grafo de dependencias y luego inicializa los módulos en orden ordenado.
+		// Devuelve false si el grafo no es válido (ciclo, dependencia ausente, nombre duplicado) o
+		// si el on_init() de algún módulo devuelve false (los módulos ya iniciados se revierten
+		// antes de devolver).
 		[[nodiscard]] bool init();
 		// Bloquea hasta que se llama a request_stop(), luego llama a shutdown() y regresa.
 		void               run();
 		// Llamado automáticamente por run() y por el destructor.
 		void               shutdown();
 
-		// Se solicita la parada del game loop.
+		// Thread-safe. Se puede llamar desde cualquier hilo, incluso dentro de on_update().
 		void               request_stop() noexcept;
 
 		// Registro de módulos --------------------------------------------------------------------
@@ -75,7 +80,10 @@ namespace anxiety {
 
 			return ref;
 		}
-		// Debe llamarse ANTES de init(). Llamarlo después de init() rechaza el módulo.
+		// Debe llamarse ANTES de init(). Rechaza:
+		//   - módulos nulos.
+		//   - módulos con el mismo nombre que uno ya registrado
+		//   - llamadas realizadas después de init()
 		void register_module(std::unique_ptr<IModule> module);
 
 		// Accesos --------------------------------------------------------------------------------
@@ -86,8 +94,13 @@ namespace anxiety {
 		EngineConfig                          m_config;
 		EngineState                           m_state         { EngineState::Uninitialized };
 		std::atomic<bool>                     m_stop_requested{ false };
+		// Contenedor propietario - direcciones estables, módulos vivos durante toda la vida del motor.
 		std::vector<std::unique_ptr<IModule>> m_modules;
+		// Vista no propietaria y ordenada topológicamente sobre m_modules.
+		// Válida tras un init_modules() exitoso: se vacía al revertir o al apagar.
+		std::vector<IModule*>                 m_sorted_order;
 
+		// Resuelve dependencias, construye m_sorted_order, ejecuta on_init en orden con reversión.
 		[[nodiscard]] bool init_modules();
 		void               update_modules(float delta);
 		void               shutdown_modules();
