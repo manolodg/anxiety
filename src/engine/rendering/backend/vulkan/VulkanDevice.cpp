@@ -3,6 +3,9 @@
 #include "VulkanDevice.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanSwapchain.h"
+#include "VulkanShader.h"
+#include "VulkanPipeline.h"
+#include "VulkanDescriptorSet.h"
 #include "VulkanHelpers.h"
 #include "Logger.h"
 
@@ -11,6 +14,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+
+#ifdef ANXIETY_HAVE_SHADERC
+#include <shaderc/shaderc.hpp>
+#endif
 
 namespace anxiety::rendering::backend::vulkan {
 
@@ -44,6 +51,12 @@ namespace anxiety::rendering::backend::vulkan {
                 vkDestroyImage(m_device, slot.image, nullptr);
                 vkFreeMemory(m_device, slot.memory, nullptr);
             }
+
+            for (auto& [key, cached] : m_desc_set_layout_cache) {
+                for (VkSampler s : cached.immutable_samplers) vkDestroySampler(m_device, s, nullptr);
+                if (cached.layout) vkDestroyDescriptorSetLayout(m_device, cached.layout, nullptr);
+            }
+            m_desc_set_layout_cache.clear();
 
             if (m_idle_fence)     { vkDestroyFence(m_device, m_idle_fence, nullptr); }
             if (m_pipeline_cache) { vkDestroyPipelineCache(m_device, m_pipeline_cache, nullptr); }
@@ -534,11 +547,7 @@ namespace anxiety::rendering::backend::vulkan {
         free_texture_slot(idx);
     }
 
-    // IDevice — create_buffer (override de 1 parámetro de IDevice + sobrecarga extendida de 3 parámetros)
-    rhi::BufferHandle VulkanDevice::create_buffer(const rhi::BufferDesc& desc) {
-        return create_buffer(desc, nullptr, 0);
-    }
-
+    // IDevice — create_buffer --------------------------------------------------------------------
     rhi::BufferHandle VulkanDevice::create_buffer(const rhi::BufferDesc& desc, const void* initial_data, size_t initial_data_sz) {
         using BU = rhi::BufferUsage;
 
@@ -805,6 +814,195 @@ namespace anxiety::rendering::backend::vulkan {
 
     void VulkanDevice::wait_idle() {
         vkDeviceWaitIdle(m_device);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Compilación de shaders — fuente HLSL -> SPIR-V vía shaderc (el front-end HLSL de glslang).
+    //
+    // Nuestros shaders se escriben para D3D12 con numeración por clase de registro (los cbuffers
+    // usan bN, las texturas tN, los samplers sN — el mismo N puede repetirse entre clases). Los
+    // bindings de descriptor de Vulkan deben ser únicos dentro de un set, así que cada clase de
+    // registro HLSL se desplaza a su propio rango de binding vía SetBindingBase. Esto DEBE coincidir
+    // con VulkanHelpers::to_vk_binding_index(), que VulkanPipeline / VulkanDescriptorSet usan para
+    // construir los VkDescriptorSetLayoutBinding correspondientes.
+    // ---------------------------------------------------------------------------
+
+    std::vector<uint8_t> VulkanDevice::compile_shader_from_source(const char* source, const char* entry_point, anxiety::rendering::rhi::ShaderStage stage)
+    {
+#ifdef ANXIETY_HAVE_SHADERC
+        shaderc_shader_kind kind;
+        switch (stage) {
+        case anxiety::rendering::rhi::ShaderStage::Vertex:   kind = shaderc_vertex_shader;   break;
+        case anxiety::rendering::rhi::ShaderStage::Fragment: kind = shaderc_fragment_shader; break;
+        case anxiety::rendering::rhi::ShaderStage::Compute:  kind = shaderc_compute_shader;  break;
+        default: return {};
+        }
+
+        shaderc::CompileOptions options;
+        options.SetSourceLanguage(shaderc_source_language_hlsl);
+        options.SetAutoBindUniforms(true);
+        options.SetHlslIoMapping(true);
+        options.SetBindingBase(shaderc_uniform_kind_buffer,         k_cbv_binding_base);
+        options.SetBindingBase(shaderc_uniform_kind_texture,        k_srv_binding_base);
+        options.SetBindingBase(shaderc_uniform_kind_sampler,        k_sampler_binding_base);
+        options.SetBindingBase(shaderc_uniform_kind_storage_buffer, k_uav_binding_base);
+        options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
+        shaderc::Compiler compiler;
+        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, std::strlen(source), kind, "shader.hlsl", entry_point, options);
+        if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+            LOGF_ERROR("RHI", "Error de compilación de shader: {}", result.GetErrorMessage());
+            return {};
+        }
+
+        const auto* begin = reinterpret_cast<const uint8_t*>(result.cbegin());
+        const auto* end   = reinterpret_cast<const uint8_t*>(result.cend());
+        return { begin, end };
+#else
+        (void)source; (void)entry_point; (void)stage;
+        LOG_ERROR("RHI", "compile_shader_from_source: compilado sin shaderc — la compilación de HLSL para Vulkan no está disponible.");
+        return {};
+#endif
+    }
+
+    // ---------------------------------------------------------------------------
+    // Fábricas de shaders / pipelines / descriptor sets
+    // ---------------------------------------------------------------------------
+
+    std::unique_ptr<anxiety::rendering::rhi::IShader> VulkanDevice::create_shader(const anxiety::rendering::rhi::ShaderDesc& desc, anxiety::rendering::rhi::ShaderStage stage)
+    {
+        if (!m_valid) return nullptr;
+        if (!desc.bytecode || desc.bytecode_size == 0 || (desc.bytecode_size % 4) != 0) {
+            LOG_ERROR("RHI", "VulkanDevice::create_shader: bytecode SPIR-V vacío o mal alineado.");
+            return nullptr;
+        }
+
+        VkShaderModuleCreateInfo ci{};
+        ci.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        ci.codeSize = desc.bytecode_size;
+        ci.pCode    = reinterpret_cast<const uint32_t*>(desc.bytecode);
+
+        VkShaderModule module = VK_NULL_HANDLE;
+        if (vkCreateShaderModule(m_device, &ci, nullptr, &module) != VK_SUCCESS) {
+            LOG_ERROR("RHI", "VulkanDevice::create_shader: vkCreateShaderModule falló.");
+            return nullptr;
+        }
+
+        return std::make_unique<VulkanShader>(m_device, module, stage, desc.entry_point);
+    }
+
+    std::unique_ptr<anxiety::rendering::rhi::IPipeline> VulkanDevice::create_pipeline(const anxiety::rendering::rhi::PipelineDesc& desc)
+    {
+        if (!m_valid) return nullptr;
+        auto pipeline = std::make_unique<VulkanPipeline>(*this, desc);
+        if (!pipeline->is_valid()) {
+            LOG_ERROR("RHI", "VulkanDevice::create_pipeline: falló la creación del pipeline.");
+            return nullptr;
+        }
+        return pipeline;
+    }
+
+    std::unique_ptr<anxiety::rendering::rhi::IDescriptorSet> VulkanDevice::create_descriptor_set(const anxiety::rendering::rhi::DescriptorSetLayout& layout)
+    {
+        if (!m_valid) return nullptr;
+        return std::make_unique<VulkanDescriptorSet>(*this, layout);
+    }
+
+    // ---------------------------------------------------------------------------
+    // get_or_create_descriptor_set_layout — caché compartida de VkDescriptorSetLayout, indexada por
+    // el contenido del DescriptorSetLayout de la RHI (tríos binding/type/count). Ver VulkanDevice.h.
+    // ---------------------------------------------------------------------------
+
+    namespace {
+        size_t hash_descriptor_layout(const anxiety::rendering::rhi::DescriptorSetLayout& layout) {
+            size_t h = layout.bindings.size();
+            for (const auto& b : layout.bindings) {
+                h ^= std::hash<uint32_t>{}(b.binding)                            + 0x9e3779b9 + (h << 6) + (h >> 2);
+                h ^= std::hash<uint32_t>{}(static_cast<uint32_t>(b.type))        + 0x9e3779b9 + (h << 6) + (h >> 2);
+                h ^= std::hash<uint32_t>{}(b.count)                              + 0x9e3779b9 + (h << 6) + (h >> 2);
+            }
+            return h;
+        }
+    }
+
+    VkDescriptorSetLayout VulkanDevice::get_or_create_descriptor_set_layout(const rhi::DescriptorSetLayout& content, const std::vector<rhi::SamplerDesc>* static_samplers) {
+        const size_t key = hash_descriptor_layout(content);
+
+        auto it = m_desc_set_layout_cache.find(key);
+        if (it != m_desc_set_layout_cache.end()) return it->second.layout;
+
+        CachedDescriptorSetLayout cached;
+
+        // Un binding por cada entrada de descriptor de la RHI (uniform buffers, texturas, storage
+        // buffers, samplers dinámicos), más un binding por cada sampler estático/incrustado (como VkSampler inmutable).
+        std::vector<VkDescriptorSetLayoutBinding> bindings;
+        bindings.reserve(content.bindings.size() + (static_samplers ? static_samplers->size() : 0));
+
+        for (const auto& b : content.bindings) {
+            VkDescriptorSetLayoutBinding vkb{};
+            vkb.binding         = to_vk_binding_index(b.type, b.binding);
+            vkb.descriptorType  = to_vk_descriptor_type(b.type);
+            vkb.descriptorCount = b.count;
+            vkb.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            bindings.push_back(vkb);
+        }
+
+        // Los samplers inmutables deben seguir vivos al menos tanto como el VkDescriptorSetLayout —
+        // son propiedad de la entrada del caché, y se destruyen junto a ella en ~VulkanDevice().
+        if (static_samplers) {
+            cached.immutable_samplers.reserve(static_samplers->size());
+            for (const auto& sd : *static_samplers) {
+                VkSamplerCreateInfo sci{};
+                sci.sType            = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                sci.magFilter        = to_vk_filter(sd.filter);
+                sci.minFilter        = to_vk_filter(sd.filter);
+                sci.mipmapMode       = to_vk_mipmap_mode(sd.filter);
+                sci.addressModeU     = to_vk_sampler_address_mode(sd.address_U);
+                sci.addressModeV     = to_vk_sampler_address_mode(sd.address_V);
+                sci.addressModeW     = to_vk_sampler_address_mode(sd.address_W);
+                sci.mipLodBias       = sd.mip_lod_bias;
+                sci.anisotropyEnable = sd.filter == rhi::FilterMode::Anisotropic ? VK_TRUE : VK_FALSE;
+                sci.maxAnisotropy    = static_cast<float>(sd.max_anisotropy);
+                sci.compareOp        = VK_COMPARE_OP_ALWAYS;
+                sci.minLod           = sd.min_lod;
+                sci.maxLod           = sd.max_lod;
+                sci.borderColor      = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+
+                VkSampler sampler = VK_NULL_HANDLE;
+                if (vkCreateSampler(m_device, &sci, nullptr, &sampler) != VK_SUCCESS) {
+                    LOG_ERROR("RHI", "get_or_create_descriptor_set_layout: vkCreateSampler falló.");
+                    continue;
+                }
+                cached.immutable_samplers.push_back(sampler);
+            }
+
+            // Segunda pasada: referencia el almacenamiento de immutable_samplers (ya estable) desde cada binding.
+            for (size_t i = 0; i < static_samplers->size() && i < cached.immutable_samplers.size(); ++i) {
+                VkDescriptorSetLayoutBinding vkb{};
+                vkb.binding            = to_vk_binding_index(rhi::DescriptorType::Sampler, (*static_samplers)[i].shader_register);
+                vkb.descriptorType     = VK_DESCRIPTOR_TYPE_SAMPLER;
+                vkb.descriptorCount    = 1;
+                vkb.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+                vkb.pImmutableSamplers = &cached.immutable_samplers[i];
+                bindings.push_back(vkb);
+            }
+        }
+
+        VkDescriptorSetLayoutCreateInfo ci{};
+        ci.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        ci.bindingCount = static_cast<uint32_t>(bindings.size());
+        ci.pBindings    = bindings.empty() ? nullptr : bindings.data();
+
+        VkResult res = vkCreateDescriptorSetLayout(m_device, &ci, nullptr, &cached.layout);
+        if (res != VK_SUCCESS) {
+            LOGF_ERROR("RHI", "get_or_create_descriptor_set_layout: vkCreateDescriptorSetLayout falló (VkResult={}).", static_cast<int>(res));
+            for (VkSampler s : cached.immutable_samplers) vkDestroySampler(m_device, s, nullptr);
+            return VK_NULL_HANDLE;
+        }
+
+        VkDescriptorSetLayout result = cached.layout;
+        m_desc_set_layout_cache.emplace(key, std::move(cached));
+        return result;
     }
 
     // Callback de depuración ---------------------------------------------------------------------

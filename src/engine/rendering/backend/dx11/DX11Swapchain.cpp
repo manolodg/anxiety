@@ -1,3 +1,5 @@
+#ifdef ANXIETY_BACKEND_DX11
+
 #include "DX11Swapchain.h"
 #include "DX11Device.h"
 #include "DX11Helpers.h"
@@ -85,3 +87,5 @@ namespace anxiety::rendering::backend::dx11 {
         }
     }
 } // namespace anxiety::rendering::backend::dx11
+
+#endif ANXIETY_BACKEND_DX11

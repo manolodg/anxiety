@@ -2,7 +2,10 @@
 
 #include "VulkanCommandBuffer.h"
 #include "VulkanDevice.h"
+#include "VulkanPipeline.h"
+#include "VulkanDescriptorSet.h"
 #include "VulkanHelpers.h"
+#include "Logger.h"
 
 #include <cassert>
 #include <cstdio>
@@ -27,6 +30,7 @@ namespace anxiety::rendering::backend::vulkan {
         m_has_pending_RT    = false;
         m_has_pending_depth = false;
         m_in_render_pass    = false;
+        m_current_pipeline = nullptr;
 
         VkCommandBufferBeginInfo bi{};
         bi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -46,7 +50,13 @@ namespace anxiety::rendering::backend::vulkan {
         if (!texture.is_valid()) return;
 
         VkTextureSlot& slot       = m_device->tex_slot(texture);
-        VkImageLayout  old_layout = to_vk_image_layout(before);
+        // oldLayout debe reflejar el layout real actual de la imagen, no el estado lógico `before`
+        // que asume el render graph — las imágenes de swapchain empiezan su vida en
+        // VK_IMAGE_LAYOUT_UNDEFINED (a diferencia de D3D12, donde COMMON/PRESENT comparten un único
+        // valor de enum y los buffers recién creados ya están en "Present"), así que confiar en
+        // `before` tal cual declara mal el barrier en el primer uso de cada imagen por ciclo de
+        // swapchain. slot.layout es la fuente de verdad — se actualiza tras cada transición.
+        VkImageLayout  old_layout = slot.layout;
         VkImageLayout  new_layout = to_vk_image_layout(after);
 
         if (old_layout == new_layout) return;
@@ -110,9 +120,80 @@ namespace anxiety::rendering::backend::vulkan {
         begin_dynamic_rendering();
     }
 
+    // clear_depth_stencil ------------------------------------------------------------------------
+    void VulkanCommandBuffer::clear_depth_stencil(rhi::TextureHandle depth, float depth_val, uint8_t stencil) {
+        if (!depth.is_valid()) return;
+
+        end_dynamic_rendering_if_active();
+
+        m_pending_depth     = depth;
+        m_pending_depth_val = depth_val;
+        m_pending_stencil   = stencil;
+        m_has_pending_depth = true;
+    }
+
+    // Estado de pipeline ---------------------------------------------------------------------------
+    void VulkanCommandBuffer::bind_pipeline(anxiety::rendering::rhi::IPipeline& pipeline) {
+        auto& p = static_cast<VulkanPipeline&>(pipeline);
+        m_current_pipeline = &p;
+
+        vkCmdBindPipeline(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, p.pipeline());
+
+        // El viewport/scissor son estado dinámico en todo VulkanPipeline — se fijan a partir del
+        // área de renderizado activa (establecida por el clear_render_target() anterior).
+        if (m_render_area.extent.width > 0 && m_render_area.extent.height > 0) {
+            // Nuestras matrices de proyección (SceneMath::mat4_perspective_LH) se escriben para la
+            // convención de D3D12, donde +Y en clip-space es arriba y la transformación de viewport
+            // de la API lo invierte a +Y hacia abajo en pantalla. La transformación de viewport de
+            // Vulkan NO hace esa inversión por defecto, así que pasar las mismas coordenadas de clip
+            // sin modificar renderiza boca abajo — y, como esa inversión también invierte el winding
+            // de triángulo que percibe el rasterizador, descarta en silencio todos los triángulos con
+            // nuestra configuración CW-front/back-cull (ver frontFace en VulkanPipeline). Un viewport
+            // con altura negativa (parte del core desde Vulkan 1.1 / VK_KHR_maintenance1 — exigimos
+            // apiVersion 1.2) restaura la inversión al estilo D3D sin tocar la matemática compartida
+            // ni el backend DX12.
+            VkViewport viewport{};
+            viewport.y        = static_cast<float>(m_render_area.extent.height);
+            viewport.width    = static_cast<float>(m_render_area.extent.width);
+            viewport.height   = -static_cast<float>(m_render_area.extent.height);
+            viewport.minDepth = 0.f;
+            viewport.maxDepth = 1.f;
+            vkCmdSetViewport(m_cmd, 0, 1, &viewport);
+            vkCmdSetScissor(m_cmd, 0, 1, &m_render_area);
+        }
+    }
+
+    void VulkanCommandBuffer::bind_descriptor_set(uint32_t set, anxiety::rendering::rhi::IDescriptorSet& ds) {
+        if (!m_current_pipeline) {
+            LOG_WARNING("RHI", "VulkanCommandBuffer::bind_descriptor_set llamado antes que bind_pipeline.");
+            return;
+        }
+        VkDescriptorSet vk_set = static_cast<VulkanDescriptorSet&>(ds).descriptor_set();
+        vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_current_pipeline->layout(), set, 1, &vk_set, 0, nullptr);
+    }
+
+    // Vertex / index buffers -------------------------------------------------------------------------
+    void VulkanCommandBuffer::bind_vertex_buffer(uint32_t slot, anxiety::rendering::rhi::BufferHandle handle, uint64_t offset, uint32_t /*stride*/) {
+        if (!handle.is_valid()) return;
+        VkBufferSlot& buf = m_device->buf_slot(handle);
+        VkDeviceSize vk_offset = static_cast<VkDeviceSize>(offset);
+        vkCmdBindVertexBuffers(m_cmd, slot, 1, &buf.buffer, &vk_offset);
+    }
+
+    void VulkanCommandBuffer::bind_index_buffer(anxiety::rendering::rhi::BufferHandle handle, uint64_t offset, bool use_32_bit) {
+        if (!handle.is_valid()) return;
+        VkBufferSlot& buf = m_device->buf_slot(handle);
+        vkCmdBindIndexBuffer(m_cmd, buf.buffer, static_cast<VkDeviceSize>(offset), use_32_bit ? VK_INDEX_TYPE_UINT32 : VK_INDEX_TYPE_UINT16);
+    }
+
     // draw / dispatch ----------------------------------------------------------------------------
     void VulkanCommandBuffer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
         vkCmdDraw(m_cmd, vertex_count, instance_count, first_vertex, first_instance);
+    }
+
+    void VulkanCommandBuffer::draw_indexed(uint32_t index_count, uint32_t instance_count,
+        uint32_t first_index, int32_t vertex_offset, uint32_t first_instance) {
+        vkCmdDrawIndexed(m_cmd, index_count, instance_count, first_index, vertex_offset, first_instance);
     }
 
     void VulkanCommandBuffer::dispatch(uint32_t groups_x, uint32_t groups_y, uint32_t groups_z) {

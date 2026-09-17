@@ -94,5 +94,15 @@ namespace anxiety::rendering {
         // attach_window()/resize()/detach_window() (potencialmente llamados desde otro hilo, p.
         // ej. el hilo de UI de Avalonia a través de anxiety_bridge).
         std::mutex m_swapchain_mutex;
+
+        rhi::TextureHandle                   m_depth_buffer;
+
+        // Orden de destrucción: recursos de pipeline → graph → cmdBuffer → swapchain → device.
+        std::unique_ptr<rhi::IShader>        m_vertex_shader;
+        std::unique_ptr<rhi::IShader>        m_fragment_shader;
+        std::unique_ptr<rhi::IPipeline>      m_pipeline;
+        rhi::BufferHandle                    m_vertex_buffer;
+        rhi::BufferHandle                    m_constant_buffer;
+        std::unique_ptr<rhi::IDescriptorSet> m_descriptor_set;
     };
 } // namespace anxiety::rendering

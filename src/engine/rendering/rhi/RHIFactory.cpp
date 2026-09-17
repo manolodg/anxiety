@@ -65,7 +65,7 @@ namespace anxiety::rendering::rhi {
     }
 
     // create_device ------------------------------------------------------------------------------
-    std::unique_ptr<IDevice> RHIFactory::create_device(RHIBackend backend, bool enable_validation, void* /*native_window*/) {
+    std::unique_ptr<IDevice> RHIFactory::create_device(RHIBackend backend, bool enable_validation, [[maybe_unused]] void* native_window) {
         LOGF_INFO(k_category, "Creando dispositivo {} (validación={}).", backend_name(backend), enable_validation);
 
         switch (backend) {

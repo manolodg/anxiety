@@ -1,3 +1,5 @@
+#ifdef ANXIETY_BACKEND_DX12
+
 #pragma once
 
 #include "../../rhi/ISwapchain.h"
@@ -54,3 +56,5 @@ namespace anxiety::rendering::backend::dx12 {
         std::array<D3D12_CPU_DESCRIPTOR_HANDLE, k_max_images>             m_rtv_handles;
     };
 } // namespace anxiety::rendering::backend::dx12
+
+#endif ANXIETY_BACKEND_DX12

@@ -34,15 +34,30 @@ namespace anxiety::rendering::rhi {
 
     // Flags de uso del buffer (combinables) ---------------------------------------------------------
     enum class BufferUsage : uint32_t {
-        None    = 0,
-        Vertex  = 1 << 0,
-        Index   = 1 << 1,
-        Uniform = 1 << 2,
-        Storage = 1 << 3,
+        None     = 0,
+        Vertex   = 1 << 0,
+        Index    = 1 << 1,
+        Uniform  = 1 << 2,
+        Storage  = 1 << 3,
+        Indirect = 1 << 4                   // buffer de argumentos para draw/dispatch indirecto
     };
 
     inline BufferUsage operator|(BufferUsage a, BufferUsage b)      noexcept { return static_cast<BufferUsage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); }
     inline bool        has_flag(BufferUsage mask, BufferUsage flag) noexcept { return (static_cast<uint32_t>(mask) & static_cast<uint32_t>(flag)) != 0; }
+
+    // Tipo de superficie nativa que describe SwapchainDesc::native_window_handle ------------------
+    // El RHI recibe esto explícitamente en vez de asumir "la plataforma en la que se compiló": es
+    // lo que permite que, por ejemplo, un backend Vulkan sepa si el handle que le llega es un HWND
+    // de Win32, una superficie DRM/KMS de RPi, o una NSView de macOS, sin adivinarlo.
+    enum class NativeSurfaceType : uint8_t {
+        Unknown,
+        Win32,
+        X11,
+        Wayland,
+        MacOS,
+        IOS,
+        Android
+    };
 
     // Descriptores --------------------------------------------------------------------------------
     struct Extent2D { uint32_t width = 0; uint32_t height = 0; };
@@ -56,18 +71,25 @@ namespace anxiety::rendering::rhi {
 
     struct TextureDesc {
         Extent2D    extent;
-        Format      format           = Format::Unknown;
-        uint32_t    mip_levels       = 1;
-        uint32_t    array_size       = 1;
-        bool        is_render_target = false;
-        const char* debug_name       = nullptr;
+        Format      format            = Format::Unknown;
+        uint32_t    mip_levels        = 1;
+        uint32_t    array_size        = 1;
+        bool        is_render_target  = false;
+        bool        is_depth_target   = false;
+        bool        is_storage_target = false;
+        const char* debug_name        = nullptr;
     };
 
     struct SwapchainDesc {
-        void*    native_window_handle = nullptr;        // HWND en Win32, Window en X11
-        Extent2D extent;
-        uint32_t image_count          = 2;
-        Format   format               = Format::BGRA8_Unorm;
-        bool     vsync                = true;
+        NativeSurfaceType surface_type         = NativeSurfaceType::Unknown;  // cómo interpretar native_window_handle
+        void*             native_window_handle = nullptr;                     // HWND en Win32, Window en X11
+        Extent2D          extent;
+        uint32_t          image_count          = 2;
+        Format            format               = Format::BGRA8_Unorm;
+        bool              vsync                = true;
     };
+
+    // Igualdad de handles (necesaria para claves de std::unordered_map y comparaciones) -----------
+    inline bool operator==(BufferHandle  a, BufferHandle  b) noexcept { return a.id == b.id; }
+    inline bool operator==(TextureHandle a, TextureHandle b) noexcept { return a.id == b.id; }
 } // namespace anxiety::rendering::rhi

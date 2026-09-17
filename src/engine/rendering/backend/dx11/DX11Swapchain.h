@@ -1,3 +1,5 @@
+#ifdef ANXIETY_BACKEND_DX11
+
 #pragma once
 
 #include "../../rhi/ISwapchain.h"
@@ -53,3 +55,5 @@ namespace anxiety::rendering::backend::dx11 {
         std::array<anxiety::rendering::rhi::TextureHandle, k_max_images> m_handles;
     };
 } // namespace anxiety::rendering::backend::dx11
+
+#endif ANXIETY_BACKEND_DX11

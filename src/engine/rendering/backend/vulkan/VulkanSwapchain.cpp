@@ -15,6 +15,18 @@
 #  endif
 #  include <windows.h>
 #  include <vulkan/vulkan_win32.h>
+#elif defined(__linux__)
+#  if defined(USE_WAYLAND)
+#    include <wayland-client.h>
+#    include <vulkan/vulkan_wayland.h>
+#  else
+#    include <X11/Xlib.h>
+#    include <vulkan/vulkan_xlib.h>
+#  endif
+#elif defined(__APPLE__)
+#  import <AppKit/AppKit.h>
+#  import <QuartzCore/CAMetalLayer.h>
+#  include <vulkan/vulkan_metal.h>
 #endif
 
 namespace anxiety::rendering::backend::vulkan {
@@ -308,9 +320,13 @@ namespace anxiety::rendering::backend::vulkan {
         pi.pImageIndices      = &m_current_image;
         vkQueuePresentKHR(m_device.graphics_queue(), &pi);
 
-        // Restablece el layout del backbuffer para el siguiente fotograma — la imagen vuelve a
-        // UNDEFINED tras el present
-        if (m_handles[m_current_image].is_valid()) m_device.tex_slot(m_handles[m_current_image]).layout = VK_IMAGE_LAYOUT_UNDEFINED;
+        // Nota: el layout rastreado del backbuffer se deja en VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+        // (fijado por el resource_barrier() que se ejecutó justo antes de este present) — ese sigue
+        // siendo genuinamente el layout real de la imagen tras vkQueuePresentKHR. NO debe
+        // reiniciarse a UNDEFINED aquí: VulkanCommandBuffer::resource_barrier() usa este valor
+        // rastreado como el oldLayout real del barrier en el siguiente fotograma en que se reutilice
+        // este mismo índice de imagen, y un UNDEFINED falso declararía mal ese barrier frente al
+        // propio rastreo (correcto) de la capa de validación.
     }
 
     void VulkanSwapchain::resize(rhi::Extent2D new_extent) {

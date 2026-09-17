@@ -100,7 +100,7 @@ int main() {
 	auto& plat_mod = engine.emplace_module<platform::PlatformModule>(pal_cfg);
 	
 	rendering::RenderingModule::Config mod_cfg;
-	mod_cfg.preferred_backend = rendering::rhi::RHIBackend::Vulkan;
+	//mod_cfg.preferred_backend = rendering::rhi::RHIBackend::Vulkan;
 	engine.emplace_module<rendering::RenderingModule>(plat_mod, mod_cfg);
 
 	if (!engine.init()) { LOG_FATAL(k_category, "El motor no ha podido iniciarse."); return 1; }

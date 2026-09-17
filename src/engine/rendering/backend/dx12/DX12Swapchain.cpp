@@ -1,3 +1,5 @@
+#ifdef ANXIETY_BACKEND_DX12
+
 #include "DX12Swapchain.h"
 #include "DX12Device.h"
 #include "DX12Helpers.h"
@@ -8,24 +10,30 @@
 namespace anxiety::rendering::backend::dx12 {
     static constexpr char k_category[] = "RHI";
 
-    DX12Swapchain::DX12Swapchain(DX12Device& device, const anxiety::rendering::rhi::SwapchainDesc& desc) : m_device(device), m_extent(desc.extent), m_image_count(desc.image_count <= k_max_images ? desc.image_count : k_max_images),
-        m_vsync(desc.vsync), m_format(anxiety::rendering::rhi::Format::BGRA8_Unorm) {
+    DX12Swapchain::DX12Swapchain(DX12Device& device, const rhi::SwapchainDesc& desc) : m_device(device), m_extent(desc.extent), m_image_count(desc.image_count <= k_max_images ? desc.image_count : k_max_images), m_vsync(desc.vsync), m_format(rhi::Format::BGRA8_Unorm) {
         // Inicializa los arrays a cero.
         m_backbuffer_handles.fill({});
         m_rtv_handles.fill({ 0 });
 
+        // Comprobación blanda, no un rechazo: hoy DX12 solo sabe interpretar un HWND de Win32 pase
+        // lo que pase en surface_type, así que esto es una señal de aviso para cuando existan más
+        // backends (Vulkan, etc.) que sí puedan recibir otros tipos — no bloquea nada todavía.
+        if (desc.surface_type != rhi::NativeSurfaceType::Unknown && desc.surface_type != rhi::NativeSurfaceType::Win32) {
+            LOG_WARNING(k_category, "DX12Swapchain: se recibió un NativeSurfaceType que no es Win32; se usará igualmente como HWND.");
+        }
+
         auto* hwnd = static_cast<HWND>(desc.native_window_handle);
 
         DXGI_SWAP_CHAIN_DESC1 sc_desc{};
-        sc_desc.Width = desc.extent.width;
-        sc_desc.Height = desc.extent.height;
-        sc_desc.Format = to_D3D12_format(m_format);
+        sc_desc.Width       = desc.extent.width;
+        sc_desc.Height      = desc.extent.height;
+        sc_desc.Format      = to_D3D12_format(m_format);
         sc_desc.BufferCount = m_image_count;
         sc_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        sc_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        sc_desc.SampleDesc = { 1, 0 };
-        sc_desc.Scaling = DXGI_SCALING_STRETCH;
-        sc_desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+        sc_desc.SwapEffect  = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        sc_desc.SampleDesc  = { 1, 0 };
+        sc_desc.Scaling     = DXGI_SCALING_STRETCH;
+        sc_desc.AlphaMode   = DXGI_ALPHA_MODE_UNSPECIFIED;
 
         ComPtr<IDXGISwapChain1> sc1;
         HRESULT hr = device.dxgi_factory()->CreateSwapChainForHwnd(device.command_queue(), hwnd, &sc_desc, nullptr, nullptr, &sc1);
@@ -98,7 +106,7 @@ namespace anxiety::rendering::backend::dx12 {
             m_device.d3d_device()->CreateRenderTargetView(m_backbuffers[i].Get(), nullptr, m_rtv_handles[i]);
 
             // Registra el buffer en el pool del dispositivo para que los command buffers puedan buscarlo por TextureHandle.
-            m_backbuffer_handles[i] = m_device.register_external_texture(m_backbuffers[i].Get(), m_rtv_handles[i], anxiety::rendering::rhi::ResourceState::Present);
+            m_backbuffer_handles[i] = m_device.register_external_texture(m_backbuffers[i].Get(), m_rtv_handles[i], rhi::ResourceState::Present);
         }
     }
 
@@ -113,3 +121,5 @@ namespace anxiety::rendering::backend::dx12 {
         }
     }
 } // namespace anxiety::rendering::backend::dx12
+
+#endif ANXIETY_BACKEND_DX12

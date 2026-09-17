@@ -9,6 +9,53 @@
 namespace anxiety::rendering {
     static constexpr char k_category[] = "Rendering";
 
+    namespace {
+        // current_platform_surface_type -----------------------------------------------------------
+        // rhi::NativeSurfaceType del SO en el que se compiló este binario. Usado tanto por el modo
+        // "ventana propia" (on_init()) como por el modo "ventana embebida" (attach_window()): en
+        // ambos casos el handle que llega es siempre del mismo tipo de superficie, porque este
+        // binario en concreto solo se compila contra un backend de plataforma (ver PlatformModule) —
+        // no hace falta que nadie lo declare explícitamente en cada llamada. Deuda menor: IWindow
+        // todavía no expone su propio NativeSurfaceType (ver
+        // docs/somatic/architecture/viewport-engine-boundary.md), así que se infiere aquí en vez de
+        // preguntárselo a la ventana.
+        rhi::NativeSurfaceType current_platform_surface_type() {
+#if defined(_WIN32)
+            return rhi::NativeSurfaceType::Win32;
+#elif defined(__APPLE__)
+            return rhi::NativeSurfaceType::MacOS;
+#else
+            return rhi::NativeSurfaceType::X11;
+#endif
+        }
+    } // namespace
+
+    // Inline HLSL shaders ------------------------------------------------------------------------
+    static constexpr const char* k_vertex_shader_HLSL = R"hlsl(
+struct VSIn  { float3 pos : POSITION; float4 col : COLOR; };
+struct VSOut { float4 pos : SV_Position; float4 col : COLOR; };
+cbuffer SceneCB : register(b0) { float4 tint; };
+VSOut VSMain(VSIn i) {
+    VSOut o;
+    o.pos = float4(i.pos, 1.0);
+    o.col = i.col * tint;
+    return o;
+}
+)hlsl";
+
+    static constexpr const char* k_pixel_shader_HLSL = R"hlsl(
+struct VSOut { float4 pos : SV_Position; float4 col : COLOR; };
+float4 PSMain(VSOut i) : SV_Target { return i.col; }
+)hlsl";
+
+    // Triangle geometry --------------------------------------------------------------------------
+    struct TriVertex { float x, y, z; float r, g, b, a; };
+    static constexpr TriVertex k_triangle_verts[] = {
+        {  0.0f,  0.5f, 0.0f,   1.f, 0.f, 0.f, 1.f },   // top     — red
+        {  0.5f, -0.5f, 0.0f,   0.f, 1.f, 0.f, 1.f },   // right   — green
+        { -0.5f, -0.5f, 0.0f,   0.f, 0.f, 1.f, 1.f },   // left    — blue
+    };
+
     // Construcción / destrucción --------------------------------------------------------------------
     RenderingModule::RenderingModule(platform::PlatformModule& platform, Config config) : m_platform(&platform), m_config(config) {}
     RenderingModule::~RenderingModule() = default;
@@ -90,7 +137,7 @@ namespace anxiety::rendering {
         const rhi::ClearColor clear_color = m_config.clear_color;
         m_graph.add_pass({
             .name    = "ClearPass",
-            .writes  = { bb_graph },
+            .writes  = {{ bb_graph, rhi::ResourceState::RenderTarget }},
             .execute = [bb, clear_color](rhi::ICommandBuffer& cmd) {
                 cmd.resource_barrier(bb, rhi::ResourceState::Present, rhi::ResourceState::RenderTarget);
                 cmd.clear_render_target(bb, clear_color);
