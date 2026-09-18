@@ -19,6 +19,18 @@
 #include "backend/vulkan/VulkanDevice.h"
 #endif
 
+#if ANXIETY_BACKEND_METAL
+#include "backend/metal/MetalDevice.h"
+#endif
+
+#if ANXIETY_BACKEND_OPENGL
+#include "backend/opengl/GLDevice.h"
+#endif
+
+#if ANXIETY_BACKEND_GLES
+#include "backend/gles/GLESDevice.h"
+#endif
+
 namespace anxiety::rendering::rhi {
     static constexpr std::string_view k_category = "RHIFactory";
 
@@ -32,6 +44,9 @@ namespace anxiety::rendering::rhi {
                 if (val == "dx12" || val == "d3d12")  return RHIBackend::DirectX12;
                 if (val == "dx11" || val == "d3d11")  return RHIBackend::DirectX11;
                 if (val == "vulkan")                  return RHIBackend::Vulkan;
+                if (val == "metal")                   return RHIBackend::Metal;
+                if (val == "opengl" || val == "gl")   return RHIBackend::OpenGL;
+                if (val == "gles" || val == "gles3")  return RHIBackend::OpenGLES;
             }
         }
         return RHIBackend::Unknown;
@@ -51,6 +66,15 @@ namespace anxiety::rendering::rhi {
 #ifdef ANXIETY_BACKEND_VULKAN
             case RHIBackend::Vulkan:       return RHIBackend::Vulkan;
 #endif
+#ifdef ANXIETY_BACKEND_METAL
+            case RHIBackend::Metal:        return RHIBackend::Metal;
+#endif
+#ifdef ANXIETY_BACKEND_OPENGL
+            case RHIBackend::OpenGL:       return RHIBackend::OpenGL;
+#endif
+#ifdef ANXIETY_BACKEND_GLES
+            case RHIBackend::OpenGLES:     return RHIBackend::OpenGLES;
+#endif
             default:
                 LOGF_WARNING(k_category, "El backend solicitado '{}' no está compilado; se recurre a la selección automática.", backend_name(preferred));
                 break;
@@ -61,6 +85,30 @@ namespace anxiety::rendering::rhi {
 #if defined(_WIN32)
         // Prioridad en Win32: DX12
         return RHIBackend::DirectX12;
+#elif defined(__APPLE__)
+#  ifdef ANXIETY_BACKEND_METAL
+        return RHIBackend::Metal;
+#  elif defined(ANXIETY_BACKEND_OPENGL)
+        return RHIBackend::OpenGL;
+#  else
+        return RHIBackend::Unknown;
+#  endif
+#elif defined(ANXIETY_PLATFORM_RPI)
+#  ifdef ANXIETY_BACKEND_VULKAN
+        return RHIBackend::Vulkan;
+#  elif defined(ANXIETY_BACKEND_GLES)
+        return RHIBackend::OpenGLES;
+#  else
+        return RHIBackend::Unknown;
+#  endif
+#else // Linux / otros POSIX
+#  ifdef ANXIETY_BACKEND_VULKAN
+        return RHIBackend::Vulkan;
+#  elif defined(ANXIETY_BACKEND_OPENGL)
+        return RHIBackend::OpenGL;
+#  else
+        return RHIBackend::Unknown;
+#  endif
 #endif
     }
 
@@ -71,7 +119,7 @@ namespace anxiety::rendering::rhi {
         switch (backend) {
 #if defined(_WIN32)
         case RHIBackend::DirectX12: {
-            auto dev = std::make_unique<anxiety::rendering::backend::dx12::DX12Device>(enable_validation);
+            auto dev = std::make_unique<backend::dx12::DX12Device>(enable_validation);
             if (!dev->is_valid()) {
                 LOGF_ERROR(k_category, "La creación de DX12Device falló.");
                 return nullptr;
@@ -82,7 +130,7 @@ namespace anxiety::rendering::rhi {
 
 #ifdef ANXIETY_BACKEND_DX11
         case RHIBackend::DirectX11: {
-            auto dev = std::make_unique<anxiety::rendering::backend::dx11::DX11Device>(enable_validation);
+            auto dev = std::make_unique<backend::dx11::DX11Device>(enable_validation);
             if (!dev->is_valid()) {
                 LOGF_ERROR(k_category, "La creación de DX11Device falló.");
                 return nullptr;
@@ -93,12 +141,42 @@ namespace anxiety::rendering::rhi {
 
 #ifdef ANXIETY_BACKEND_VULKAN
         case RHIBackend::Vulkan: {
-            auto dev = std::make_unique<anxiety::rendering::backend::vulkan::VulkanDevice>(enable_validation);
+            auto dev = std::make_unique<backend::vulkan::VulkanDevice>(enable_validation);
             if (!dev->is_valid()) {
                 LOGF_ERROR(k_category, "La creación de VulkanDevice falló.");
                 return nullptr;
             }
             return dev;
+        }
+#endif
+
+#ifdef ANXIETY_BACKEND_METAL
+        case RHIBackend::Metal: {
+            auto dev = std::make_unique<backend::metal::MetalDevice>(enable_validation);
+            if (!dev->is_valid()) {
+                LOGF_ERROR(k_category, "La creación de MetalDevice falló.");
+                return nullptr;
+            }
+            return dev;
+        }
+#endif
+
+#ifdef ANXIETY_BACKEND_OPENGL
+        case RHIBackend::OpenGL: {
+            auto dev = std::make_unique<backend::opengl::GLDevice>(enable_validation, native_window);
+            if (!dev->is_valid()) {
+                LOGF_ERROR(k_category, "La creación de GLDevice falló.");
+                return nullptr;
+            }
+            return dev;
+        }
+#endif
+
+#ifdef ANXIETY_BACKEND_GLES
+        case RHIBackend::OpenGLES: {
+            // GLESDevice aplaza la inicialización de GLAD hasta que create_swapchain() establece
+            // el contexto EGL — is_valid() es deliberadamente falso aquí. No lo compruebes.
+            return std::make_unique<backend::gles::GLESDevice>(enable_validation);
         }
 #endif
 
@@ -111,7 +189,7 @@ namespace anxiety::rendering::rhi {
     // create_best_device -------------------------------------------------------------------------
     std::unique_ptr<IDevice> RHIFactory::create_best_device(int argc, const char* const* argv, bool enable_validation) {
         const RHIBackend preferred = parse_command_line(argc, argv);
-        const RHIBackend selected = select_backend(preferred);
+        const RHIBackend selected  = select_backend(preferred);
         if (selected == RHIBackend::Unknown) {
             LOGF_ERROR(k_category, "No hay ningún backend de RHI disponible en esta plataforma/build.");
             return nullptr;

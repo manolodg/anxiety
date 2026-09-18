@@ -26,8 +26,17 @@ if(WIN32)
 		set(ANXIETY_BACKEND_DX11_ENABLED ON)
 		message(STATUS "[anxiety] Backend de DirectX 11 activado.")
 	endif()
-elseif(UNIX AND NOT APPLE)
-	# ...
+elseif(APPLE)
+	# Metal (solo Apple only) ---------------------------------------------------------------------
+	list(APPEND RENDERING_SOURCES
+		backend/metal/MetalCommandBuffer.mm
+		backend/metal/MetalDescriptorSet.mm
+		backend/metal/MetalDevice.mm
+		backend/metal/MetalPipeline.mm
+		backend/metal/MetalShader.mm
+		backend/metal/MetalSwapchain.mm)
+	set(ANXIETY_BACKEND_METAL_ENABLED ON)
+	message(STATUS "[anxiety] Plataforma Apple - backend de Metal activado.")
 endif()
 
 # Vulkan (Linux, Windows optional, macOS via MoltenVK) --------------------------------------------
@@ -90,6 +99,79 @@ if(ANXIETY_VULKAN)
 	endif()
 endif()
 
+# OpenGL 4.x (Windows, Linux, macOS legacy) -------------------------------------------------------
+if(ANXIETY_OPENGL)
+	find_package(OpenGL QUIET)
+	if(OpenGL_FOUND OR OPENGL_FOUND)
+		# GLAD — cargador de funciones para el perfil core de OpenGL 4.5.
+		# glcorearb.h y wglext.h son cabeceras de Khronos que no están en el Windows SDK,
+		# así que GLAD es la forma habitual de obtener las declaraciones de GL 4.x y cargar los punteros a función.
+		include(FetchContent)
+		FetchContent_Declare(
+			glad
+			GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+			GIT_TAG        v0.1.36
+		)
+		set(GLAD_PROFILE "core"   CACHE STRING "OpenGL profile"           FORCE)
+		set(GLAD_API     "gl=4.5" CACHE STRING "OpenGL API + version"     FORCE)
+		set(GLAD_SPEC    "gl"     CACHE STRING "Khronos spec to generate" FORCE)
+		# GLAD v0.1.x declara cmake_minimum_required(VERSION 2.8), que CMake 3.27+ rechaza.
+		# Esta variable eleva el mínimo a 3.5 para todos los subdirectorios de FetchContent.
+		set(CMAKE_POLICY_VERSION_MINIMUM "3.5" CACHE INTERNAL "")
+		FetchContent_MakeAvailable(glad)
+
+		list(APPEND RENDERING_SOURCES
+			backend/opengl/GLCommandBuffer.cpp
+			backend/opengl/GLDescriptorSet.cpp
+			backend/opengl/GLDevice.cpp
+			backend/opengl/GLPipeline.cpp
+			backend/opengl/GLShader.cpp
+			backend/opengl/GLSwapchain.cpp)
+		set(ANXIETY_BACKEND_OPENGL_ENABLED ON)
+		message(STATUS "[anxiety] OpenGL encontrado - backend de OpenGL 4.x activado (cargador GLAD).")
+	else()
+		message(STATUS "[anxiety] OpenGL no encontrado - backend de OpenGL desactivado.")
+	endif()
+endif()
+
+# OpenGL ES 3.x (Linux ARM / Android / RPi) -------------------------------------------------------
+if(ANXIETY_GLES)
+	# EGL es necesario para la gestión de superficies
+	find_package(OpenGLES QUIET)
+	if(NOT OpenGLES_FOUND)
+		# Intenta una búsqueda manual (habitual en Linux embebido)
+		find_library(GLES3_LIB NAMES GLESv3 GLESv2 QUIET)
+		find_library(EGL_LIB   NAMES EGL           QUIET)
+		if(GLES3_LIB AND EGL_LIB)
+			set(OpenGLES_FOUND  TRUE)
+			set(GLES3_LIBRARIES ${GLES_LIB})
+			set(EGL_LIBRARIES   ${EGL_LIB})
+		endif()
+	endif()
+
+	if(OpenGLES_FOUND OR (GLES3_LIB AND EGL_LIB))
+		list(APPEND RENDERING_SOURCES
+			backend/gles/GLESDevice.cpp
+			backend/gles/GLESSwapchain.cpp)
+		# GLESDevice hereda de GLDevice — compila las fuentes base de GL aunque no haya OpenGL de escritorio.
+		# GLDevice.cpp / GLCommandBuffer.cpp / GLSwapchain.cpp están protegidos por ANXIETY_BACKEND_OPENGL,
+		# así que se define aquí para que esos guards se cumplan.
+		if(NOT ANXIETY_BACKEND_OPENGL_ENABLED)
+			list(APPEND RENDERING_SOURCES
+				backend/opengl/GLCommandBuffer.cpp
+				backend/opengl/GLDescriptorSet.cpp
+				backend/opengl/GLPipeline.cpp
+				backend/opengl/GLShader.cpp
+				backend/opengl/GLSwapchain.cpp)
+		endif()
+		set(ANXIETY_BACKEND_GLES_ENABLED ON)
+		message(STATUS "[anxiety] OpenGL ES encontrado - backend de GLES 3.x activado.")
+	else()
+		message(STATUS "[anxiety] OpenGL ES no encontrado - backend de GLES desactivado.")
+	endif()
+endif()
+
+# Librerias ---------------------------------------------------------------------------------------
 add_library(anxiety_rendering STATIC ${RENDERING_SOURCES})
 add_library(anxiety::rendering ALIAS anxiety_rendering)
 
@@ -105,6 +187,15 @@ if(ANXIETY_BACKEND_VULKAN_ENABLED)
 endif()
 if(ANXIETY_HAVE_SHADERC)
 	target_compile_definitions(anxiety_rendering PRIVATE ANXIETY_HAVE_SHADERC=1)
+endif()
+if(ANXIETY_BACKEND_METAL_ENABLED)
+	target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_BACKEND_METAL=1)
+endif()
+if(ANXIETY_BACKEND_OPENGL_ENABLED OR ANXIETY_BACKEND_GLES_ENABLED)
+	target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_BACKEND_OPENGL=1)
+endif()
+if(ANXIETY_BACKEND_GLES_ENABLED)
+	target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_BACKEND_GLES=1)
 endif()
 
 # Rutas de inclusión --------------------------------------------------------------------------------
@@ -134,6 +225,16 @@ if(ANXIETY_BACKEND_VULKAN_ENABLED)
 	target_link_libraries(anxiety_rendering PRIVATE Vulkan::Vulkan)
 	target_include_directories(anxiety_rendering PRIVATE ${Vulkan_INCLUDE_DIRS})
 
+	if(APPLE)
+		# VulkanSwapchain crea su VkSurfaceKHR vía VK_EXT_metal_surface, que necesita una
+		# CAMetalLayer adjunta al content view de la ventana (AppKit/QuartzCore), igual que el
+		# backend nativo de Metal.
+		target_link_libraries(anxiety_rendering PRIVATE "-framework AppKit" "-framework QuartzCore")
+		set_source_files_properties(
+			backend/vulkan/VulkanSwapchain.cpp
+			PROPERTIES LANGUAGE OBJCXX COMPILE_OPTIONS "-fobjc-arc")
+	endif()
+
 	if(ANXIETY_HAVE_SHADERC)
 		target_link_libraries(anxiety_rendering PRIVATE PkgConfig::SHADERC)
 	endif()
@@ -146,5 +247,72 @@ if(ANXIETY_BACKEND_VULKAN_ENABLED)
 		set_source_files_properties(
 			backend/vulkan/VulkanSwapchain.cpp
 			PROPERTIES LANGUAGE OBJCXX COMPILE_OPTIONS "-fobjc-arc")
+	endif()
+endif()
+
+if(APPLE AND ANXIETY_BACKEND_METAL_ENABLED)
+	target_link_libraries(anxiety_rendering PRIVATE
+		"-framework Metal"
+		"-framework MetalKit"
+		"-framework QuartzCore"
+		"-framework AppKit")
+
+	# ARC es necesario para que los casts __bridge_retained / __bridge_transfer del backend de
+	# Metal realmente retengan/liberen los objetos Objective-C subyacentes.
+	set_source_files_properties(
+		backend/metal/MetalCommandBuffer.mm
+		backend/metal/MetalDevice.mm
+		backend/metal/MetalSwapchain.mm
+		PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+endif()
+
+if(ANXIETY_BACKEND_OPENGL_ENABLED)
+	target_link_libraries(anxiety_rendering PRIVATE OpenGL::GL glad)
+	target_compile_definitions(anxiety_rendering PRIVATE ANXIETY_USE_GLAD=1)
+	if(WIN32)
+		target_link_libraries(anxiety_rendering PRIVATE opengl32)
+	elseif(UNIX AND NOT APPLE)
+		target_link_libraries(anxiety_rendering PRIVATE GL X11)
+	elseif(APPLE)
+		# GLDevice/GLSwapchain usan NSOpenGLContext (AppKit) para crear/presentar el contexto GL, y
+		# necesitan ARC para que sus casts __bridge_retained / __bridge_transfer retengan/liberen de verdad.
+		target_link_libraries(anxiety_rendering PRIVATE "-framework AppKit")
+		set_source_files_properties(
+			backend/opengl/GLDevice.cpp
+			backend/opengl/GLSwapchain.cpp
+			PROPERTIES
+				LANGUAGE OBJCXX
+				COMPILE_OPTIONS "-fobjc-arc"
+				COMPILE_DEFINITIONS "GL_SILENCE_DEPRECATION")
+	endif()
+endif()
+
+if(ANXIETY_BACKEND_GLES_ENABLED)
+	# GLAD hace falta incluso para GLES — GLESDevice hereda de GLDevice, que usa las cabeceras/el cargador de GLAD.
+	if(NOT ANXIETY_BACKEND_OPENGL_ENABLED)
+		include(FetchContent)
+		FetchContent_Declare(
+			glad
+			GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+			GIT_TAG        v0.1.36
+		)
+		set(GLAD_PROFILE "core"   CACHE STRING "OpenGL profile"           FORCE)
+		set(GLAD_API     "gl=4.5" CACHE STRING "OpenGL API + version"     FORCE)
+		set(GLAD_SPEC    "gl"     CACHE STRING "Khronos spec to generate" FORCE)
+		set(CMAKE_POLICY_VERSION_MINIMUM "3.5" CACHE INTERNAL "")
+		FetchContent_MakeAvailable(glad)
+		target_link_libraries(anxiety_rendering PRIVATE glad)
+		target_compile_definitions(anxiety_rendering PRIVATE ANXIETY_USE_GLAD=1)
+	endif()
+
+	if(TARGET OpenGLES::OpenGLES)
+		target_link_libraries(anxiety_rendering PRIVATE OpenGLES::OpenGLES EGL)
+	else()
+		find_package(PkgConfig REQUIRED)
+		pkg_check_modules(EGL REQUIRED egl)
+		target_link_libraries(anxiety_rendering PRIVATE ${EGL_LIBRARIES})
+		target_include_directories(anxiety_rendering SYSTEM PRIVATE ${EGL_INCLUDE_DIRS})
+		find_library(GLES3_LIB NAMES GLESv3 GLESv2 REQUIRED)
+		target_link_libraries(anxiety_rendering PRIVATE ${GLES3_LIB})
 	endif()
 endif()

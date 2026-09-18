@@ -24,7 +24,9 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER":   "cl.exe",
         "CMAKE_CXX_COMPILER": "cl.exe",
-        "ANXIETY_DX11": "ON"
+        "ANXIETY_DX11":   "ON",
+        "ANXIETY_VULKAN": "ON",
+        "ANXIETY_OPENGL": "ON"
       },
       "architecture": {
         "value": "x64",
@@ -80,8 +82,10 @@
         "rhs": "Linux"
       },
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++"
+        "CMAKE_C_COMPILER":   "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "ANXIETY_VULKAN": "ON",
+        "ANXIETY_OPENGL": "ON"
       }
     },
     {
@@ -116,7 +120,9 @@
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_SYSTEM_PROCESSOR": "aarch64",
-        "ANXIETY_PLATFORM_RPI": "ON"
+        "ANXIETY_PLATFORM_RPI": "ON",
+        "ANXIETY_VULKAN": "ON",
+        "ANXIETY_GLES":   "ON"
       }
     },
     {
@@ -148,8 +154,10 @@
         "rhs": "Darwin"
       },
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_C_COMPILER":   "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "ANXIETY_VULKAN": "ON",
+        "ANXIETY_OPENGL": "ON"
       }
     },
     {

@@ -13,6 +13,8 @@ endif()
 # Opciones ========================================================================================
 option(ANXIETY_DX11                 "Activa el backend de DirectX 11"                     ON)
 option(ANXIETY_VULKAN               "Activa el backend de Vulkan"                         ON)
+option(ANXIETY_OPENGL               "Activa el backend de OpenGL 4.x"                     ON)
+option(ANXIETY_GLES                 "Activa el backend de OpenGL ES 3.x"                  OFF)
 # =================================================================================================
 
 # Estándar global C++ -----------------------------------------------------------------------------

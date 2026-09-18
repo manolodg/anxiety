@@ -4,6 +4,10 @@
 
 #if defined(ANXIETY_PLATFORM_WINDOWS)
 #include "win32/Win32Platform.h"
+#elif defined(ANXIETY_PLATFORM_MACOS)
+#include "macos/MacosPlatform.h"
+#elif defined(ANXIETY_PLATFORM_RPI)
+#include "raspberrypi/RpiPlatform.h"
 #elif defined(ANXIETY_PLATFORM_LINUX)
 #include "linux/LinuxPlatform.h"
 #endif
@@ -22,6 +26,10 @@ namespace anxiety::platform {
         // Crear el backend de plataforma -----------------------------------------------------------
 #if defined(ANXIETY_PLATFORM_WINDOWS)
         m_platform = std::make_unique<Win32Platform>();
+#elif defined(ANXIETY_PLATFORM_MACOS)
+        m_platform = std::make_unique<MacosPlatform>();
+#elif defined(ANXIETY_PLATFORM_RPI)
+        m_platform = std::make_unique<RpiPlatform>();
 #elif defined(ANXIETY_PLATFORM_LINUX)
         m_platform = std::make_unique<LinuxPlatform>();
 #else
