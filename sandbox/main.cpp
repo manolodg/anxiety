@@ -4,10 +4,15 @@
 #include "Logger.h"
 #include "PlatformModule.h"
 #include "RenderingModule.h"
+#include "World.h"
 
 using namespace anxiety;
 
 static constexpr std::string_view k_category = "sandbox";
+
+// Componentes de ejemplo ---------------------------------------------------------------------------
+struct Transform { float x  = 0.0f, y  = 0.0f, z  = 0.0f; };
+struct Velocity  { float dx = 0.0f, dy = 0.0f, dz = 0.0f; };
 
 // Módulos de ejemplo -----------------------------------------------------------------------------
 
@@ -86,6 +91,17 @@ private:
 // main ===========================================================================================
 int main() {
 	Engine engine;
+
+	// Demo de ECS --------------------------------------------------------------------------------
+	ecs::World world;
+
+	const ecs::EntityId e1 = world.create_entity();
+	const ecs::EntityId e2 = world.create_entity();
+
+	world.add_component<Transform>(e1, { .x = 1.0f, .y = 2.0f, .z = 3.0f });
+	world.add_component<Velocity> (e1, { .dx = 0.1f });
+	world.add_component<Transform>(e2, { .x = 5.0f, .y = 0.0f, .z = 0.0f });
+	// --------------------------------------------------------------------------------------------
 
 	platform::PlatformModule::Config pal_cfg;
 	pal_cfg.window.title     = "Anxiety - Ejemplo en Ventana";
