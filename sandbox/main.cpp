@@ -1,18 +1,16 @@
 #include "Engine.h"
 #include "IModule.h"
-#include "IPlatform.h"
 #include "Logger.h"
 #include "PlatformModule.h"
 #include "RenderingModule.h"
 #include "World.h"
 
+#include "scene/SceneComponents.h"
+#include "scene/SceneRenderer.h"
+
 using namespace anxiety;
 
 static constexpr std::string_view k_category = "sandbox";
-
-// Componentes de ejemplo ---------------------------------------------------------------------------
-struct Transform { float x  = 0.0f, y  = 0.0f, z  = 0.0f; };
-struct Velocity  { float dx = 0.0f, dy = 0.0f, dz = 0.0f; };
 
 // Módulos de ejemplo -----------------------------------------------------------------------------
 
@@ -52,76 +50,92 @@ private:
 	double  m_elapsed{ 0 };
 };
 
-// ClockModule ------------------------------------------------------------------------------------
-// Lanza un mensaje en pantalla cada segúndo indicando el tiempo que ha transcurrido.
+// Demo de escena — con ventana, D3D12, cámara + una entidad malla con triángulo RGB --------------
+// Se abre una ventana Win32. Una entidad cámara mira al origen desde Z=-3. Una entidad malla se
+// sitúa en el origen con un triángulo coloreado. El SceneRenderer la dibuja vía ScenePass durante
+// 60 fotogramas y luego cierra.
 // ------------------------------------------------------------------------------------------------
-class ClockModule final : public IModule {
-public:
-	std::string_view name() const noexcept override { return "Clock"; }
+[[maybe_unused]] static void run_scene_demo() {
+	LOG_INFO("Scene", "--- Demo de SceneRenderer ---");
 
-	std::vector<std::string_view> dependencies() const override { return { "AutoStop" }; }
+	anxiety::platform::PlatformModule::Config palCfg;
+	palCfg.window.title = "IAEngine — Scene Renderer";
+	palCfg.window.width = 1280;
+	palCfg.window.height = 720;
+	palCfg.window.resizable = true;
 
-	bool on_init(Engine& engine) override {
-		LOG_INFO(k_category, "iniciandose...");
+	anxiety::EngineConfig cfg{
+		.app_name = "Scene Demo",
+		.target_fps = 60,
+		.headless = false,
+	};
 
-		LOGF_INFO(k_category, "Nombre de la app : '{}'", engine.config().app_name);
-		LOGF_INFO(k_category, "Fps objetivo     : {}", engine.config().target_fps);
+	anxiety::Engine eng(cfg);
+	auto& platMod   = eng.emplace_module<anxiety::platform::PlatformModule>(palCfg);
+	rendering::RenderingModule::Config mod_cfg;
+	mod_cfg.preferred_backend = rendering::rhi::RHIBackend::DirectX11;
+	auto& renderMod = eng.emplace_module<anxiety::rendering::RenderingModule>(platMod, mod_cfg);
+	eng.emplace_module<AutoStopModule>(60u);
 
-		return true;
+	if (!eng.init()) {
+		LOG_FATAL("Scene", "La demo de escena no pudo inicializarse.");
+		return;
 	}
 
-	void on_update(float delta) override {
-		m_accum_delta += static_cast<double>(delta);
+	// Construye el world de ECS: cámara + una entidad malla.
+	anxiety::ecs::World world;
 
-		int actual_second = static_cast<int>(m_accum_delta);
-		if (m_actual_second < actual_second) LOGF_INFO(k_category, "Estamos en el segundo {}", actual_second);
+	namespace sc = anxiety::rendering::scene;
 
-		m_actual_second = actual_second;
+	// Entidad cámara -------------------------------------------------------------------------------
+	{
+		auto camEnt = world.create_entity();
+		sc::Transform camT{};
+		camT.position[2] = -3.f;   // ojo en (0, 0, -3), mirando hacia +Z
+		world.add_component<sc::Transform>(camEnt, camT);
+		world.add_component<sc::Camera>(camEnt, sc::Camera{ 1.0472f, 0.1f, 1000.f, 16.f / 9.f });
 	}
 
-	void on_shutdown() override { LOGF_INFO(k_category, "apagado..."); }
+	// Entidad malla --------------------------------------------------------------------------------
+	{
+		struct SceneV { float x, y, z, r, g, b, a; };
+		static constexpr SceneV kVerts[] = {
+			{  0.f,  0.5f, 0.f, 1.f, 0.f, 0.f, 1.f },           // arriba   — rojo
+			{  0.5f,-0.5f, 0.f, 0.f, 1.f, 0.f, 1.f },           // derecha  — verde
+			{ -0.5f,-0.5f, 0.f, 0.f, 0.f, 1.f, 1.f },           // izquierda— azul
+		};
+		static constexpr uint32_t kIndices[] = { 0, 1, 2 };
 
-private:
-	static constexpr std::string_view k_category = "Clock";
+		auto meshEnt = world.create_entity();
+		sc::Transform meshT{};                                  // en el origen
+		world.add_component<sc::Transform>(meshEnt, meshT);
 
-	double m_accum_delta  { 0.0 };
-	int    m_actual_second{ 0 };
-};
+		auto* sr = renderMod.scene_renderer();
+		if (sr) {
+			auto h = sr->upload_mesh(kVerts, sizeof(kVerts), kIndices, sizeof(kIndices));
+			sc::MeshRenderer mr{};
+			mr.vertex_buffer = h.vertex_buffer;
+			mr.index_buffer = h.index_buffer;
+			mr.index_count = 3;
+			mr.vertex_stride = sizeof(SceneV);
+			world.add_component<sc::MeshRenderer>(meshEnt, mr);
+		}
+	}
+
+	renderMod.set_world(&world);
+
+	eng.run();                                                  // bloquea; la escena se renderiza cada fotograma
+
+	renderMod.set_world(nullptr);                               // desadjuntar antes de que world salga de ámbito
+}
 
 // main ===========================================================================================
 int main() {
-	Engine engine;
+	logs::Logger::get().set_level(logs::LogLevel::Trace);
+	LOG_INFO(k_category, "=== Ejemplo de Anxiety -> ECS + Jobs + PAL ===");
 
-	// Demo de ECS --------------------------------------------------------------------------------
-	ecs::World world;
+	run_scene_demo();
 
-	const ecs::EntityId e1 = world.create_entity();
-	const ecs::EntityId e2 = world.create_entity();
-
-	world.add_component<Transform>(e1, { .x = 1.0f, .y = 2.0f, .z = 3.0f });
-	world.add_component<Velocity> (e1, { .dx = 0.1f });
-	world.add_component<Transform>(e2, { .x = 5.0f, .y = 0.0f, .z = 0.0f });
-	// --------------------------------------------------------------------------------------------
-
-	platform::PlatformModule::Config pal_cfg;
-	pal_cfg.window.title     = "Anxiety - Ejemplo en Ventana";
-	pal_cfg.window.width     = 800;
-	pal_cfg.window.height    = 600;
-	pal_cfg.window.resizable = true;
-
-	// Orden de registro (desordenado — la ordenación por dependencias lo corregirá):
-	engine.emplace_module<ClockModule>();
-	engine.emplace_module<AutoStopModule>(5.0);		// Se solicitará la parada pasados 5 segundos
-	
-	auto& plat_mod = engine.emplace_module<platform::PlatformModule>(pal_cfg);
-	
-	rendering::RenderingModule::Config mod_cfg;
-	//mod_cfg.preferred_backend = rendering::rhi::RHIBackend::Vulkan;
-	engine.emplace_module<rendering::RenderingModule>(plat_mod, mod_cfg);
-
-	if (!engine.init()) { LOG_FATAL(k_category, "El motor no ha podido iniciarse."); return 1; }
-
-	engine.run();
-
+	LOG_INFO(k_category, "=== Cerrando la aplicación de ejemplo ===");
 	return 0;
 }

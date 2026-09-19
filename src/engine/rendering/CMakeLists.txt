@@ -1,7 +1,8 @@
 set(RENDERING_SOURCES
 	RenderingModule.cpp
 	graph/RenderGraph.cpp
-	rhi/RHIFactory.cpp)
+	rhi/RHIFactory.cpp
+	scene/SceneRenderer.cpp)
 
 # Fuentes del backend específicas de la plataforma -------------------------------------------------
 if(WIN32)

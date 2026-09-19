@@ -2,185 +2,220 @@
 
 #include "Entity.h"
 #include "ComponentRegistry.h"
-#include <vector>
-#include <unordered_map>
-#include <memory>
-#include <functional>
+#include "Archetype.h"
+#include "Query.h"
+
+#include <algorithm>
+#include <array>
 #include <cassert>
+#include <memory>
 #include <stdexcept>
+#include <type_traits>
+#include <unordered_map>
+#include <vector>
 
 namespace anxiety::ecs {
-	// IComponentStorage - base con borrado de tipo para los pools de componentes -------------------
-	struct IComponentStorage {
-		virtual ~IComponentStorage() = default;
-		virtual void remove(uint32_t entity_index) = 0;
-	};
-
-	// ComponentStorage<T> ------------------------------------------------------------------------
-	//	Almacenamiento sparse-set: un array de índices (entity_index -> dense_index) y un array
-	//	denso y compacto con los valores de los componentes.
-	// --------------------------------------------------------------------------------------------
-	template<typename T>
-	class ComponentStorage final : public IComponentStorage {
-	public:
-		void add(uint32_t entity_index, T component) {
-			if (entity_index >= m_sparse.size()) m_sparse.resize(entity_index + 1, k_none);
-
-			assert(m_sparse[entity_index] == k_none && "Component already exists for entity");
-
-			m_sparse[entity_index] = static_cast<uint32_t>(m_dense.size());
-			m_dense_entities.push_back(entity_index);
-			m_dense.push_back(std::move(component));
-		}
-
-		void remove(uint32_t entity_index) override {
-			if (entity_index >= m_sparse.size()) return;
-			if (m_sparse[entity_index] == k_none) return;
-
-			const uint32_t dense_idx  = m_sparse[entity_index];
-			const uint32_t last_dense = static_cast<uint32_t>(m_dense.size()) - 1;
-
-			if (dense_idx != last_dense) {
-				// Intercambiar con el último elemento para mantener el array compacto
-				m_dense[dense_idx]                    = std::move(m_dense[last_dense]);
-				m_dense_entities[dense_idx]           = m_dense_entities[last_dense];
-				m_sparse[m_dense_entities[dense_idx]] = dense_idx;
-			}
-
-			m_dense.pop_back();
-			m_dense_entities.pop_back();
-			m_sparse[entity_index] = k_none;
-		}
-
-		[[nodiscard]] T* get(uint32_t entity_index) noexcept {
-			if (entity_index >= m_sparse.size()) return nullptr;
-			if (m_sparse[entity_index] == k_none) return nullptr;
-
-			return &m_dense[m_sparse[entity_index]];
-		}
-
-		[[nodiscard]] const T* get(uint32_t entity_index) const noexcept {
-			if (entity_index >= m_sparse.size()) return nullptr;
-			if (m_sparse[entity_index] == k_none) return nullptr;
-
-			return &m_dense[m_sparse[entity_index]];
-		}
-
-		[[nodiscard]] bool has(uint32_t entity_index) const noexcept { return (entity_index < m_sparse.size()) && (m_sparse[entity_index] != k_none); }
-
-		[[nodiscard]] std::vector<T>&       components()        noexcept { return m_dense; }
-		[[nodiscard]] const std::vector<T>& components() const  noexcept { return m_dense; }
-
-	private:
-		static constexpr uint32_t k_none = std::numeric_limits<uint32_t>::max();
-
-		std::vector<uint32_t> m_sparse;					// entity_index -> dense_index
-		std::vector<uint32_t> m_dense_entities;			// dense_index  -> entity_index
-		std::vector<T>        m_dense;
-	};
-
-	// World --------------------------------------------------------------------------------------
+    // World --------------------------------------------------------------------------------------
+    // World de ECS basado en archetypes. Las entidades se agrupan por su composición exacta de
+    // componentes; cada grupo (Archetype) almacena los componentes en layout SoA para una
+    // iteración favorable a la caché.
+    //
+    // Contrato de los componentes
+    // -------------------
+    //   Los componentes deben ser trivially copyable (se comprueba en tiempo de compilación) y
+    //   construibles por defecto. Las migraciones internas usan memcpy.
+    //
+    // Mutación durante la iteración
+    // -------------------------
+    //   NO añadas/quites componentes ni destruyas entidades mientras se está iterando un QueryView
+    //   — los archetypes pueden reasignar memoria, invalidando los punteros.
+    // --------------------------------------------------------------------------------------------
     class World {
     public:
-        World()  = default;
+        World() = default;
         ~World() = default;
 
-        World(const World&)            = delete;
+        World(const World&) = delete;
         World& operator=(const World&) = delete;
 
-        // Gestión de entidades -------------------------------------------------------------------
-        EntityId           create_entity();
-        void               destroy_entity(EntityId id);
-        [[nodiscard]] bool is_alive(EntityId id)       const noexcept;
+        // Gestión de entidades ---------------------------------------------------------------------
+        [[nodiscard]] EntityId create_entity();
+        void                   destroy_entity(EntityId id);
+        [[nodiscard]] bool     is_alive(EntityId id)        const noexcept;
+        [[nodiscard]] uint32_t entity_count()               const noexcept { return m_alive_count; }
 
-        // Gestión de componentes ------------------------------------------------------------------
+        // Gestión de componentes -------------------------------------------------------------------
         template<typename T>
-        void add_component(EntityId id, T component) {
+        void add_component(EntityId id, T value = {}) {
+            static_assert(std::is_trivially_copyable_v<T>, "Los componentes ECS deben ser trivially copyable");
             validate_entity(id);
-            auto& storage = get_or_create_storage<T>();
-            storage.add(id.index, std::move(component));
+
+            const ComponentTypeId tid = ComponentRegistry::type_id<T>();
+            EntityRecord& rec = m_records[id.index];
+
+            // Calcula la nueva clave de archetype (tipos actuales + T, ordenados).
+            ArchetypeKey new_key = rec.archetype ? rec.archetype->type_ids() : ArchetypeKey{};
+
+            {
+                auto it = std::lower_bound(new_key.begin(), new_key.end(), tid);
+                if (it != new_key.end() && *it == tid) return;              // ya está presente
+                new_key.insert(it, tid);
+            }
+
+            ensure_meta<T>();                                               // registra el meta de T antes de buscar el archetype
+
+            Archetype* dst = get_or_create_archetype(new_key);
+            size_t     dst_row = dst->add_entity(id);
+
+            if (rec.archetype) {
+                rec.archetype->copy_shared_components(rec.row, *dst, dst_row);
+                swap_remove(rec);                                           // rec.archetype / rec.row todavía son los valores viejos aquí
+            }
+
+            *dst->get<T>(dst_row) = value;
+
+            rec.archetype = dst;
+            rec.row = static_cast<uint32_t>(dst_row);
         }
 
         template<typename T>
         void remove_component(EntityId id) {
-            validate_entity(id);
-            if (auto* s = find_storage<T>()) s->remove(id.index);
+            static_assert(std::is_trivially_copyable_v<T>, "Los componentes ECS deben ser trivially copyable");
+            if (!is_alive(id)) return;
+
+            const ComponentTypeId tid = ComponentRegistry::type_id<T>();
+            EntityRecord& rec = m_records[id.index];
+            if (!rec.archetype || !rec.archetype->has_type(tid)) return;
+
+            // Nueva clave = tipos actuales menos T.
+            ArchetypeKey new_key = rec.archetype->type_ids();
+            new_key.erase(std::remove(new_key.begin(), new_key.end(), tid), new_key.end());
+
+            if (new_key.empty()) {
+                // La entidad no tiene componentes restantes - se desvincula por completo.
+                swap_remove(rec);
+                rec.archetype = nullptr;
+                rec.row = 0;
+
+                return;
+            }
+
+            Archetype* dst = get_or_create_archetype(new_key);
+            size_t     dst_row = dst->add_entity(id);
+            rec.archetype->copy_shared_components(rec.row, *dst, dst_row);
+            swap_remove(rec);
+
+            rec.archetype = dst;
+            rec.row = static_cast<uint32_t>(dst_row);
         }
 
         template<typename T>
         [[nodiscard]] T* get_component(EntityId id) noexcept {
             if (!is_alive(id)) return nullptr;
-            auto* s = find_storage<T>();
-            return s ? s->get(id.index) : nullptr;
+
+            Archetype* arch = m_records[id.index].archetype;
+            if (!arch) return nullptr;
+
+            return arch->get<T>(m_records[id.index].row);
         }
 
         template<typename T>
         [[nodiscard]] const T* get_component(EntityId id) const noexcept {
             if (!is_alive(id)) return nullptr;
-            const auto* s = find_storage<T>();
-            return s ? s->get(id.index) : nullptr;
+
+            const Archetype* arch = m_records[id.index].archetype;
+            if (!arch) return nullptr;
+
+            return static_cast<const T*>(arch->component_raw(ComponentRegistry::type_id<T>(), m_records[id.index].row));
         }
 
         template<typename T>
         [[nodiscard]] bool has_component(EntityId id) const noexcept {
             if (!is_alive(id)) return false;
-            const auto* s = find_storage<T>();
-            return s && s->has(id.index);
+
+            const Archetype* arch = m_records[id.index].archetype;
+
+            return arch && arch->has_type(ComponentRegistry::type_id<T>());
         }
 
-        // Iteración --------------------------------------------------------------------------------
-        template<typename T, typename Fn>
-        void each(Fn&& fn) {
-            if (auto* s = find_storage<T>()) {
-                for (auto& comp : s->components()) {
-                    fn(comp);
+        // Consultas --------------------------------------------------------------------------------
+        // Devuelve una vista sobre todos los archetypes que contienen cada T de Ts. La vista es
+        // válida hasta la siguiente mutación estructural.
+        template<typename... Ts>
+        [[nodiscard]] QueryView<Ts...> query() {
+            std::vector<Archetype*> matching;
+
+            const std::array<ComponentTypeId, sizeof...(Ts)> required{ ComponentRegistry::type_id<Ts>()... };
+
+            for (auto& [key, arch] : m_archetypes) {
+                bool has_all = true;
+                for (ComponentTypeId rid : required) {
+                    if (!arch->has_type(rid)) {
+                        has_all = false;
+                        break;
+                    }
                 }
-            }
-        }
 
-        [[nodiscard]] uint32_t entity_count() const noexcept { return m_alive_count; }
+                if (has_all) matching.push_back(arch.get());
+            }
+
+            return QueryView<Ts...> { std::move(matching) };
+        }
 
     private:
-        // Pool de entidades
+        // Tipos internos -------------------------------------------------------------------------
         struct EntityRecord {
-            uint32_t generation = 0;
-            bool     alive      = false;
+            uint32_t   generation = 0;
+            bool       alive = false;
+            Archetype* archetype = nullptr;                    // nullptr - la entidad no tiene componentes
+            uint32_t   row = 0;
         };
 
-        std::vector<EntityRecord>                                               m_entities;
-        std::vector<uint32_t>                                                   m_free_list;
-        uint32_t                                                                m_alive_count{ 0 };
-        std::unordered_map<ComponentTypeId, std::unique_ptr<IComponentStorage>> m_storages;
+        using ArchetypeKey = std::vector<ComponentTypeId>;      // ordenado
 
+        struct ArchetypeKeyHash {
+            size_t operator()(const ArchetypeKey& k) const noexcept {
+                size_t seed = k.size();
+                for (ComponentTypeId id : k) {
+                    seed ^= id + 0x9e3779b9u + (seed << 6) + (seed >> 2);
+                }
+
+                return seed;
+            }
+        };
+
+        // Ayudantes --------------------------------------------------------------------------------
         void validate_entity(EntityId id) const { if (!is_alive(id)) throw std::invalid_argument("EntityId is not alive"); }
 
+        // Registra el ComponentMeta de T en el registro a nivel de World (idempotente).
         template<typename T>
-        ComponentStorage<T>& get_or_create_storage() {
+        void ensure_meta() {
             const ComponentTypeId tid = ComponentRegistry::type_id<T>();
-            auto it = m_storages.find(tid);
-            if (it == m_storages.end()) {
-                auto ptr = std::make_unique<ComponentStorage<T>>();
-                auto* raw = ptr.get();
-                m_storages.emplace(tid, std::move(ptr));
-                return *raw;
-            }
-            return *static_cast<ComponentStorage<T>*>(it->second.get());
+
+            if (m_meta_registry.count(tid)) return;
+            m_meta_registry.emplace(tid, Archetype::ComponentMeta{
+                .type_id = tid,
+                .size = static_cast<uint32_t>(sizeof(T)),
+                .align = static_cast<uint32_t>(alignof(T)),
+                .default_init = [](void* dst) { new (dst) T{}; },
+                });
         }
 
-        template<typename T>
-        ComponentStorage<T>* find_storage() noexcept {
-            const ComponentTypeId tid = ComponentRegistry::type_id<T>();
-            auto it = m_storages.find(tid);
-            return (it != m_storages.end())
-                ? static_cast<ComponentStorage<T>*>(it->second.get())
-                : nullptr;
-        }
+        // Encuentra o crea el archetype para 'key'. Todos los tipos en 'key' ya deben estar
+        // registrados en m_meta_registry.
+        Archetype* get_or_create_archetype(const ArchetypeKey& key);
 
-        template<typename T>
-        const ComponentStorage<T>* find_storage() const noexcept {
-            const ComponentTypeId tid = ComponentRegistry::type_id<T>();
-            auto it = m_storages.find(tid);
-            return (it != m_storages.end()) ? static_cast<const ComponentStorage<T>*>(it->second.get()) : nullptr;
-        }
+        // Swap-remove de 'rec.row' en rec.archetype; actualiza el registro de la entidad movida.
+        // rec.archetype y rec.row quedan apuntando al hueco viejo (ya inválido) — quien llame debe
+        // actualizarlos después.
+        void swap_remove(EntityRecord& rec);
+
+        // Datos -----------------------------------------------------------------------------------
+        std::vector<EntityRecord>  m_records;           // indexado por EntityId::index
+        std::vector<uint32_t>      m_free_list;
+        uint32_t                   m_alive_count{ 0 };
+
+        std::unordered_map<ArchetypeKey, std::unique_ptr<Archetype>, ArchetypeKeyHash> m_archetypes;
+        std::unordered_map<ComponentTypeId, Archetype::ComponentMeta>                  m_meta_registry;
     };
 } // namespace anxiety::ecs
