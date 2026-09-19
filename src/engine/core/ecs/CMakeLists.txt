@@ -1,7 +1,6 @@
 add_library(anxiety_ecs STATIC
 	Archetype.cpp
 	EcsModule.cpp
-	EngineRegistry.cpp
 	World.cpp)
 add_library(anxiety::ecs ALIAS anxiety_ecs)
 

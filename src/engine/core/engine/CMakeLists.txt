@@ -1,5 +1,4 @@
 add_library(anxiety_engine STATIC
-    CoreModule.cpp
     Engine.cpp
     ModuleGraph.cpp)
 add_library(anxiety::engine ALIAS anxiety_engine)

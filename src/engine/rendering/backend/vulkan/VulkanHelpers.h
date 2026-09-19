@@ -3,6 +3,7 @@
 #ifdef ANXIETY_BACKEND_VULKAN
 
 #include "../../rhi/RHITypes.h"
+#include "../../shader/HlslCompiler.h"
 
 #include <vulkan/vulkan.h>
 
@@ -13,11 +14,11 @@ namespace anxiety::rendering::backend::vulkan {
     // clases (b0 y t0 pueden coexistir). Los bindings de descriptor set de Vulkan deben ser únicos
     // dentro de un set, así que cada clase de registro se desplaza a su propio rango numérico. Estas
     // bases DEBEN coincidir con las opciones de binding-base HLSL de shaderc usadas en
-    // VulkanDevice::compile_shader_from_source() — ver k_cbv/srv/sampler/uav_binding_base más abajo.
-    inline constexpr uint32_t k_cbv_binding_base = 0;    // cbuffer bN     -> binding [0..15]
-    inline constexpr uint32_t k_srv_binding_base = 16;   // Texture2D tN   -> binding [16..31]
-    inline constexpr uint32_t k_sampler_binding_base = 32;   // SamplerState sN-> binding [32..47]
-    inline constexpr uint32_t k_uav_binding_base = 48;   // RWBuffer uN    -> binding [48..63]
+    // shader::compile_hlsl_to_spirv() — los valores viven en shader/HlslCompiler.h.
+    inline constexpr uint32_t k_cbv_binding_base = shader::k_cbv_binding_base;    // cbuffer bN     -> binding [0..15]
+    inline constexpr uint32_t k_srv_binding_base = shader::k_srv_binding_base;   // Texture2D tN   -> binding [16..31]
+    inline constexpr uint32_t k_sampler_binding_base = shader::k_sampler_binding_base;   // SamplerState sN-> binding [32..47]
+    inline constexpr uint32_t k_uav_binding_base = shader::k_uav_binding_base;   // RWBuffer uN    -> binding [48..63]
 
     inline VkDescriptorType to_vk_descriptor_type(rhi::DescriptorType t) noexcept {
         switch (t) {

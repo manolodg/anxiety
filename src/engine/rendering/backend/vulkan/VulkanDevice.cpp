@@ -7,6 +7,7 @@
 #include "VulkanPipeline.h"
 #include "VulkanDescriptorSet.h"
 #include "VulkanHelpers.h"
+#include "../../shader/HlslCompiler.h"
 #include "Logger.h"
 
 #include <cassert>
@@ -15,9 +16,6 @@
 #include <cstring>
 #include <algorithm>
 
-#ifdef ANXIETY_HAVE_SHADERC
-#include <shaderc/shaderc.hpp>
-#endif
 
 namespace anxiety::rendering::backend::vulkan {
 
@@ -829,40 +827,7 @@ namespace anxiety::rendering::backend::vulkan {
 
     std::vector<uint8_t> VulkanDevice::compile_shader_from_source(const char* source, const char* entry_point, anxiety::rendering::rhi::ShaderStage stage)
     {
-#ifdef ANXIETY_HAVE_SHADERC
-        shaderc_shader_kind kind;
-        switch (stage) {
-        case anxiety::rendering::rhi::ShaderStage::Vertex:   kind = shaderc_vertex_shader;   break;
-        case anxiety::rendering::rhi::ShaderStage::Fragment: kind = shaderc_fragment_shader; break;
-        case anxiety::rendering::rhi::ShaderStage::Compute:  kind = shaderc_compute_shader;  break;
-        default: return {};
-        }
-
-        shaderc::CompileOptions options;
-        options.SetSourceLanguage(shaderc_source_language_hlsl);
-        options.SetAutoBindUniforms(true);
-        options.SetHlslIoMapping(true);
-        options.SetBindingBase(shaderc_uniform_kind_buffer,         k_cbv_binding_base);
-        options.SetBindingBase(shaderc_uniform_kind_texture,        k_srv_binding_base);
-        options.SetBindingBase(shaderc_uniform_kind_sampler,        k_sampler_binding_base);
-        options.SetBindingBase(shaderc_uniform_kind_storage_buffer, k_uav_binding_base);
-        options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-
-        shaderc::Compiler compiler;
-        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, std::strlen(source), kind, "shader.hlsl", entry_point, options);
-        if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-            LOGF_ERROR("RHI", "Error de compilación de shader: {}", result.GetErrorMessage());
-            return {};
-        }
-
-        const auto* begin = reinterpret_cast<const uint8_t*>(result.cbegin());
-        const auto* end   = reinterpret_cast<const uint8_t*>(result.cend());
-        return { begin, end };
-#else
-        (void)source; (void)entry_point; (void)stage;
-        LOG_ERROR("RHI", "compile_shader_from_source: compilado sin shaderc — la compilación de HLSL para Vulkan no está disponible.");
-        return {};
-#endif
+        return shader::compile_hlsl_to_spirv(source, entry_point, stage);
     }
 
     // ---------------------------------------------------------------------------

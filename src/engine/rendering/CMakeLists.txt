@@ -2,7 +2,8 @@ set(RENDERING_SOURCES
 	RenderingModule.cpp
 	graph/RenderGraph.cpp
 	rhi/RHIFactory.cpp
-	scene/SceneRenderer.cpp)
+	scene/SceneRenderer.cpp
+	shader/HlslCompiler.cpp)
 
 # Fuentes del backend específicas de la plataforma -------------------------------------------------
 if(WIN32)
@@ -40,6 +41,57 @@ elseif(APPLE)
 	message(STATUS "[anxiety] Plataforma Apple - backend de Metal activado.")
 endif()
 
+# shaderc — compila los shaders HLSL fuente a SPIR-V en tiempo de ejecución. Lo usan Vulkan (SPIR-V
+# directo) y OpenGL (SPIR-V -> GLSL vía SPIRV-Cross), así que se busca si cualquiera de los dos está
+# activo. Orden de búsqueda, pensado para Windows / Linux / macOS:
+#   1. Vulkan::shaderc_combined — lo aporta FindVulkan cuando el Vulkan SDK (LunarG) trae shaderc
+#      (Windows, macOS y Linux con SDK). Gestiona solo las variantes Debug/Release (shaderc_combinedd).
+#   2. pkg-config — paquetes de distro en Linux (libshaderc-dev) o Homebrew en macOS.
+#   3. Búsqueda directa bajo $VULKAN_SDK y rutas habituales del SDK, para IDEs que lanzan CMake sin
+#      heredar el entorno de la shell.
+if(ANXIETY_VULKAN OR ANXIETY_OPENGL)
+	find_package(Vulkan QUIET OPTIONAL_COMPONENTS shaderc_combined)
+
+	if(TARGET Vulkan::shaderc_combined)
+		set(ANXIETY_SHADERC_TARGET Vulkan::shaderc_combined)
+	else()
+		find_package(PkgConfig QUIET)
+		if(PkgConfig_FOUND)
+			pkg_check_modules(SHADERC QUIET IMPORTED_TARGET shaderc)
+		endif()
+
+		if(TARGET PkgConfig::SHADERC)
+			set(ANXIETY_SHADERC_TARGET PkgConfig::SHADERC)
+		else()
+			file(GLOB _anxiety_vulkan_sdk_hints
+				"$ENV{VULKAN_SDK}"
+				"$ENV{HOME}/vulkan/*/x86_64"
+				"$ENV{HOME}/VulkanSDK/*/x86_64"
+				"/opt/vulkan*/x86_64"
+				"C:/VulkanSDK/*")
+			find_path(SHADERC_FALLBACK_INCLUDE_DIR shaderc/shaderc.hpp HINTS ${_anxiety_vulkan_sdk_hints} PATH_SUFFIXES include Include)
+			find_library(SHADERC_FALLBACK_LIBRARY NAMES shaderc_combined shaderc_shared shaderc HINTS ${_anxiety_vulkan_sdk_hints} PATH_SUFFIXES lib Lib)
+			if(SHADERC_FALLBACK_INCLUDE_DIR AND SHADERC_FALLBACK_LIBRARY)
+				add_library(anxiety_shaderc UNKNOWN IMPORTED)
+				set_target_properties(anxiety_shaderc PROPERTIES
+					IMPORTED_LOCATION             "${SHADERC_FALLBACK_LIBRARY}"
+					INTERFACE_INCLUDE_DIRECTORIES "${SHADERC_FALLBACK_INCLUDE_DIR}")
+				set(ANXIETY_SHADERC_TARGET anxiety_shaderc)
+				message(STATUS "[anxiety] shaderc localizado mediante búsqueda directa en el SDK: ${SHADERC_FALLBACK_LIBRARY}")
+			endif()
+		endif()
+	endif()
+
+	if(ANXIETY_SHADERC_TARGET)
+		set(ANXIETY_HAVE_SHADERC ON)
+		message(STATUS "[anxiety] shaderc encontrado (${ANXIETY_SHADERC_TARGET}) - compilación de shaders HLSL activada.")
+	else()
+		message(STATUS "[anxiety] shaderc no encontrado - los backends de Vulkan y OpenGL no podrán compilar shaders HLSL. "
+			"Instala el Vulkan SDK (define VULKAN_SDK) o libshaderc, o pasa "
+			"-DSHADERC_FALLBACK_INCLUDE_DIR=... -DSHADERC_FALLBACK_LIBRARY=... explícitamente.")
+	endif()
+endif()
+
 # Vulkan (Linux, Windows optional, macOS via MoltenVK) --------------------------------------------
 if(ANXIETY_VULKAN)
 	find_package(Vulkan QUIET)
@@ -53,48 +105,6 @@ if(ANXIETY_VULKAN)
 			backend/vulkan/VulkanSwapchain.cpp)
 		set(ANXIETY_BACKEND_VULKAN_ENABLED ON)
 		message(STATUS "[anxiety] Vulkan encontrado - backend de Vulkan activado.")
-
-		# shaderc — compila nuestros shaders HLSL fuente a SPIR-V en tiempo de ejecución (equivalente
-		# a D3DCompile en el backend DX12). Se distribuye con el Vulkan SDK; opcional — sin él,
-		# Vulkan::compile_shader_from_source() falla con elegancia y los materiales no cargarán en
-		# este backend.
-		#
-		# pkg-config solo ve shaderc si PKG_CONFIG_PATH incluye el lib/pkgconfig del SDK — cierto en
-		# una shell que ha hecho source del setup-env.sh del SDK, pero los IDE (CLion, VS Code, etc.)
-		# que lanzan CMake sin heredar ese entorno de shell lo pasarán por alto y desactivarán la
-		# compilación de HLSL en silencio. Se recurre a buscar directamente en las rutas de
-		# instalación habituales del SDK para que el build no se degrade en silencio solo porque el
-		# entorno de proceso del IDE está pelado.
-		find_package(PkgConfig QUIET)
-		if(PkgConfig_FOUND)
-			pkg_check_modules(SHADERC QUIET IMPORTED_TARGET shaderc)
-		endif()
-
-		if(NOT TARGET PkgConfig::SHADERC)
-			file(GLOB _anxiety_vulkan_sdk_hints
-				"$ENV{VULKAN_SDK}"
-				"$ENV{HOME}/vulkan/*/x86_64"
-				"$ENV{HOME}/VulkanSDK/*/x86_64"
-				"/opt/vulkan*/x86_64")
-			find_path(SHADERC_FALLBACK_INCLUDE_DIR shaderc/shaderc.hpp HINTS ${_anxiety_vulkan_sdk_hints} PATH_SUFFIXES include)
-			find_library(SHADERC_FALLBACK_LIBRARY NAMES shaderc_combined shaderc_shared shaderc HINTS ${_anxiety_vulkan_sdk_hints} PATH_SUFFIXES lib)
-			if(SHADERC_FALLBACK_INCLUDE_DIR AND SHADERC_FALLBACK_LIBRARY)
-				add_library(PkgConfig::SHADERC UNKNOWN IMPORTED)
-				set_target_properties(PkgConfig::SHADERC PROPERTIES
-					IMPORTED_LOCATION             "${SHADERC_FALLBACK_LIBRARY}"
-					INTERFACE_INCLUDE_DIRECTORIES "${SHADERC_FALLBACK_INCLUDE_DIR}")
-				message(STATUS "[anxiety] shaderc localizado mediante búsqueda directa en el SDK (pkg-config no lo encontró): ${SHADERC_FALLBACK_LIBRARY}")
-			endif()
-		endif()
-
-		if(TARGET PkgConfig::SHADERC)
-			set(ANXIETY_HAVE_SHADERC ON)
-			message(STATUS "[anxiety] shaderc encontrado - compilación de shaders HLSL para Vulkan activada.")
-		else()
-			message(STATUS "[anxiety] shaderc no encontrado - el backend de Vulkan no podrá compilar shaders HLSL en tiempo de ejecución. "
-				"Define VULKAN_SDK o PKG_CONFIG_PATH (ver el setup-env.sh del Vulkan SDK) antes de configurar, o pasa "
-				"-DSHADERC_FALLBACK_INCLUDE_DIR=... -DSHADERC_FALLBACK_LIBRARY=... explícitamente.")
-		endif()
 	else()
 		message(STATUS "[anxiety] Vulkan no encontrado - backend de Vulkan desactivado.")
 	endif()
@@ -120,6 +130,31 @@ if(ANXIETY_OPENGL)
 		# Esta variable eleva el mínimo a 3.5 para todos los subdirectorios de FetchContent.
 		set(CMAKE_POLICY_VERSION_MINIMUM "3.5" CACHE INTERNAL "")
 		FetchContent_MakeAvailable(glad)
+
+		# SPIRV-Cross — traduce el SPIR-V generado por shaderc a GLSL (los shaders del motor son HLSL y
+		# el driver de GL solo entiende GLSL). Solo se necesita la parte GLSL, como librería estática.
+		if(ANXIETY_HAVE_SHADERC)
+			FetchContent_Declare(
+				spirv_cross
+				GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross.git
+				GIT_TAG        vulkan-sdk-1.3.290.0
+			)
+			set(SPIRV_CROSS_CLI              OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_ENABLE_TESTS     OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_ENABLE_HLSL      OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_ENABLE_MSL       OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_ENABLE_CPP       OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_ENABLE_REFLECT   OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_ENABLE_C_API     OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_ENABLE_UTIL      OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_SKIP_INSTALL     ON  CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_SHARED           OFF CACHE BOOL "" FORCE)
+			set(SPIRV_CROSS_STATIC           ON  CACHE BOOL "" FORCE)
+			FetchContent_MakeAvailable(spirv_cross)
+			set(ANXIETY_HAVE_SPIRV_CROSS ON)
+		else()
+			message(STATUS "[anxiety] OpenGL sin shaderc - no se podrán compilar los shaders HLSL en el backend de GL.")
+		endif()
 
 		list(APPEND RENDERING_SOURCES
 			backend/opengl/GLCommandBuffer.cpp
@@ -186,8 +221,13 @@ endif()
 if(ANXIETY_BACKEND_VULKAN_ENABLED)
 	target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_BACKEND_VULKAN=1)
 endif()
-if(ANXIETY_HAVE_SHADERC)
+if(ANXIETY_HAVE_SHADERC AND (ANXIETY_BACKEND_VULKAN_ENABLED OR ANXIETY_BACKEND_OPENGL_ENABLED OR ANXIETY_BACKEND_GLES_ENABLED))
 	target_compile_definitions(anxiety_rendering PRIVATE ANXIETY_HAVE_SHADERC=1)
+	target_link_libraries(anxiety_rendering PRIVATE ${ANXIETY_SHADERC_TARGET})
+endif()
+if(ANXIETY_HAVE_SPIRV_CROSS)
+	target_compile_definitions(anxiety_rendering PRIVATE ANXIETY_HAVE_SPIRV_CROSS=1)
+	target_link_libraries(anxiety_rendering PRIVATE spirv-cross-glsl spirv-cross-core)
 endif()
 if(ANXIETY_BACKEND_METAL_ENABLED)
 	target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_BACKEND_METAL=1)
@@ -236,9 +276,6 @@ if(ANXIETY_BACKEND_VULKAN_ENABLED)
 			PROPERTIES LANGUAGE OBJCXX COMPILE_OPTIONS "-fobjc-arc")
 	endif()
 
-	if(ANXIETY_HAVE_SHADERC)
-		target_link_libraries(anxiety_rendering PRIVATE PkgConfig::SHADERC)
-	endif()
 
 	if(APPLE)
 		# VulkanSwapchain crea su VkSurfaceKHR vía VK_EXT_metal_surface, que necesita una

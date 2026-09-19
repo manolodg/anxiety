@@ -221,11 +221,16 @@ namespace anxiety::rendering::backend::opengl {
             glBindBuffer(GL_ARRAY_BUFFER, bslot.name);
 
             if (pipeline) {
+                // La location del atributo es su posición en el layout (igual que en Vulkan): shaderc
+                // numera las entradas del VS en orden de declaración. semantic_index NO sirve — POSITION0
+                // y COLOR0 valen ambos 0 y pisarían el mismo atributo.
+                GLuint next_location = 0;
                 for (const auto& attr : pipeline->vertex_attribs()) {
+                    const GLuint location = next_location++;
                     if (attr.input_slot != s) continue;
 
                     const GLVertexTypeInfo ti          = to_GL_vertex_type(attr.format);
-                    const GLuint           attrib_idx  = attr.semantic_index;
+                    const GLuint           attrib_idx  = location;
                     // Puntero = inicio del buffer + offset en bytes del atributo por vértice.
                     const void* ptr = reinterpret_cast<const void*>(static_cast<uintptr_t>(off) + attr.byte_offset);
 

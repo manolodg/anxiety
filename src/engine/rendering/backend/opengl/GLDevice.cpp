@@ -7,12 +7,17 @@
 #include "GLPipeline.h"
 #include "GLDescriptorSet.h"
 #include "Logger.h"
+#include "../../shader/HlslCompiler.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <stdexcept>
 #include <string>
+
+#ifdef ANXIETY_HAVE_SPIRV_CROSS
+#include <spirv_glsl.hpp>
+#endif
 
 #if defined(__APPLE__)
 #import <AppKit/AppKit.h>
@@ -503,17 +508,56 @@ namespace anxiety::rendering::backend::opengl {
     }
 
     // compile_shader_from_source -------------------------------------------------------------------
-    // En GL, el source se usa directamente — no hay un paso intermedio de cross-compile a binario.
-    // Se devuelven los bytes del source para que create_shader() pueda compilarlos.
-    std::vector<uint8_t> GLDevice::compile_shader_from_source(const char* source, const char* /*entry_point*/, rhi::ShaderStage /*stage*/) {
+    // Los shaders del motor están escritos en HLSL y el driver de GL solo entiende GLSL, así que la
+    // ruta es HLSL -> SPIR-V (shaderc, compartido con Vulkan) -> GLSL (SPIRV-Cross). Se devuelve el
+    // texto GLSL para que create_shader() lo compile.
+    //
+    // Se genera GLSL 4.10 (el máximo de macOS): no admite layout(binding=N) en los UBO, así que cada
+    // bloque se renombra a "<prefijo><registro>" y create_pipeline() lo enlaza con glUniformBlockBinding.
+    // Los cbuffer usan la misma numeración que el registro HLSL bN, que es lo que espera
+    // GLDescriptorSet (binding == registro). Limitación conocida: las texturas/samplers aún no se traducen.
+    static constexpr char k_ubo_name_prefix[] = "anxiety_ub";
+
+    std::vector<uint8_t> GLDevice::compile_shader_from_source(const char* source, const char* entry_point, rhi::ShaderStage stage) {
         if (!source || source[0] == '\0') {
             LOG_ERROR(k_category, "compile_shader_from_source: source nulo/vacío.");
             return {};
         }
-        const size_t len = std::strlen(source);
-        return std::vector<uint8_t>(
-            reinterpret_cast<const uint8_t*>(source),
-            reinterpret_cast<const uint8_t*>(source) + len);
+
+#ifdef ANXIETY_HAVE_SPIRV_CROSS
+        const std::vector<uint8_t> spirv = shader::compile_hlsl_to_spirv(source, entry_point, stage);
+        if (spirv.empty() || spirv.size() % sizeof(uint32_t) != 0) {
+            LOG_ERROR(k_category, "compile_shader_from_source: falló la compilación de HLSL a SPIR-V.");
+            return {};
+        }
+
+        try {
+            spirv_cross::CompilerGLSL glsl(reinterpret_cast<const uint32_t*>(spirv.data()), spirv.size() / sizeof(uint32_t));
+
+            spirv_cross::CompilerGLSL::Options opts;
+            opts.version                  = 410;
+            opts.es                       = false;
+            opts.enable_420pack_extension = false;   // sin layout(binding) — ver create_pipeline()
+            opts.vertex.fixup_clipspace   = true;    // z de clip D3D/Vulkan [0,w] -> GL [-w,w]
+            glsl.set_common_options(opts);
+
+            const spirv_cross::ShaderResources res = glsl.get_shader_resources();
+            for (const auto& ubo : res.uniform_buffers) {
+                const uint32_t binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
+                glsl.set_name(ubo.base_type_id, k_ubo_name_prefix + std::to_string(binding - shader::k_cbv_binding_base));
+            }
+
+            const std::string text = glsl.compile();
+            return std::vector<uint8_t>(text.begin(), text.end());
+        } catch (const spirv_cross::CompilerError& e) {
+            LOGF_ERROR(k_category, "SPIRV-Cross no pudo generar GLSL: {}", e.what());
+            return {};
+        }
+#else
+        (void)entry_point; (void)stage;
+        LOG_ERROR(k_category, "compile_shader_from_source: compilado sin shaderc/SPIRV-Cross — no hay traducción de HLSL a GLSL.");
+        return {};
+#endif
     }
 
     // create_shader ------------------------------------------------------------------------------
@@ -589,6 +633,20 @@ namespace anxiety::rendering::backend::opengl {
                        desc.debug_name ? desc.debug_name : "?", log);
             glDeleteProgram(program);
             return nullptr;
+        }
+
+        // Enlaza cada uniform block a su binding point (los bloques se llaman "<prefijo><registro>",
+        // ver compile_shader_from_source()). GLDescriptorSet los vincula con glBindBufferRange.
+        {
+            GLint block_count = 0;
+            glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, &block_count);
+            const size_t prefix_len = sizeof(k_ubo_name_prefix) - 1;
+            for (GLint i = 0; i < block_count; ++i) {
+                char name[128] = {};
+                glGetActiveUniformBlockName(program, static_cast<GLuint>(i), sizeof(name), nullptr, name);
+                if (std::strncmp(name, k_ubo_name_prefix, prefix_len) == 0)
+                    glUniformBlockBinding(program, static_cast<GLuint>(i), static_cast<GLuint>(std::atoi(name + prefix_len)));
+            }
         }
 
         // Desvincular los objetos de shader tras un enlazado exitoso

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "EngineRegistry.h"
 #include "IModule.h"
 
 #include <atomic>
@@ -90,12 +89,6 @@ namespace anxiety {
 		// Accesos --------------------------------------------------------------------------------
 		[[nodiscard]] const EngineConfig& config() const noexcept { return m_config; }
 		[[nodiscard]] EngineState         state()  const noexcept { return m_state; }
-		// El registry de descubrimiento ECS (módulos/componentes/propiedades) — ver
-		// docs/anxiety/architecture/ecs-registry.md. Disponible desde la construcción del Engine
-		// (antes de init()), para que los IModule puedan registrar en su on_init(). Un único
-		// EngineRegistry por Engine, con la misma vida que este.
-		[[nodiscard]] ecs::EngineRegistry&       registry()       noexcept { return m_registry; }
-		[[nodiscard]] const ecs::EngineRegistry& registry() const noexcept { return m_registry; }
 
 	private:
 		EngineConfig                          m_config;
@@ -106,7 +99,6 @@ namespace anxiety {
 		// Vista no propietaria y ordenada topológicamente sobre m_modules.
 		// Válida tras un init_modules() exitoso: se vacía al revertir o al apagar.
 		std::vector<IModule*>                 m_sorted_order;
-		ecs::EngineRegistry                   m_registry;
 
 		// Resuelve dependencias, construye m_sorted_order, ejecuta on_init en orden con reversión.
 		[[nodiscard]] bool init_modules();
