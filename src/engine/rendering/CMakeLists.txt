@@ -47,24 +47,28 @@ endif()
 # shaderc — compila los shaders HLSL fuente a SPIR-V en tiempo de ejecución. Lo usan Vulkan (SPIR-V
 # directo) y OpenGL (SPIR-V -> GLSL vía SPIRV-Cross), así que se busca si cualquiera de los dos está
 # activo. Orden de búsqueda, pensado para Windows / Linux / macOS:
-#   1. Vulkan::shaderc_combined — lo aporta FindVulkan cuando el Vulkan SDK (LunarG) trae shaderc
+#   1. pkg-config — paquetes de distro en Linux (libshaderc-dev) o Homebrew en macOS. shaderc.pc
+#      apunta a libshaderc.so, que ya lleva glslang/SPIRV-Tools enlazados dentro (comprobado con
+#      ldd: sin dependencias a esas libs). Se prueba primero porque en Linux libshaderc_combined.a
+#      del paquete de distro NO es autocontenido -a diferencia del que trae el Vulkan SDK de LunarG-
+#      y enlazarlo directamente deja símbolos de glslang/SPIRV-Tools sin resolver.
+#   2. Vulkan::shaderc_combined — lo aporta FindVulkan cuando el Vulkan SDK (LunarG) trae shaderc
 #      (Windows, macOS y Linux con SDK). Gestiona solo las variantes Debug/Release (shaderc_combinedd).
-#   2. pkg-config — paquetes de distro en Linux (libshaderc-dev) o Homebrew en macOS.
 #   3. Búsqueda directa bajo $VULKAN_SDK y rutas habituales del SDK, para IDEs que lanzan CMake sin
 #      heredar el entorno de la shell.
 if(ANXIETY_VULKAN OR ANXIETY_OPENGL)
-	find_package(Vulkan QUIET OPTIONAL_COMPONENTS shaderc_combined)
+	find_package(PkgConfig QUIET)
+	if(PkgConfig_FOUND)
+		pkg_check_modules(SHADERC QUIET IMPORTED_TARGET shaderc)
+	endif()
 
-	if(TARGET Vulkan::shaderc_combined)
-		set(ANXIETY_SHADERC_TARGET Vulkan::shaderc_combined)
+	if(TARGET PkgConfig::SHADERC)
+		set(ANXIETY_SHADERC_TARGET PkgConfig::SHADERC)
 	else()
-		find_package(PkgConfig QUIET)
-		if(PkgConfig_FOUND)
-			pkg_check_modules(SHADERC QUIET IMPORTED_TARGET shaderc)
-		endif()
+		find_package(Vulkan QUIET OPTIONAL_COMPONENTS shaderc_combined)
 
-		if(TARGET PkgConfig::SHADERC)
-			set(ANXIETY_SHADERC_TARGET PkgConfig::SHADERC)
+		if(TARGET Vulkan::shaderc_combined)
+			set(ANXIETY_SHADERC_TARGET Vulkan::shaderc_combined)
 		else()
 			file(GLOB _anxiety_vulkan_sdk_hints
 				"$ENV{VULKAN_SDK}"

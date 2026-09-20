@@ -41,13 +41,20 @@ elseif(UNIX)
             linux/LinuxWindow.cpp)
 
         # Wayland opcional --------------------------------------------------------------------------
+        # Experimental y desactivado por defecto: los backends de render (GLX para OpenGL,
+        # VK_KHR_xlib_surface para Vulkan) todavía solo saben crear superficies sobre X11. Si se
+        # activa esta opción con un compositor Wayland en marcha (WAYLAND_DISPLAY seteado),
+        # LinuxPlatform::create_window elegirá WaylandWindow y el render fallará, porque el native
+        # handle ya no es una Window de X11. Actívala solo para trabajar en el propio WaylandWindow.
+        option(ANXIETY_LINUX_WAYLAND "Compila el backend de ventana Wayland en Linux (experimental, el render aún no lo soporta)" OFF)
+
         find_package(PkgConfig QUIET)
-        if(PKG_CONFIG_FOUND)
+        if(ANXIETY_LINUX_WAYLAND AND PKG_CONFIG_FOUND)
             pkg_check_modules(WAYLAND_CLIENT    QUIET wayland-client)
             pkg_check_modules(WAYLAND_PROTOCOLS QUIET wayland-protocols)
         endif()
 
-        if(WAYLAND_CLIENT_FOUND)
+        if(ANXIETY_LINUX_WAYLAND AND WAYLAND_CLIENT_FOUND)
             message(STATUS "[anxiety] Cliente de Wayland encontrado — compilando WaylandWindow.")
 
             # Busca el ejecutable wayland-scanner

@@ -94,7 +94,15 @@ namespace anxiety::platform {
         }
 
         // Título de Window -----------------------------------------------------------------------
+        // XStoreName fija WM_NAME como STRING (Latin-1) — cualquier título con caracteres fuera de
+        // ese rango (p.ej. una raya "—") sale corrupto. Los WM modernos (GNOME/KDE/XFCE) prefieren
+        // la propiedad EWMH _NET_WM_NAME en UTF8_STRING; XStoreName se deja solo como fallback.
         XStoreName(m_display, m_window, desc.title.c_str());
+
+        const Atom utf8_string  = XInternAtom(m_display, "UTF8_STRING", False);
+        const Atom net_wm_name  = XInternAtom(m_display, "_NET_WM_NAME", False);
+        XChangeProperty(m_display, m_window, net_wm_name, utf8_string, 8, PropModeReplace,
+                         reinterpret_cast<const unsigned char*>(desc.title.data()), static_cast<int>(desc.title.size()));
 
         // Configura el ancho de hints (honour resizable flag) ------------------------------------
         if (!desc.resizable) {

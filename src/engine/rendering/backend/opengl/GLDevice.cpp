@@ -228,6 +228,12 @@ namespace anxiety::rendering::backend::opengl {
         }
     #endif
 
+    // Xlib.h define None como macro (0L); a partir de aquí ya no se usa el None de X11 en este
+    // archivo, y choca con enums como CullMode::None / BufferUsage::None de más abajo.
+    #if ANXIETY_USE_GLX
+    #undef None
+    #endif
+
         if (!gladLoadGL()) {
             LOG_ERROR(k_category, "gladLoadGL() falló — no hay contexto de OpenGL actual.");
             return;
