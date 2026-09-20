@@ -257,6 +257,22 @@ namespace anxiety::rendering::backend::vulkan {
             m_has_dynamic_rendering = true;
         }
 
+        // Stride de vértices dinámico: requiere la extensión Y que el dispositivo soporte la feature.
+        bool has_extended_dynamic_state = false;
+        if (has_ext(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME)) {
+            VkPhysicalDeviceExtendedDynamicStateFeaturesEXT eds_query{};
+            eds_query.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
+            VkPhysicalDeviceFeatures2 query2{};
+            query2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+            query2.pNext = &eds_query;
+            vkGetPhysicalDeviceFeatures2(m_phys_device, &query2);
+
+            if (eds_query.extendedDynamicState) {
+                device_exts.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+                has_extended_dynamic_state = true;
+            }
+        }
+
         if (has_ext(VK_KHR_MAINTENANCE1_EXTENSION_NAME))        device_exts.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
         if (has_ext(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)) device_exts.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 
@@ -268,6 +284,10 @@ namespace anxiety::rendering::backend::vulkan {
         dyn_feature.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
         dyn_feature.dynamicRendering = VK_TRUE;
 
+        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT eds_feature{};
+        eds_feature.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
+        eds_feature.extendedDynamicState = VK_TRUE;
+
         VkDeviceCreateInfo ci{};
         ci.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         ci.queueCreateInfoCount    = 1;
@@ -275,7 +295,13 @@ namespace anxiety::rendering::backend::vulkan {
         ci.enabledExtensionCount   = static_cast<uint32_t>(device_exts.size());
         ci.ppEnabledExtensionNames = device_exts.data();
         ci.pEnabledFeatures        = &features;
-        if (m_has_dynamic_rendering) ci.pNext = &dyn_feature;
+        // Cadena de features: dynamic rendering y/o extended dynamic state, según lo disponible.
+        if (m_has_dynamic_rendering) {
+            ci.pNext = &dyn_feature;
+            if (has_extended_dynamic_state) dyn_feature.pNext = &eds_feature;
+        } else if (has_extended_dynamic_state) {
+            ci.pNext = &eds_feature;
+        }
 
         VkResult res = vkCreateDevice(m_phys_device, &ci, nullptr, &m_device);
         if (res != VK_SUCCESS) {
@@ -284,6 +310,11 @@ namespace anxiety::rendering::backend::vulkan {
         }
 
         vkGetDeviceQueue(m_device, m_graphics_family, 0, &m_graphics_queue);
+
+        if (has_extended_dynamic_state) {
+            pfn_cmd_bind_vertex_buffers2 = reinterpret_cast<PFN_vkCmdBindVertexBuffers2EXT>(vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers2EXT"));
+            if (!pfn_cmd_bind_vertex_buffers2) pfn_cmd_bind_vertex_buffers2 = reinterpret_cast<PFN_vkCmdBindVertexBuffers2EXT>(vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers2"));
+        }
 
         if (m_has_dynamic_rendering) {
             pfn_cmd_begin_rendering = reinterpret_cast<PFN_vkCmdBeginRenderingKHR>(vkGetDeviceProcAddr(m_device, "vkCmdBeginRenderingKHR"));

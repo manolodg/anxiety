@@ -12,6 +12,7 @@
 namespace anxiety::ecs                  { class World; }
 namespace anxiety::rendering::scene     { class SceneRenderer; }
 namespace anxiety::rendering::materials { class MaterialManager; }
+namespace anxiety::rendering::textures  { class TextureManager; }
 
 namespace anxiety::rendering {
     // RenderingModule ----------------------------------------------------------------------------
@@ -112,6 +113,8 @@ namespace anxiety::rendering {
         [[nodiscard]] scene::SceneRenderer*       scene_renderer() noexcept { return m_scene_renderer.get(); }
         // Accede al gestor de materiales (válido tras on_init()).
         [[nodiscard]] materials::MaterialManager* material_manager() noexcept { return m_material_manager.get(); }
+        // Accede al gestor de texturas (válido tras on_init()).
+        [[nodiscard]] textures::TextureManager*   texture_manager()  noexcept { return m_texture_manager.get(); }
 
     private:
         anxiety::platform::PlatformModule* m_plat = nullptr;      // nulo en modo ventana embebida
@@ -140,6 +143,7 @@ namespace anxiety::rendering {
 
         // SceneRenderer opcional — activo cuando se ha llamado a set_world().
         std::unique_ptr<materials::MaterialManager> m_material_manager;
+        std::unique_ptr<textures::TextureManager>   m_texture_manager;
         std::unique_ptr<scene::SceneRenderer>       m_scene_renderer;
 
         bool init_pipeline();                       // llamado desde on_init() cuando hay un swapchain

@@ -81,6 +81,12 @@ namespace anxiety::rendering::backend::vulkan {
         PFN_vkCmdBeginRenderingKHR pfn_cmd_begin_rendering = nullptr;
         PFN_vkCmdEndRenderingKHR   pfn_cmd_end_rendering   = nullptr;
 
+        // Stride de vértices dinámico (VK_EXT_extended_dynamic_state o núcleo 1.3). Cuando existe,
+        // los pipelines lo declaran como estado dinámico y bind_vertex_buffer() respeta el stride
+        // que pasa quien llama, igual que D3D12 y OpenGL. Si es nullptr, el stride queda fijado en el pipeline.
+        PFN_vkCmdBindVertexBuffers2EXT pfn_cmd_bind_vertex_buffers2 = nullptr;
+        [[nodiscard]] bool             has_dynamic_vertex_stride() const noexcept { return pfn_cmd_bind_vertex_buffers2 != nullptr; }
+
         // Accesores del pool de recursos ----------------------------------------------------------
         [[nodiscard]]       VkTextureSlot& tex_slot(rhi::TextureHandle h);
         [[nodiscard]] const VkTextureSlot& tex_slot(rhi::TextureHandle h) const;

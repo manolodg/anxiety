@@ -9,10 +9,11 @@ namespace anxiety::rendering::backend::opengl {
     // update — almacena los handles de recursos de GL resueltos para todas las escrituras ----------
     void GLDescriptorSet::update(const std::vector<rhi::DescriptorWrite>& writes) {
         for (const auto& w : writes) {
-            // Busca o crea un slot para este índice de binding
+            // Busca o crea un slot para este (índice de binding, tipo). El tipo forma parte de la clave:
+            // el registro HLSL b0 (UBO) y t0 (textura) comparten número pero no son el mismo recurso.
             GLBinding* existing = nullptr;
             for (auto& b : m_bindings) {
-                if (b.binding == w.binding) { existing = &b; break; }
+                if (b.binding == w.binding && b.type == w.type) { existing = &b; break; }
             }
             if (!existing) {
                 m_bindings.push_back({});

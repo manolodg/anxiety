@@ -173,10 +173,25 @@ namespace anxiety::rendering::backend::vulkan {
     }
 
     // Vertex / index buffers -------------------------------------------------------------------------
-    void VulkanCommandBuffer::bind_vertex_buffer(uint32_t slot, anxiety::rendering::rhi::BufferHandle handle, uint64_t offset, uint32_t /*stride*/) {
+    void VulkanCommandBuffer::bind_vertex_buffer(uint32_t slot, anxiety::rendering::rhi::BufferHandle handle, uint64_t offset, uint32_t stride) {
         if (!handle.is_valid()) return;
         VkBufferSlot& buf = m_device->buf_slot(handle);
         VkDeviceSize vk_offset = static_cast<VkDeviceSize>(offset);
+
+        // Igual que en las demás APIs, stride == 0 significa "usar el del pipeline".
+        const uint32_t pipeline_stride = m_current_pipeline ? m_current_pipeline->vertex_stride() : 0;
+        const uint32_t eff_stride      = stride > 0 ? stride : pipeline_stride;
+
+        if (m_device->has_dynamic_vertex_stride()) {
+            const VkDeviceSize vk_stride = eff_stride;
+            m_device->pfn_cmd_bind_vertex_buffers2(m_cmd, slot, 1, &buf.buffer, &vk_offset, nullptr, &vk_stride);
+            return;
+        }
+
+        // Sin stride dinámico el stride del pipeline es inamovible: si no coincide, el resultado sería basura.
+        if (stride > 0 && pipeline_stride > 0 && stride != pipeline_stride) {
+            LOGF_ERROR("VulkanCommandBuffer", "bind_vertex_buffer: stride {} distinto del del pipeline ({}) y el dispositivo no soporta stride dinámico.", stride, pipeline_stride);
+        }
         vkCmdBindVertexBuffers(m_cmd, slot, 1, &buf.buffer, &vk_offset);
     }
 

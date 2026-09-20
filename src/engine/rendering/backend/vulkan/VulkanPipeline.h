@@ -31,6 +31,8 @@ namespace anxiety::rendering::backend::vulkan {
         [[nodiscard]] bool                   is_valid() const noexcept { return m_pipeline != VK_NULL_HANDLE; }
         [[nodiscard]] VkPipeline             pipeline() const noexcept { return m_pipeline; }
         [[nodiscard]] VkPipelineLayout       layout()   const noexcept { return m_layout; }
+        // Stride de vértices declarado en el layout del pipeline (0 si no hay entrada de vértices).
+        [[nodiscard]] uint32_t               vertex_stride() const noexcept { return m_vertex_stride; }
 
     private:
         VulkanDevice&    m_device;
@@ -38,6 +40,7 @@ namespace anxiety::rendering::backend::vulkan {
         VkPipeline       m_pipeline = VK_NULL_HANDLE;
         VkPipelineLayout m_layout   = VK_NULL_HANDLE;
         std::string      m_debug_name;
+        uint32_t         m_vertex_stride = 0;
     };
 } // namespace anxiety::rendering::backend::vulkan
 

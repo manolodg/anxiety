@@ -7,6 +7,7 @@
 
 #include "scene/SceneComponents.h"
 #include "scene/SceneRenderer.h"
+#include "textures/TextureManager.h"
 
 using namespace anxiety;
 
@@ -58,23 +59,23 @@ private:
 [[maybe_unused]] static void run_scene_demo() {
 	LOG_INFO("Scene", "--- Demo de SceneRenderer ---");
 
-	anxiety::platform::PlatformModule::Config palCfg;
-	palCfg.window.title = "IAEngine — Scene Renderer";
-	palCfg.window.width = 1280;
-	palCfg.window.height = 720;
-	palCfg.window.resizable = true;
+	anxiety::platform::PlatformModule::Config pal_cfg;
+	pal_cfg.window.title     = "IAEngine — Scene Renderer";
+	pal_cfg.window.width     = 1280;
+	pal_cfg.window.height    = 720;
+	pal_cfg.window.resizable = true;
 
 	anxiety::EngineConfig cfg{
-		.app_name = "Scene Demo",
+		.app_name   = "Scene Demo",
 		.target_fps = 60,
-		.headless = false,
+		.headless   = false,
 	};
 
 	anxiety::Engine eng(cfg);
-	auto& platMod   = eng.emplace_module<anxiety::platform::PlatformModule>(palCfg);
+	auto& plat_mod   = eng.emplace_module<anxiety::platform::PlatformModule>(pal_cfg);
 	rendering::RenderingModule::Config mod_cfg;
-	mod_cfg.preferred_backend = rendering::rhi::RHIBackend::Vulkan;
-	auto& renderMod = eng.emplace_module<anxiety::rendering::RenderingModule>(platMod, mod_cfg);
+	// mod_cfg.preferred_backend = rendering::rhi::RHIBackend::OpenGL;
+	auto& render_mod = eng.emplace_module<anxiety::rendering::RenderingModule>(plat_mod, mod_cfg);
 	eng.emplace_module<AutoStopModule>(60u);
 
 	if (!eng.init()) {
@@ -87,6 +88,7 @@ private:
 
 	namespace sc  = anxiety::rendering::scene;
 	namespace mat = anxiety::rendering::materials;
+	namespace tex = anxiety::rendering::textures;
 
 	// Entidad cámara -------------------------------------------------------------------------------
 	{
@@ -97,68 +99,82 @@ private:
 		world.add_component<sc::Camera>(camEnt, sc::Camera{ 1.0472f, 0.1f, 1000.0f, 16.0f / 9.0f });
 	}
 
-	// Entidad malla --------------------------------------------------------------------------------
-	struct SceneV { float x, y, z, r, g, b, a; };
-	static constexpr SceneV k_tri_verts[] = {
-        {  0.0f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f },                   // arriba
-        {  0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f },                   // derecha
-        { -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f },                   // izquierda
-	};
-	static constexpr uint32_t k_tri_idx[] = { 0, 1, 2 };
+    // Geometría del quad (36 bytes/vértice: POSITION float3, COLOR float4, UV float2) ----------
+    struct QuadV { float x, y, z, r, g, b, a, u, v; };
 
-	auto* sr  = renderMod.scene_renderer();
-	auto* mgr = renderMod.material_manager();
+    // Quad unitario centrado en el origen, abarcando [-0.5, 0.5] en XY.
+    static constexpr QuadV k_quad_verts[] = {
+        { -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f },        // arriba-izquierda
+        {  0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f },        // arriba-derecha
+        {  0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f },        // abajo-derecha
+        { -0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f },        // abajo-izquierda
+    };
+    static constexpr uint32_t k_quad_idx[] = { 0,1,2,  0,2,3 };             // 6 índices
 
-	// Crea dos instancias de material: tinte rojo y tinte azul.
-	mat::MaterialInstanceHandle red_inst, blue_inst;
-	if (mgr) {
-		red_inst  = mgr->create_instance(mgr->default_unlit());
-		blue_inst = mgr->create_instance(mgr->default_unlit());
+    auto* sr  = render_mod.scene_renderer();
+    auto* mgr = render_mod.material_manager();
+    auto* tmg = render_mod.texture_manager();
 
-		mgr->set_base_color(red_inst, 1.0f, 0.3f, 0.3f, 1.0f);      // tinte rojo
-		mgr->set_base_color(blue_inst, 0.3f, 0.5f, 1.0f, 1.0f);     // tinte azul
-	}
+    // Quad izquierdo — unlit, tinte rojo (sin textura) --------------------------------------------
+    if (sr && mgr) {
+        mat::MaterialHandle unlit_mat = mgr->default_unlit();
+        mat::MaterialInstanceHandle red_inst;
+        if (unlit_mat.is_valid()) {
+            red_inst = mgr->create_instance(unlit_mat);
+            mgr->set_base_color(red_inst, 1.0f, 0.3f, 0.3f, 1.0f);
+        }
 
-    // Triángulo rojo — lado izquierdo -----------------------------------------------------------
-    if (sr) {
-        auto h = sr->upload_mesh(k_tri_verts, sizeof(k_tri_verts), k_tri_idx, sizeof(k_tri_idx));
-        auto mesh_ent = world.create_entity();
-
+        auto h   = sr->upload_mesh(k_quad_verts, sizeof(k_quad_verts), k_quad_idx, sizeof(k_quad_idx));
+        auto ent = world.create_entity();
         sc::Transform t{};
-        t.position[0] = -0.8f;                                      // desplaza a la izquierda
-        world.add_component<sc::Transform>(mesh_ent, t);
-
+        t.position[0] = -1.0f;
+        world.add_component<sc::Transform>(ent, t);
         sc::MeshRenderer mr{};
         mr.vertex_buffer     = h.vertex_buffer;
         mr.index_buffer      = h.index_buffer;
-        mr.index_count       = 3;
-        mr.vertex_stride     = sizeof(SceneV);
+        mr.index_count       = 6;
+        mr.vertex_stride     = sizeof(QuadV);
         mr.material_instance = red_inst;
-        world.add_component<sc::MeshRenderer>(mesh_ent, mr);
+        world.add_component<sc::MeshRenderer>(ent, mr);
     }
-    // Triángulo azul — lado derecho -----------------------------------------------------------
-    if (sr) {
-        auto h = sr->upload_mesh(k_tri_verts, sizeof(k_tri_verts), k_tri_idx, sizeof(k_tri_idx));
-        auto mesh_ent = world.create_entity();
 
+    // Quad derecho — unlit_textured, textura cargada desde fichero -------------------------------
+    if (sr && mgr && tmg) {
+        mat::MaterialHandle tex_mat = mgr->default_unlit_textured();
+        mat::MaterialInstanceHandle texInst;
+        anxiety::rendering::rhi::TextureHandle checker_tex;
+
+        if (tex_mat.is_valid()) {
+            texInst = mgr->create_instance(tex_mat);
+
+            // Damero RGBA8 2×2: cian arriba-izquierda/abajo-derecha, magenta en el resto.
+            constexpr uint8_t C = 255, Z = 0;
+            const uint8_t k_pixels[2 * 2 * 4] = {
+                C, Z, C, C,   Z, C, C, C,                       // fila 0: cian, magenta
+                Z, C, C, C,   C, Z, C, C,                       // fila 1: magenta, cian
+            };
+            //checker_tex = tmg->load_from_memory(k_pixels, 2, 2, "CheckerTex");
+            checker_tex = tmg->load("textures/roca.jpg");
+            if (checker_tex.is_valid()) mgr->set_albedo_texture(texInst, checker_tex);
+        }
+
+        auto h = sr->upload_mesh(k_quad_verts, sizeof(k_quad_verts), k_quad_idx, sizeof(k_quad_idx));
+        auto ent = world.create_entity();
         sc::Transform t{};
-        t.position[0] = 0.8f;                                      // desplaza a la derecha
-        world.add_component<sc::Transform>(mesh_ent, t);
-
+        t.position[0] = 1.0f;
+        world.add_component<sc::Transform>(ent, t);
         sc::MeshRenderer mr{};
         mr.vertex_buffer     = h.vertex_buffer;
         mr.index_buffer      = h.index_buffer;
-        mr.index_count       = 3;
-        mr.vertex_stride     = sizeof(SceneV);
-        mr.material_instance = blue_inst;
-        world.add_component<sc::MeshRenderer>(mesh_ent, mr);
+        mr.index_count       = 6;
+        mr.vertex_stride     = sizeof(QuadV);
+        mr.material_instance = texInst;
+        world.add_component<sc::MeshRenderer>(ent, mr);
     }
 
-	renderMod.set_world(&world);
-
-	eng.run();                                                  // bloquea; la escena se renderiza cada fotograma
-
-	renderMod.set_world(nullptr);                               // desadjuntar antes de que world salga de ámbito
+    render_mod.set_world(&world);
+    eng.run();
+    render_mod.set_world(nullptr);
 }
 
 // main ===========================================================================================

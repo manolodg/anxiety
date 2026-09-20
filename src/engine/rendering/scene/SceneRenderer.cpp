@@ -1,4 +1,5 @@
 #include "SceneRenderer.h"
+#include "textures/TextureManager.h"
 #include "Logger.h"
 
 namespace anxiety::rendering::scene {
@@ -15,7 +16,7 @@ namespace anxiety::rendering::scene {
     };
 
     // Construcción / destrucción ----------------------------------------------------------------
-    SceneRenderer::SceneRenderer(rhi::IDevice& device, materials::MaterialManager* materials) : m_device(device), m_materials(materials) {}
+    SceneRenderer::SceneRenderer(rhi::IDevice& device, materials::MaterialManager* materials, textures::TextureManager* textures) : m_device(device), m_materials(materials), m_textures(textures) {}
 
     SceneRenderer::~SceneRenderer() {
         // Destruye todos los constant buffers por entidad.
@@ -62,6 +63,29 @@ namespace anxiety::rendering::scene {
         });
 
         return data;
+    }
+
+    void SceneRenderer::refresh_entity_DS(PerEntityData& data, materials::Material* mat, rhi::TextureHandle albedo_tex) {
+        if (data.last_material == mat->handle() && data.descriptor_set) return;
+
+        // Recrea el descriptor set con el layout del material.
+        data.descriptor_set = m_device.create_descriptor_set(mat->descriptor_layout());
+
+        std::vector<rhi::DescriptorWrite> writes = {
+            { 0, rhi::DescriptorType::UniformBuffer, data.wvp_buffer },
+            { 1, rhi::DescriptorType::UniformBuffer, data.mat_params_buffer }
+        };
+
+        // Vincula la textura a cualquier binding de tipo Texture del layout.
+        for (const auto& b : mat->descriptor_layout().bindings) {
+            if (b.type == rhi::DescriptorType::Texture) {
+                rhi::TextureHandle tex_to_use = albedo_tex.is_valid() ? albedo_tex : (m_textures ? m_textures->null_texture() : rhi::TextureHandle{});
+                if (tex_to_use.is_valid()) writes.push_back({ b.binding, rhi::DescriptorType::Texture, rhi::BufferHandle{}, tex_to_use });
+            }
+        }
+
+        data.descriptor_set->update(writes);
+        data.last_material = mat->handle();
     }
 
     // Construcción de pases por fotograma --------------------------------------------------------
@@ -113,12 +137,15 @@ namespace anxiety::rendering::scene {
             // WVP = P * V * W
             const Mat4 wvp = mat4_mul(proj_mat, mat4_mul(view_mat, world_mat));
 
-            // Crea de forma perezosa el CB y el descriptor set, y luego escribe la nueva WVP.
+            // Garantiza que existen los constant buffers de GPU.
             PerEntityData& data = ensure_entity_data(id.index);
             m_device.write_buffer(data.wvp_buffer, wvp.data(), 0, sizeof(Mat4));
 
-            const float* base_color = mat_inst->params().base_color;
-            m_device.write_buffer(data.mat_params_buffer, base_color, 0, sizeof(float) * 4);
+            const auto& p = mat_inst->params();
+            m_device.write_buffer(data.mat_params_buffer, &p, 0, sizeof(materials::MaterialParams));
+
+            // Reconstruye el descriptor set cuando cambia el material (y por tanto su layout de DS).
+            refresh_entity_DS(data, mat, mat_inst->albedo_texture());
 
             drawList.push_back({
                 .vertex_buffer  = mr.vertex_buffer,

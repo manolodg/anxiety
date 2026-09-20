@@ -446,7 +446,9 @@ namespace anxiety::rendering::backend::opengl {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         } else {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            // Con un solo nivel, un filtro con mipmaps deja la textura incompleta y GL la muestrea
+            // como negro: el filtro mipmap solo se usa cuando hay más de un nivel.
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mips > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -515,8 +517,12 @@ namespace anxiety::rendering::backend::opengl {
     // Se genera GLSL 4.10 (el máximo de macOS): no admite layout(binding=N) en los UBO, así que cada
     // bloque se renombra a "<prefijo><registro>" y create_pipeline() lo enlaza con glUniformBlockBinding.
     // Los cbuffer usan la misma numeración que el registro HLSL bN, que es lo que espera
-    // GLDescriptorSet (binding == registro). Limitación conocida: las texturas/samplers aún no se traducen.
+    // GLDescriptorSet (binding == registro).
     static constexpr char k_ubo_name_prefix[] = "anxiety_ub";
+    // Las texturas HLSL (tN) y sus samplers (sN) son objetos separados; GLSL usa sampler2D combinados.
+    // Cada combinado se renombra a "<prefijo><N>", con N = registro tN de la textura, y create_pipeline()
+    // le asigna la unidad de textura N (la misma que usa GLDescriptorSet: GL_TEXTURE0 + binding).
+    static constexpr char k_tex_name_prefix[] = "anxiety_tex";
 
     std::vector<uint8_t> GLDevice::compile_shader_from_source(const char* source, const char* entry_point, rhi::ShaderStage stage) {
         if (!source || source[0] == '\0') {
@@ -545,6 +551,12 @@ namespace anxiety::rendering::backend::opengl {
             for (const auto& ubo : res.uniform_buffers) {
                 const uint32_t binding = glsl.get_decoration(ubo.id, spv::DecorationBinding);
                 glsl.set_name(ubo.base_type_id, k_ubo_name_prefix + std::to_string(binding - shader::k_cbv_binding_base));
+            }
+
+            glsl.build_combined_image_samplers();
+            for (const auto& remap : glsl.get_combined_image_samplers()) {
+                const uint32_t binding = glsl.get_decoration(remap.image_id, spv::DecorationBinding);
+                glsl.set_name(remap.combined_id, k_tex_name_prefix + std::to_string(binding - shader::k_srv_binding_base));
             }
 
             const std::string text = glsl.compile();
@@ -646,6 +658,23 @@ namespace anxiety::rendering::backend::opengl {
                 glGetActiveUniformBlockName(program, static_cast<GLuint>(i), sizeof(name), nullptr, name);
                 if (std::strncmp(name, k_ubo_name_prefix, prefix_len) == 0)
                     glUniformBlockBinding(program, static_cast<GLuint>(i), static_cast<GLuint>(std::atoi(name + prefix_len)));
+            }
+        }
+
+        // Asigna a cada sampler2D combinado la unidad de textura que corresponde a su registro tN.
+        {
+            GLint uniform_count = 0;
+            glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &uniform_count);
+            const size_t prefix_len = sizeof(k_tex_name_prefix) - 1;
+            for (GLint i = 0; i < uniform_count; ++i) {
+                char   name[128] = {};
+                GLint  size = 0;
+                GLenum type = 0;
+                glGetActiveUniform(program, static_cast<GLuint>(i), sizeof(name), nullptr, &size, &type, name);
+                if (std::strncmp(name, k_tex_name_prefix, prefix_len) != 0) continue;
+
+                const GLint loc = glGetUniformLocation(program, name);
+                if (loc >= 0) glProgramUniform1i(program, loc, std::atoi(name + prefix_len));
             }
         }
 

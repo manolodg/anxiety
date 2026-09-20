@@ -1,6 +1,7 @@
 #include "RenderingModule.h"
 #include "materials/MaterialManager.h"
 #include "scene/SceneRenderer.h"
+#include "textures/TextureManager.h"
 #include "Logger.h"
 
 // Selección de backend — en las cabeceras de esta unidad de traducción no se permite ningún tipo de D3D12/Vulkan.
@@ -127,8 +128,10 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
 
         // Gestor de materiales — en la construcción carga desde disco los shaders incorporados.
         m_material_manager = std::make_unique<materials::MaterialManager>(*m_device);
+        // Gestor de texturas — crea la textura nula y ofrece el servicio de subida a GPU.
+        m_texture_manager  = std::make_unique<textures::TextureManager>(*m_device);
         // SceneRenderer — recibe un puntero al gestor de materiales.
-        m_scene_renderer = std::make_unique<scene::SceneRenderer>(*m_device, m_material_manager.get());
+        m_scene_renderer   = std::make_unique<scene::SceneRenderer>(*m_device, m_material_manager.get(), m_texture_manager.get());
 
         LOG_INFO(k_category, "RenderingModule en línea.");
         return true;

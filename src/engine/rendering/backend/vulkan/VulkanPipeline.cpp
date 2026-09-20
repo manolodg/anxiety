@@ -61,6 +61,8 @@ namespace anxiety::rendering::backend::vulkan {
         }
 
         // Entrada de vértices ------------------------------------------------------------------------
+        m_vertex_stride = desc.vertex_layout.stride_bytes;
+
         VkVertexInputBindingDescription binding{};
         binding.binding   = 0;
         binding.stride    = desc.vertex_layout.stride_bytes;
@@ -135,11 +137,14 @@ namespace anxiety::rendering::backend::vulkan {
         blend_ci.pAttachments    = desc.render_target_fmts.empty() ? nullptr : &blend_attachment;
 
         // Estado dinámico ---------------------------------------------------------------------------
-        VkDynamicState dynamic_states[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+        // El stride de vértices es dinámico cuando el dispositivo lo soporta: así el stride que pasa
+        // quien llama a bind_vertex_buffer() manda sobre el del layout, como en D3D12 / OpenGL.
+        std::vector<VkDynamicState> dynamic_states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+        if (device.has_dynamic_vertex_stride()) dynamic_states.push_back(VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT);
         VkPipelineDynamicStateCreateInfo dynamic_ci{};
         dynamic_ci.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamic_ci.dynamicStateCount = static_cast<uint32_t>(std::size(dynamic_states));
-        dynamic_ci.pDynamicStates    = dynamic_states;
+        dynamic_ci.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
+        dynamic_ci.pDynamicStates    = dynamic_states.data();
 
         // Formatos de adjuntos para dynamic rendering --------------------------------------------------
         std::vector<VkFormat> color_formats;

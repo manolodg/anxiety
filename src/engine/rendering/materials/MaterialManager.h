@@ -3,6 +3,7 @@
 #include "Material.h"
 #include "MaterialInstance.h"
 #include "rhi/IDevice.h"
+#include "rhi/RHITypes.h"
 
 #include <memory>
 #include <string>
@@ -13,16 +14,23 @@
 // MaterialManager --------------------------------------------------------------------------------
 // Factoría, propietario y caché de todos los objetos Material y MaterialInstance.
 //
-// En la construcción se carga el material incorporado "unlit" desde <assets_dir>/shaders/unlit.hlsl
-// y queda disponible vía default_unlit(). Las siguientes llamadas a load_material() se cachean por
-// nombre.
+// En la construcción se cargan dos materiales incorporados:
+//   "unlit"          - vértice POSITION+COLOR    (stride 28). Solo CBs b0+b1.
+//   "unlit_textured" - vértice POSITION+COLOR+UV (stride 36). CBs b0+b1 + SRV t0.
 //
-// Uso:
-//   MaterialManager mgr(device);                               // carga el material unlit por defecto
-//   MaterialHandle         mat  = mgr.default_unlit();
-//   MaterialInstanceHandle red  = mgr.create_instance(mat);
-//   mgr.set_base_color(red, 1.f, 0.f, 0.f, 1.f);
-//   meshRenderer.material_instance = red;
+// Ambos se cargan desde assets/shaders/. load_material() / load_textured_material() se cachean por
+// nombre, así que el mismo PSO no se crea dos veces.
+//
+// Uso típico:
+//   MaterialManager mgr(device);
+//
+//   // Malla de color opaco
+//   MaterialInstanceHandle red  = mgr.create_instance(mgr.default_unlit());
+//   mgr.set_base_color(red, 1.0f, 0.0f, 0.0f, 1.0f);
+//
+//   // Malla con textura
+//   MaterialInstanceHandle tex = mgr.create_instance(mgr.default_unlit_textured());
+//   mgr.set_albedo_texture(tex, my_texture_handle);       // TextureHandle de TextureManager
 // ------------------------------------------------------------------------------------------------
 
 // Directorio de assets en tiempo de compilación (fijado vía CMake; puede sobrescribirse en runtime).
@@ -38,10 +46,10 @@ namespace anxiety::rendering::materials {
         ~MaterialManager() = default;
 
         // Carga de materiales -----------------------------------------------------------------
-        // Carga (o devuelve el cacheado) un material desde un único fichero HLSL que contiene ambos
-        // entry points VS y PS. shader_path es relativo a assets_dir salvo que empiece por '/' o por
-        // una letra de unidad de Windows.
+        // Carga (o devuelve el cacheado) un material unlit. Vertex layout: POSITION float3 + COLOR float4 (stride 28).
         [[nodiscard]] MaterialHandle load_material(std::string_view name, std::string_view shader_path, std::string_view vs_entry = "VSMain", std::string_view ps_entry = "PSMain");
+        // Carga (o devuelve el cacheado) un material con textura. Vertex layout: POSITION float3 + COLOR float4 + TEXCOORD float2 (stride 36). Incluye un sampler estático linear-wrap en s0.
+        [[nodiscard]] MaterialHandle load_textured_material(std::string_view name, std::string_view shader_path, std::string_view vs_entry = "VSMain", std::string_view ps_entry = "PSMain");
 
         // Gestión de instancias ---------------------------------------------------------------
         [[nodiscard]] MaterialInstanceHandle create_instance(MaterialHandle mat);
@@ -52,17 +60,23 @@ namespace anxiety::rendering::materials {
 
         // Setter de conveniencia — equivalente a get_instance(h)->set_base_color(...).
         void set_base_color(MaterialInstanceHandle h, float r, float g, float b, float a) noexcept;
+        void set_albedo_texture(MaterialInstanceHandle h, rhi::TextureHandle texture)     noexcept;
 
-        // Handle del material unlit incorporado (cargado en la construcción). Inválido cuando el
-        // directorio de assets está vacío o el fichero no existe.
-        [[nodiscard]] MaterialHandle default_unlit() const noexcept { return m_unlit_handle; }
+        // Handles de los materiales incorporados (pueden ser inválidos si la carga falló).
+        [[nodiscard]] MaterialHandle default_unlit()          const noexcept { return m_unlit_handle; }
+        [[nodiscard]] MaterialHandle default_unlit_textured() const noexcept { return m_unlit_textured_handle; }
 
     private:
         [[nodiscard]] std::string resolve_path(std::string_view path) const;
 
+        // Función interna que hace el trabajo: compila shaders + crea el PSO.
+        [[nodiscard]] MaterialHandle load_material_internal(std::string_view name, std::string_view shader_path, std::string_view vs_entry, std::string_view ps_entry, const rhi::DescriptorSetLayout& ds_layout,
+                                                            uint32_t vertex_stride, bool has_tex_coord, const std::vector<rhi::SamplerDesc>& samplers);
+
         rhi::IDevice&   m_device;
         std::string     m_assets_dir;
         MaterialHandle  m_unlit_handle;
+        MaterialHandle  m_unlit_textured_handle;
 
         std::vector<std::unique_ptr<Material>>          m_materials;  // indexado por id-1
         std::vector<std::unique_ptr<MaterialInstance>>  m_instances;  // indexado por id-1

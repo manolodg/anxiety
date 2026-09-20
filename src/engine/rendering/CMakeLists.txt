@@ -4,7 +4,9 @@ set(RENDERING_SOURCES
 	materials/MaterialManager.cpp
 	rhi/RHIFactory.cpp
 	scene/SceneRenderer.cpp
-	shader/HlslCompiler.cpp)
+	shader/HlslCompiler.cpp
+	textures/ImageLoader.cpp
+	textures/TextureManager.cpp)
 
 # Fuentes del backend específicas de la plataforma -------------------------------------------------
 if(WIN32)
@@ -358,4 +360,15 @@ if(ANXIETY_BACKEND_GLES_ENABLED)
 		find_library(GLES3_LIB NAMES GLESv3 GLESv2 REQUIRED)
 		target_link_libraries(anxiety_rendering PRIVATE ${GLES3_LIB})
 	endif()
+endif()
+
+
+# stb_image — define ANXIETY_HAVE_STB_IMAGE si la cabecera se ha descargado ----------------------
+set(_STB_HEADER "${CMAKE_SOURCE_DIR}/third_party/stb/stb_image.h")
+if(EXISTS "${_STB_HEADER}")
+    target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_HAVE_STB_IMAGE=1)
+    target_include_directories(anxiety_rendering PUBLIC "${CMAKE_SOURCE_DIR}/third_party")
+    message(STATUS "[anxiety] stb_image.h encontrado — carga de texturas desde fichero activada.")
+else()
+    message(STATUS "[anxiety] stb_image.h no encontrado — carga de texturas desde fichero desactivada.")
 endif()
