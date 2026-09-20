@@ -1,4 +1,5 @@
 #include "RenderingModule.h"
+#include "materials/MaterialManager.h"
 #include "scene/SceneRenderer.h"
 #include "Logger.h"
 
@@ -124,9 +125,10 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
             // No es fatal: el clear pass sigue funcionando.
         }
 
-        // Crea el SceneRenderer (siempre, incluso en modo headless — quien llame puede usarlo
-        // para subir mallas antes de que haya una ventana disponible).
-        m_scene_renderer = std::make_unique<scene::SceneRenderer>(*m_device);
+        // Gestor de materiales — en la construcción carga desde disco los shaders incorporados.
+        m_material_manager = std::make_unique<materials::MaterialManager>(*m_device);
+        // SceneRenderer — recibe un puntero al gestor de materiales.
+        m_scene_renderer = std::make_unique<scene::SceneRenderer>(*m_device, m_material_manager.get());
 
         LOG_INFO(k_category, "RenderingModule en línea.");
         return true;
@@ -257,6 +259,15 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
     void RenderingModule::on_shutdown() {
         if (m_device) {
             m_device->wait_idle();
+            // Libera los objetos que dependen del dispositivo ANTES de que este se destruya. Sus
+            // miembros se declaran antes que m_device, así que C++ los destruiría después de él
+            // (vkDestroyPipeline / vkFreeDescriptorSets sobre un VkDevice ya destruido en Vulkan).
+            m_scene_renderer.reset();
+            m_material_manager.reset();
+            m_descriptor_set.reset();
+            m_pipeline.reset();
+            m_fragment_shader.reset();
+            m_vertex_shader.reset();
             // Libera explícitamente los recursos de GPU mientras el HWND sigue vivo (modo 1:
             // PlatformModule::on_shutdown() se ejecuta DESPUÉS de esto y llama a DestroyWindow(); si
             // IDXGISwapChain3 sigue vivo en ese momento, el hook MakeWindowAssociation de DXGI

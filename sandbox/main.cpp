@@ -73,7 +73,7 @@ private:
 	anxiety::Engine eng(cfg);
 	auto& platMod   = eng.emplace_module<anxiety::platform::PlatformModule>(palCfg);
 	rendering::RenderingModule::Config mod_cfg;
-	//mod_cfg.preferred_backend = rendering::rhi::RHIBackend::Vulkan;
+	mod_cfg.preferred_backend = rendering::rhi::RHIBackend::Vulkan;
 	auto& renderMod = eng.emplace_module<anxiety::rendering::RenderingModule>(platMod, mod_cfg);
 	eng.emplace_module<AutoStopModule>(60u);
 
@@ -85,42 +85,74 @@ private:
 	// Construye el world de ECS: cámara + una entidad malla.
 	anxiety::ecs::World world;
 
-	namespace sc = anxiety::rendering::scene;
+	namespace sc  = anxiety::rendering::scene;
+	namespace mat = anxiety::rendering::materials;
 
 	// Entidad cámara -------------------------------------------------------------------------------
 	{
 		auto camEnt = world.create_entity();
 		sc::Transform camT{};
-		camT.position[2] = -3.f;   // ojo en (0, 0, -3), mirando hacia +Z
+		camT.position[2] = -4.0f;   // ojo en (0, 0, -4), mirando hacia +Z
 		world.add_component<sc::Transform>(camEnt, camT);
-		world.add_component<sc::Camera>(camEnt, sc::Camera{ 1.0472f, 0.1f, 1000.f, 16.f / 9.f });
+		world.add_component<sc::Camera>(camEnt, sc::Camera{ 1.0472f, 0.1f, 1000.0f, 16.0f / 9.0f });
 	}
 
 	// Entidad malla --------------------------------------------------------------------------------
-	{
-		struct SceneV { float x, y, z, r, g, b, a; };
-		static constexpr SceneV kVerts[] = {
-			{  0.f,  0.5f, 0.f, 1.f, 0.f, 0.f, 1.f },           // arriba   — rojo
-			{  0.5f,-0.5f, 0.f, 0.f, 1.f, 0.f, 1.f },           // derecha  — verde
-			{ -0.5f,-0.5f, 0.f, 0.f, 0.f, 1.f, 1.f },           // izquierda— azul
-		};
-		static constexpr uint32_t kIndices[] = { 0, 1, 2 };
+	struct SceneV { float x, y, z, r, g, b, a; };
+	static constexpr SceneV k_tri_verts[] = {
+        {  0.0f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f },                   // arriba
+        {  0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f },                   // derecha
+        { -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f },                   // izquierda
+	};
+	static constexpr uint32_t k_tri_idx[] = { 0, 1, 2 };
 
-		auto meshEnt = world.create_entity();
-		sc::Transform meshT{};                                  // en el origen
-		world.add_component<sc::Transform>(meshEnt, meshT);
+	auto* sr  = renderMod.scene_renderer();
+	auto* mgr = renderMod.material_manager();
 
-		auto* sr = renderMod.scene_renderer();
-		if (sr) {
-			auto h = sr->upload_mesh(kVerts, sizeof(kVerts), kIndices, sizeof(kIndices));
-			sc::MeshRenderer mr{};
-			mr.vertex_buffer = h.vertex_buffer;
-			mr.index_buffer = h.index_buffer;
-			mr.index_count = 3;
-			mr.vertex_stride = sizeof(SceneV);
-			world.add_component<sc::MeshRenderer>(meshEnt, mr);
-		}
+	// Crea dos instancias de material: tinte rojo y tinte azul.
+	mat::MaterialInstanceHandle red_inst, blue_inst;
+	if (mgr) {
+		red_inst  = mgr->create_instance(mgr->default_unlit());
+		blue_inst = mgr->create_instance(mgr->default_unlit());
+
+		mgr->set_base_color(red_inst, 1.0f, 0.3f, 0.3f, 1.0f);      // tinte rojo
+		mgr->set_base_color(blue_inst, 0.3f, 0.5f, 1.0f, 1.0f);     // tinte azul
 	}
+
+    // Triángulo rojo — lado izquierdo -----------------------------------------------------------
+    if (sr) {
+        auto h = sr->upload_mesh(k_tri_verts, sizeof(k_tri_verts), k_tri_idx, sizeof(k_tri_idx));
+        auto mesh_ent = world.create_entity();
+
+        sc::Transform t{};
+        t.position[0] = -0.8f;                                      // desplaza a la izquierda
+        world.add_component<sc::Transform>(mesh_ent, t);
+
+        sc::MeshRenderer mr{};
+        mr.vertex_buffer     = h.vertex_buffer;
+        mr.index_buffer      = h.index_buffer;
+        mr.index_count       = 3;
+        mr.vertex_stride     = sizeof(SceneV);
+        mr.material_instance = red_inst;
+        world.add_component<sc::MeshRenderer>(mesh_ent, mr);
+    }
+    // Triángulo azul — lado derecho -----------------------------------------------------------
+    if (sr) {
+        auto h = sr->upload_mesh(k_tri_verts, sizeof(k_tri_verts), k_tri_idx, sizeof(k_tri_idx));
+        auto mesh_ent = world.create_entity();
+
+        sc::Transform t{};
+        t.position[0] = 0.8f;                                      // desplaza a la derecha
+        world.add_component<sc::Transform>(mesh_ent, t);
+
+        sc::MeshRenderer mr{};
+        mr.vertex_buffer     = h.vertex_buffer;
+        mr.index_buffer      = h.index_buffer;
+        mr.index_count       = 3;
+        mr.vertex_stride     = sizeof(SceneV);
+        mr.material_instance = blue_inst;
+        world.add_component<sc::MeshRenderer>(mesh_ent, mr);
+    }
 
 	renderMod.set_world(&world);
 

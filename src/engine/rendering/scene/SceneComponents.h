@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rhi/RHITypes.h"
+#include "materials/MaterialHandle.h"
 
 #include <cstdint>
 #include <type_traits>
@@ -26,11 +27,11 @@ namespace anxiety::rendering::scene {
 	//   POSITION (float3, 12 bytes) | COLOR (float4, 16 bytes) — 28 bytes/vértice.
 	// --------------------------------------------------------------------------------------------
 	struct MeshRenderer {
-        rhi::BufferHandle vertex_buffer;            // datos de vértice intercalados
-        rhi::BufferHandle index_buffer;             // datos de índice (uint32_t)
-        uint32_t          index_count   = 0;
-        uint32_t          vertex_stride = 28;       // bytes por vértice (pos+col por defecto)
-        uint32_t          material_id   = 0;        // reservado para un futuro sistema de materiales
+        rhi::BufferHandle                 vertex_buffer;            // datos de vértice intercalados
+        rhi::BufferHandle                 index_buffer;             // datos de índice (uint32_t)
+        uint32_t                          index_count       = 0;
+        uint32_t                          vertex_stride     = 28;   // bytes por vértice (pos+col por defecto)
+		materials::MaterialInstanceHandle material_instance;        // inválido → material unlit por defecto
 	};
 	static_assert(std::is_trivially_copyable_v<MeshRenderer>);
 

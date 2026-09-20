@@ -1,6 +1,7 @@
 set(RENDERING_SOURCES
 	RenderingModule.cpp
 	graph/RenderGraph.cpp
+	materials/MaterialManager.cpp
 	rhi/RHIFactory.cpp
 	scene/SceneRenderer.cpp
 	shader/HlslCompiler.cpp)
@@ -246,6 +247,10 @@ target_include_directories(anxiety_rendering PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_compile_features(anxiety_rendering PUBLIC cxx_std_20)
 set_target_properties(anxiety_rendering PROPERTIES CXX_EXTENSIONS OFF)
+
+# Fija en tiempo de compilación la ruta de assets del árbol de fuentes para builds de desarrollo.
+# Los consumidores que distribuyan a otras máquinas deben sobrescribir ANXIETY_ASSETS_DIR.
+target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets")
 
 # Dependencias --------------------------------------------------------------------------------------
 # PUBLIC anxiety::platform - RenderingModule.h incluye PlatformModule.h, así que los consumidores

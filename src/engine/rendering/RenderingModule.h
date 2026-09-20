@@ -9,8 +9,9 @@
 #include <mutex>
 
 // Declaraciones adelantadas para no arrastrar aquí las cabeceras de ECS y de escena.
-namespace anxiety::ecs              { class World; }
-namespace anxiety::rendering::scene { class SceneRenderer; }
+namespace anxiety::ecs                  { class World; }
+namespace anxiety::rendering::scene     { class SceneRenderer; }
+namespace anxiety::rendering::materials { class MaterialManager; }
 
 namespace anxiety::rendering {
     // RenderingModule ----------------------------------------------------------------------------
@@ -76,9 +77,9 @@ namespace anxiety::rendering {
         [[nodiscard]] std::string_view              name()         const noexcept override { return "Rendering"; }
         [[nodiscard]] std::vector<std::string_view> dependencies() const          override { return m_plat ? std::vector<std::string_view>{ "Platform" } : std::vector<std::string_view>{}; }
 
-        [[nodiscard]] bool on_init(anxiety::Engine& engine) override;
-        void               on_update(float dt)              override;
-        void               on_shutdown()                    override;
+        [[nodiscard]] bool on_init(Engine& engine) override;
+        void               on_update(float dt)     override;
+        void               on_shutdown()           override;
 
         // Ventana embebida (modo 2 de arriba) -----------------------------------------------------
         // Crea (o recrea) el swapchain contra una ventana nativa cuya propiedad es externa al
@@ -96,19 +97,21 @@ namespace anxiety::rendering {
 
         // Accesores -------------------------------------------------------------------------------
         // Válido tras que on_init() devuelva true.
-        [[nodiscard]] rhi::IDevice& device()      noexcept { return *m_device; }
+        [[nodiscard]] rhi::IDevice&       device()      noexcept { return *m_device; }
         // Nulo en modo headless, o en modo embebido antes de attach_window() / tras detach_window().
-        [[nodiscard]] rhi::ISwapchain* swapchain()   noexcept { return m_swapchain.get(); }
+        [[nodiscard]] rhi::ISwapchain*    swapchain()   noexcept { return m_swapchain.get(); }
         [[nodiscard]] graph::RenderGraph& graph()       noexcept { return m_graph; }
 
-        void          set_clear_color(rhi::ClearColor c) noexcept { m_cfg.clear_color = c; }
+        void set_clear_color(rhi::ClearColor c) noexcept { m_cfg.clear_color = c; }
 
         // Adjunta un world de ECS para activar el renderizado de escena. Llamar antes del primer
         // fotograma renderizado. Pasar nullptr revierte al triángulo incorporado como fallback.
-        void          set_world(anxiety::ecs::World* world);
+        void set_world(anxiety::ecs::World* world);
 
         // Accede al SceneRenderer (válido tras on_init() con un swapchain).
-        [[nodiscard]] scene::SceneRenderer* scene_renderer() noexcept { return m_scene_renderer.get(); }
+        [[nodiscard]] scene::SceneRenderer*       scene_renderer() noexcept { return m_scene_renderer.get(); }
+        // Accede al gestor de materiales (válido tras on_init()).
+        [[nodiscard]] materials::MaterialManager* material_manager() noexcept { return m_material_manager.get(); }
 
     private:
         anxiety::platform::PlatformModule* m_plat = nullptr;      // nulo en modo ventana embebida
@@ -136,7 +139,8 @@ namespace anxiety::rendering {
         std::mutex m_swapchain_mutex;
 
         // SceneRenderer opcional — activo cuando se ha llamado a set_world().
-        std::unique_ptr<scene::SceneRenderer> m_scene_renderer;
+        std::unique_ptr<materials::MaterialManager> m_material_manager;
+        std::unique_ptr<scene::SceneRenderer>       m_scene_renderer;
 
         bool init_pipeline();                       // llamado desde on_init() cuando hay un swapchain
     };
