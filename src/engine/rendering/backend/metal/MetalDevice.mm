@@ -10,11 +10,17 @@
 #include "MetalShader.h"
 #include "MetalPipeline.h"
 #include "MetalDescriptorSet.h"
+#include "../../shader/HlslCompiler.h"
 #include "Logger.h"
 
+#include <algorithm>
 #include <cstring>
 #include <stdexcept>
 #include <dispatch/dispatch.h>
+
+#ifdef ANXIETY_HAVE_SPIRV_CROSS
+#include <spirv_msl.hpp>
+#endif
 
 namespace anxiety::rendering::backend::metal {
     // Construcción / destrucción --------------------------------------------------------------------
@@ -90,6 +96,7 @@ namespace anxiety::rendering::backend::metal {
 
     // Accesores de slots -------------------------------------------------------------------------
     MetalTextureSlot& MetalDevice::tex_slot(rhi::TextureHandle h) { return m_textures[static_cast<uint32_t>(h.id) - 1]; }
+    MetalBufferSlot&  MetalDevice::buf_slot(rhi::BufferHandle h)  { return m_buffers[static_cast<uint32_t>(h.id) - 1]; }
 
     // Buffer -------------------------------------------------------------------------------------
     rhi::BufferHandle MetalDevice::create_buffer(const rhi::BufferDesc& desc, const void* initial_data, size_t initial_data_sz) {
@@ -257,23 +264,77 @@ namespace anxiety::rendering::backend::metal {
     }
 
     // Compilación de shaders -------------------------------------------------------------------------
-    std::vector<uint8_t> MetalDevice::compile_shader_from_source(const char* source, const char* /*entry_point*/, rhi::ShaderStage /*stage*/) {
-        // En Metal validamos el origen MSL compilándolo, pero el "bytecode" que devolvemos es
-        // simplemente el texto fuente en UTF-8 — create_shader() lo volverá a compilar.
+    // Los shaders del motor son HLSL: shaderc los compila a SPIR-V y SPIRV-Cross los traduce a MSL. El
+    // "bytecode" que devolvemos es el texto MSL en UTF-8; create_shader() lo compila a MTLLibrary.
+#ifdef ANXIETY_HAVE_SPIRV_CROSS
+    // Fija los slots MSL de cada recurso según los rangos de binding de SPIR-V (ver HlslCompiler.h y
+    // k_msl_* en MetalHelpers.h).
+    static void add_msl_bindings(spirv_cross::CompilerMSL& msl, const spirv_cross::SmallVector<spirv_cross::Resource>& resources,
+                                 uint32_t binding_base, uint32_t slot_base, bool buffer, bool texture, bool sampler) {
+        for (const auto& r : resources) {
+            spirv_cross::MSLResourceBinding rb{};
+            rb.stage    = msl.get_execution_model();
+            rb.desc_set = msl.get_decoration(r.id, spv::DecorationDescriptorSet);
+            rb.binding  = msl.get_decoration(r.id, spv::DecorationBinding);
+            const uint32_t slot = slot_base + (rb.binding - binding_base);
+            if (buffer)  rb.msl_buffer  = slot;
+            if (texture) rb.msl_texture = slot;
+            if (sampler) rb.msl_sampler = slot;
+            msl.add_msl_resource_binding(rb);
+        }
+    }
+#endif
+
+    std::vector<uint8_t> MetalDevice::compile_shader_from_source(const char* source, const char* entry_point, rhi::ShaderStage stage) {
+        if (!source || !*source) {
+            LOGF_ERROR("Metal", "compile_shader_from_source: source nulo/vacío.");
+            return {};
+        }
+#ifdef ANXIETY_HAVE_SPIRV_CROSS
+        const std::vector<uint8_t> spirv = shader::compile_hlsl_to_spirv(source, entry_point, stage);
+        if (spirv.empty() || spirv.size() % sizeof(uint32_t) != 0) {
+            LOGF_ERROR("Metal", "compile_shader_from_source: falló la compilación de HLSL a SPIR-V.");
+            return {};
+        }
+
+        std::string msl_source;
+        try {
+            spirv_cross::CompilerMSL msl(reinterpret_cast<const uint32_t*>(spirv.data()), spirv.size() / sizeof(uint32_t));
+
+            spirv_cross::CompilerMSL::Options opts;
+            opts.platform = spirv_cross::CompilerMSL::Options::macOS;
+            opts.set_msl_version(2, 1);
+            msl.set_msl_options(opts);
+
+            const spirv_cross::ShaderResources res = msl.get_shader_resources();
+            add_msl_bindings(msl, res.uniform_buffers, shader::k_cbv_binding_base,     k_msl_cbv_buffer_base, true,  false, false);
+            add_msl_bindings(msl, res.storage_buffers, shader::k_uav_binding_base,     k_msl_uav_buffer_base, true,  false, false);
+            add_msl_bindings(msl, res.separate_images, shader::k_srv_binding_base,     0,                     false, true,  false);
+            add_msl_bindings(msl, res.separate_samplers, shader::k_sampler_binding_base, 0,                   false, false, true);
+
+            msl_source = msl.compile();
+        } catch (const spirv_cross::CompilerError& e) {
+            LOGF_ERROR("Metal", "compile_shader_from_source: SPIRV-Cross falló al generar MSL: {}", e.what());
+            return {};
+        }
+
+        // Valida el MSL compilándolo ahora para detectar errores en el momento de la carga.
         @autoreleasepool {
             id<MTLDevice> dev = (__bridge id<MTLDevice>)m_device;
-            NSString* src = [NSString stringWithUTF8String:source];
+            NSString* src = [NSString stringWithUTF8String:msl_source.c_str()];
             NSError*  err = nil;
             id<MTLLibrary> lib = [dev newLibraryWithSource:src options:nil error:&err];
             if (!lib) {
-                LOGF_ERROR("Metal", "error de compilación MSL: {}", [[err localizedDescription] UTF8String]);
+                LOGF_ERROR("Metal", "error de compilación MSL: {}\n{}", [[err localizedDescription] UTF8String], msl_source);
                 return {};
             }
-            size_t len = std::strlen(source);
-            return std::vector<uint8_t>(
-                reinterpret_cast<const uint8_t*>(source),
-                reinterpret_cast<const uint8_t*>(source) + len);
         }
+        return std::vector<uint8_t>(msl_source.begin(), msl_source.end());
+#else
+        (void)entry_point; (void)stage;
+        LOGF_ERROR("Metal", "compile_shader_from_source: compilado sin shaderc/SPIRV-Cross — no hay traducción de HLSL a MSL.");
+        return {};
+#endif
     }
 
     std::unique_ptr<rhi::IShader> MetalDevice::create_shader(const rhi::ShaderDesc& desc, rhi::ShaderStage stage) {
@@ -294,7 +355,8 @@ namespace anxiety::rendering::backend::metal {
             }
 
             const char* ep = desc.entry_point ? desc.entry_point : "main";
-            NSString* entry = [NSString stringWithUTF8String:ep];
+            // SPIRV-Cross renombra "main" a "main0" en MSL (main es reservado).
+            NSString* entry = [NSString stringWithUTF8String:(std::strcmp(ep, "main") == 0 ? "main0" : ep)];
             id<MTLFunction> fn = [lib newFunctionWithName:entry];
             if (!fn) {
                 LOGF_ERROR("Metal", "create_shader — función '{}' no encontrada en la library", ep);
@@ -334,15 +396,20 @@ namespace anxiety::rendering::backend::metal {
             // Descriptor de vértices
             if (!desc.vertex_layout.attributes.empty()) {
                 MTLVertexDescriptor* vd = [[MTLVertexDescriptor alloc] init];
+                // El índice de atributo es la posición en el layout: coincide con el location que shaderc
+                // asigna por orden de declaración de la entrada del vertex shader (igual que Vulkan).
+                uint32_t attr_index = 0;
                 for (const auto& attr : desc.vertex_layout.attributes) {
-                    vd.attributes[attr.semantic_index].format      = to_MTL_vertex_format(attr.format);
-                    vd.attributes[attr.semantic_index].offset      = attr.byte_offset;
-                    vd.attributes[attr.semantic_index].bufferIndex = attr.input_slot;
+                    vd.attributes[attr_index].format      = to_MTL_vertex_format(attr.format);
+                    vd.attributes[attr_index].offset      = attr.byte_offset;
+                    vd.attributes[attr_index].bufferIndex = attr.input_slot;
+                    ++attr_index;
                 }
                 // Todos los atributos del mismo input slot comparten una única entrada de layout.
-                vd.layouts[0].stride       = desc.vertex_layout.stride_bytes;
-                vd.layouts[0].stepRate     = 1;
-                vd.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
+                const uint32_t slot = desc.vertex_layout.attributes.front().input_slot;
+                vd.layouts[slot].stride       = desc.vertex_layout.stride_bytes;
+                vd.layouts[slot].stepRate     = 1;
+                vd.layouts[slot].stepFunction = MTLVertexStepFunctionPerVertex;
                 rpd.vertexDescriptor = vd;
             }
 
@@ -385,7 +452,7 @@ namespace anxiety::rendering::backend::metal {
                 dss = [dev newDepthStencilStateWithDescriptor:dsd];
             }
 
-            return std::make_unique<MetalPipeline>(
+            auto pipeline = std::make_unique<MetalPipeline>(
                 (__bridge_retained void*)pso,
                 dss ? (__bridge_retained void*)dss : nullptr,
                 desc.debug_name ? desc.debug_name : "",
@@ -393,6 +460,27 @@ namespace anxiety::rendering::backend::metal {
                 desc.rasterizer.cull_mode,
                 desc.rasterizer.fill_mode,
                 desc.rasterizer.front_face_CCW);
+
+            // Samplers estáticos (registro sN de HLSL -> [[sampler(N)]] en MSL)
+            for (const auto& sd : desc.static_samplers) {
+                MTLSamplerDescriptor* sampd = [[MTLSamplerDescriptor alloc] init];
+                sampd.minFilter    = to_MTL_sampler_min_mag_filter(sd.filter);
+                sampd.magFilter    = to_MTL_sampler_min_mag_filter(sd.filter);
+                sampd.mipFilter    = sd.filter == rhi::FilterMode::Nearest ? MTLSamplerMipFilterNearest : MTLSamplerMipFilterLinear;
+                sampd.sAddressMode = to_MTL_sampler_address_mode(sd.address_U);
+                sampd.tAddressMode = to_MTL_sampler_address_mode(sd.address_V);
+                sampd.rAddressMode = to_MTL_sampler_address_mode(sd.address_W);
+                sampd.lodMinClamp  = sd.min_lod;
+                sampd.lodMaxClamp  = sd.max_lod;
+                sampd.maxAnisotropy = sd.filter == rhi::FilterMode::Anisotropic ? std::max(1u, std::min(16u, sd.max_anisotropy)) : 1;
+                id<MTLSamplerState> ss = [dev newSamplerStateWithDescriptor:sampd];
+                if (!ss) {
+                    LOGF_ERROR("Metal", "create_pipeline: no se pudo crear el sampler s{}", sd.shader_register);
+                    continue;
+                }
+                pipeline->add_static_sampler(sd.shader_register, (__bridge_retained void*)ss);
+            }
+            return pipeline;
         }
     }
 

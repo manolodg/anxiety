@@ -64,6 +64,7 @@ namespace anxiety::rendering::backend::metal {
         void* mtl_command_queue() const noexcept { return m_command_queue; }
 
         MetalTextureSlot& tex_slot(rhi::TextureHandle h);
+        MetalBufferSlot&  buf_slot(rhi::BufferHandle h);
 
         // Registra una MTLTexture cuya propiedad es externa (p. ej. un drawable de CAMetalLayer). Devuelve un handle que se puede usar como cualquier otro handle de textura.
         rhi::TextureHandle register_external_texture(void* mtl_texture, uint32_t w, uint32_t h);

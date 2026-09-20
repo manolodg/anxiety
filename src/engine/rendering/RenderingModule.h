@@ -71,7 +71,8 @@ namespace anxiety::rendering {
         explicit RenderingModule(anxiety::platform::PlatformModule& plat, Config cfg);
         // Modo ventana embebida: sin ventana propia. El swapchain no existe hasta que se llame a
         // attach_window().
-        explicit RenderingModule(Config cfg = {});
+        RenderingModule();
+        explicit RenderingModule(Config cfg);
         ~RenderingModule() override;
 
         // IModule --------------------------------------------------------------------------------

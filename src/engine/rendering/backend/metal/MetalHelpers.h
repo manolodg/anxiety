@@ -10,6 +10,15 @@
 #include "../../rhi/VertexLayout.h"
 
 namespace anxiety::rendering::backend::metal {
+    // Mapa de slots MSL ------------------------------------------------------------------------------
+    // Los shaders HLSL (bN, tN, sN, uN) se traducen a MSL con SPIRV-Cross y estos slots se fijan en la
+    // traducción (MetalDevice::compile_shader_from_source). MetalDescriptorSet y MetalCommandBuffer
+    // DEBEN usar los mismos. Los vertex buffers ocupan los slots de buffer 0..k_msl_cbv_buffer_base-1.
+    inline constexpr uint32_t k_msl_cbv_buffer_base = 8;    // cbuffer bN   -> [[buffer(8 + N)]]
+    inline constexpr uint32_t k_msl_uav_buffer_base = 24;   // RWBuffer uN  -> [[buffer(24 + N)]]
+                                                            // Texture2D tN -> [[texture(N)]]
+                                                            // SamplerState sN -> [[sampler(N)]]
+
     // Formato de píxel -----------------------------------------------------------------------------
     inline MTLPixelFormat to_MTL_pixel_format(rhi::Format fmt) noexcept {
         switch (fmt) {

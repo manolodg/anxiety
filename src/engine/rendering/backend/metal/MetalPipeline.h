@@ -7,6 +7,8 @@
 #include "../../rhi/IPipeline.h"
 #include "../../rhi/PipelineDesc.h"
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace anxiety::rendering::backend::metal {
 
@@ -26,6 +28,10 @@ namespace anxiety::rendering::backend::metal {
         rhi::FillMode          fill_mode()          const noexcept { return m_fill_mode; }
         bool                   front_face_ccw()     const noexcept { return m_front_face_ccw; }
 
+        // Samplers estáticos (registro sN, id<MTLSamplerState>). El pipeline se queda con la propiedad.
+        void add_static_sampler(uint32_t shader_register, void* sampler_state) { m_samplers.emplace_back(shader_register, sampler_state); }
+        [[nodiscard]] const std::vector<std::pair<uint32_t, void*>>& static_samplers() const noexcept { return m_samplers; }
+
     private:
         void*                  m_pipeline_state = nullptr;  // id<MTLRenderPipelineState>
         void*                  m_depth_state    = nullptr;  // id<MTLDepthStencilState>
@@ -34,6 +40,7 @@ namespace anxiety::rendering::backend::metal {
         rhi::CullMode          m_cull_mode;
         rhi::FillMode          m_fill_mode;
         bool                   m_front_face_ccw = true;
+        std::vector<std::pair<uint32_t, void*>> m_samplers;   // (sN, id<MTLSamplerState>)
     };
 
 } // namespace anxiety::rendering::backend::metal

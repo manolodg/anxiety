@@ -18,6 +18,10 @@ namespace anxiety::rendering::backend::metal {
     {}
 
     MetalPipeline::~MetalPipeline() {
+        for (auto& s : m_samplers) {
+            if (s.second) (void)(__bridge_transfer id<MTLSamplerState>)s.second;
+        }
+        m_samplers.clear();
         if (m_depth_state) {
             (void)(__bridge_transfer id<MTLDepthStencilState>)m_depth_state;
             m_depth_state = nullptr;

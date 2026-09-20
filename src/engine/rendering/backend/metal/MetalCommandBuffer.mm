@@ -64,7 +64,7 @@ namespace anxiety::rendering::backend::metal {
 
             if (m_pending_color_tex) {
                 id<MTLTexture> color_tex = (__bridge id<MTLTexture>)m_pending_color_tex;
-                auto& att = rpd.colorAttachments[0];
+                MTLRenderPassColorAttachmentDescriptor* att = rpd.colorAttachments[0];
                 att.texture     = color_tex;
                 att.loadAction  = to_MTL_load_action(m_has_pending_clear);
                 att.storeAction = MTLStoreActionStore;
@@ -151,6 +151,12 @@ namespace anxiety::rendering::backend::metal {
 
             if (mp.mtl_depth_state()) {
                 [enc setDepthStencilState:(__bridge id<MTLDepthStencilState>)mp.mtl_depth_state()];
+            }
+
+            for (const auto& [reg, sampler] : mp.static_samplers()) {
+                id<MTLSamplerState> ss = (__bridge id<MTLSamplerState>)sampler;
+                [enc setVertexSamplerState:ss   atIndex:reg];
+                [enc setFragmentSamplerState:ss atIndex:reg];
             }
 
             [enc setCullMode:to_MTL_cull_mode(mp.cull_mode())];

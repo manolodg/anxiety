@@ -62,6 +62,7 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
     // Construcción / destrucción --------------------------------------------------------------------
     RenderingModule::RenderingModule(anxiety::platform::PlatformModule& plat) : RenderingModule(plat, Config{}) {}
     RenderingModule::RenderingModule(anxiety::platform::PlatformModule& plat, Config cfg) : m_plat(&plat), m_cfg(cfg) {}
+    RenderingModule::RenderingModule() : RenderingModule(Config{}) {}
     RenderingModule::RenderingModule(Config cfg) : m_plat(nullptr), m_cfg(cfg) {}
     RenderingModule::~RenderingModule() = default;
 

@@ -134,31 +134,6 @@ if(ANXIETY_OPENGL)
 		set(CMAKE_POLICY_VERSION_MINIMUM "3.5" CACHE INTERNAL "")
 		FetchContent_MakeAvailable(glad)
 
-		# SPIRV-Cross — traduce el SPIR-V generado por shaderc a GLSL (los shaders del motor son HLSL y
-		# el driver de GL solo entiende GLSL). Solo se necesita la parte GLSL, como librería estática.
-		if(ANXIETY_HAVE_SHADERC)
-			FetchContent_Declare(
-				spirv_cross
-				GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross.git
-				GIT_TAG        vulkan-sdk-1.3.290.0
-			)
-			set(SPIRV_CROSS_CLI              OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_ENABLE_TESTS     OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_ENABLE_HLSL      OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_ENABLE_MSL       OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_ENABLE_CPP       OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_ENABLE_REFLECT   OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_ENABLE_C_API     OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_ENABLE_UTIL      OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_SKIP_INSTALL     ON  CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_SHARED           OFF CACHE BOOL "" FORCE)
-			set(SPIRV_CROSS_STATIC           ON  CACHE BOOL "" FORCE)
-			FetchContent_MakeAvailable(spirv_cross)
-			set(ANXIETY_HAVE_SPIRV_CROSS ON)
-		else()
-			message(STATUS "[anxiety] OpenGL sin shaderc - no se podrán compilar los shaders HLSL en el backend de GL.")
-		endif()
-
 		list(APPEND RENDERING_SOURCES
 			backend/opengl/GLCommandBuffer.cpp
 			backend/opengl/GLDescriptorSet.cpp
@@ -171,6 +146,39 @@ if(ANXIETY_OPENGL)
 	else()
 		message(STATUS "[anxiety] OpenGL no encontrado - backend de OpenGL desactivado.")
 	endif()
+endif()
+
+# SPIRV-Cross ------------------------------------------------------------------------------------
+# Traduce el SPIR-V generado por shaderc (los shaders del motor son HLSL) al lenguaje nativo del
+# backend: GLSL para OpenGL y MSL para Metal. Se compila como librería estática y solo con los
+# traductores que hacen falta.
+if(ANXIETY_HAVE_SHADERC AND (ANXIETY_BACKEND_OPENGL_ENABLED OR ANXIETY_BACKEND_METAL_ENABLED))
+	include(FetchContent)
+	FetchContent_Declare(
+		spirv_cross
+		GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross.git
+		GIT_TAG        vulkan-sdk-1.3.290.0
+	)
+	set(SPIRV_CROSS_CLI              OFF CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_ENABLE_TESTS     OFF CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_ENABLE_GLSL      ON  CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_ENABLE_HLSL      OFF CACHE BOOL "" FORCE)
+	if(ANXIETY_BACKEND_METAL_ENABLED)
+		set(SPIRV_CROSS_ENABLE_MSL   ON  CACHE BOOL "" FORCE)
+	else()
+		set(SPIRV_CROSS_ENABLE_MSL   OFF CACHE BOOL "" FORCE)
+	endif()
+	set(SPIRV_CROSS_ENABLE_CPP       OFF CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_ENABLE_REFLECT   OFF CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_ENABLE_C_API     OFF CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_ENABLE_UTIL      OFF CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_SKIP_INSTALL     ON  CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_SHARED           OFF CACHE BOOL "" FORCE)
+	set(SPIRV_CROSS_STATIC           ON  CACHE BOOL "" FORCE)
+	FetchContent_MakeAvailable(spirv_cross)
+	set(ANXIETY_HAVE_SPIRV_CROSS ON)
+elseif(ANXIETY_BACKEND_OPENGL_ENABLED OR ANXIETY_BACKEND_METAL_ENABLED)
+	message(STATUS "[anxiety] Sin shaderc - no se podrán compilar los shaders HLSL en los backends de GL/Metal.")
 endif()
 
 # OpenGL ES 3.x (Linux ARM / Android / RPi) -------------------------------------------------------
@@ -224,13 +232,16 @@ endif()
 if(ANXIETY_BACKEND_VULKAN_ENABLED)
 	target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_BACKEND_VULKAN=1)
 endif()
-if(ANXIETY_HAVE_SHADERC AND (ANXIETY_BACKEND_VULKAN_ENABLED OR ANXIETY_BACKEND_OPENGL_ENABLED OR ANXIETY_BACKEND_GLES_ENABLED))
+if(ANXIETY_HAVE_SHADERC AND (ANXIETY_BACKEND_VULKAN_ENABLED OR ANXIETY_BACKEND_OPENGL_ENABLED OR ANXIETY_BACKEND_GLES_ENABLED OR ANXIETY_BACKEND_METAL_ENABLED))
 	target_compile_definitions(anxiety_rendering PRIVATE ANXIETY_HAVE_SHADERC=1)
 	target_link_libraries(anxiety_rendering PRIVATE ${ANXIETY_SHADERC_TARGET})
 endif()
 if(ANXIETY_HAVE_SPIRV_CROSS)
 	target_compile_definitions(anxiety_rendering PRIVATE ANXIETY_HAVE_SPIRV_CROSS=1)
 	target_link_libraries(anxiety_rendering PRIVATE spirv-cross-glsl spirv-cross-core)
+	if(ANXIETY_BACKEND_METAL_ENABLED)
+		target_link_libraries(anxiety_rendering PRIVATE spirv-cross-msl)
+	endif()
 endif()
 if(ANXIETY_BACKEND_METAL_ENABLED)
 	target_compile_definitions(anxiety_rendering PUBLIC ANXIETY_BACKEND_METAL=1)
@@ -307,6 +318,8 @@ if(APPLE AND ANXIETY_BACKEND_METAL_ENABLED)
 	set_source_files_properties(
 		backend/metal/MetalCommandBuffer.mm
 		backend/metal/MetalDevice.mm
+		backend/metal/MetalPipeline.mm
+		backend/metal/MetalShader.mm
 		backend/metal/MetalSwapchain.mm
 		PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
 endif()

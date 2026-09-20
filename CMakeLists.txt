@@ -1,8 +1,16 @@
 cmake_minimum_required (VERSION 3.25)
-project(anxiety
-	VERSION     0.1.0
-	DESCRIPTION "GameEngine AAA modular"
-	LANGUAGES   CXX C)
+if(APPLE)
+    # OBJCXX es necesario para los archivos .mm de macOS y debe activarse en el CMakeLists raíz
+    project(anxiety
+        VERSION     0.1.0
+        DESCRIPTION "GameEngine AAA modular"
+        LANGUAGES   CXX C OBJCXX)
+else()
+    project(anxiety
+        VERSION     0.1.0
+        DESCRIPTION "GameEngine AAA modular"
+        LANGUAGES   CXX C)
+endif()
 
 # Habilite Recarga activa para los compiladores de MSVC si se admiten.
 if (POLICY CMP0141)

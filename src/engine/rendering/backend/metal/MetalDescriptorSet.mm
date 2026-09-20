@@ -5,6 +5,7 @@
 
 #include "MetalDescriptorSet.h"
 #include "MetalDevice.h"
+#include "MetalHelpers.h"
 
 namespace anxiety::rendering::backend::metal {
 
@@ -59,8 +60,9 @@ namespace anxiety::rendering::backend::metal {
             case rhi::DescriptorType::UniformBuffer:
             case rhi::DescriptorType::StorageBuffer: {
                 id<MTLBuffer> buf = (__bridge id<MTLBuffer>)b.resource;
-                [enc setVertexBuffer:buf   offset:(NSUInteger)b.buffer_offset atIndex:b.binding];
-                [enc setFragmentBuffer:buf offset:(NSUInteger)b.buffer_offset atIndex:b.binding];
+                const NSUInteger slot = (b.type == rhi::DescriptorType::UniformBuffer ? k_msl_cbv_buffer_base : k_msl_uav_buffer_base) + b.binding;
+                [enc setVertexBuffer:buf   offset:(NSUInteger)b.buffer_offset atIndex:slot];
+                [enc setFragmentBuffer:buf offset:(NSUInteger)b.buffer_offset atIndex:slot];
                 break;
             }
             case rhi::DescriptorType::Texture: {
@@ -70,7 +72,7 @@ namespace anxiety::rendering::backend::metal {
                 break;
             }
             case rhi::DescriptorType::Sampler:
-                // Los samplers se incrustan en el pipeline como samplers estáticos; nada que hacer aquí.
+                // Los samplers se incrustan en el pipeline como samplers estáticos (ver MetalCommandBuffer::bind_pipeline).
                 break;
             default:
                 break;
