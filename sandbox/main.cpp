@@ -88,88 +88,142 @@ private:
 
 	namespace sc  = anxiety::rendering::scene;
 	namespace mat = anxiety::rendering::materials;
-	namespace tex = anxiety::rendering::textures;
 
-	// Entidad cámara -------------------------------------------------------------------------------
-	{
-		auto camEnt = world.create_entity();
-		sc::Transform camT{};
-		camT.position[2] = -4.0f;   // ojo en (0, 0, -4), mirando hacia +Z
-		world.add_component<sc::Transform>(camEnt, camT);
-		world.add_component<sc::Camera>(camEnt, sc::Camera{ 1.0472f, 0.1f, 1000.0f, 16.0f / 9.0f });
-	}
 
-    // Geometría del quad (36 bytes/vértice: POSITION float3, COLOR float4, UV float2) ----------
-    struct QuadV { float x, y, z, r, g, b, a, u, v; };
+    // Cámara — en (0,1,-5) mirando hacia el origen ------------------------------------------------
+    {
+        auto cam_ent = world.create_entity();
+        sc::Transform cam_T{};
+        cam_T.position[0] =  0.0f;
+        cam_T.position[1] =  1.0f;
+        cam_T.position[2] = -5.f;
+        // Mira a lo largo de +Z: el cuaternión "adelante" por defecto es la identidad {0,0,0,1}
+        world.add_component<sc::Transform>(cam_ent, cam_T);
+        world.add_component<sc::Camera>(cam_ent, sc::Camera{ 1.0472f, 0.1f, 500.f, 16.f / 9.f });
+    }
 
-    // Quad unitario centrado en el origen, abarcando [-0.5, 0.5] en XY.
-    static constexpr QuadV k_quad_verts[] = {
-        { -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f },        // arriba-izquierda
-        {  0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f },        // arriba-derecha
-        {  0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f },        // abajo-derecha
-        { -0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f },        // abajo-izquierda
+    // Luz direccional — sol cálido, arriba a la derecha -------------------------------------------
+    {
+        auto dl_ent = world.create_entity();
+        world.add_component<sc::Transform>(dl_ent, sc::Transform{});
+
+        sc::DirectionalLight dl{};
+        // Dirección en la que viaja la luz (normalizada, hacia abajo-izquierda-adelante)
+        const float s = 1.0f / std::sqrt(3.0f);
+        dl.direction[0] = -s;                           // izquierda
+        dl.direction[1] = -s;                           // abajo
+        dl.direction[2] =  s;                           // adelante
+        dl.intensity    = 2.5f;
+        dl.color[0]     = 1.00f;
+        dl.color[1]     = 0.95f;
+        dl.color[2]     = 0.80f;                        // blanco cálido
+        world.add_component<sc::DirectionalLight>(dl_ent, dl);
+    }
+
+    // Luz puntual 1 — azul frío, lado izquierdo ---------------------------------------------------
+    {
+        auto pl_ent = world.create_entity();
+        sc::Transform t{};
+        t.position[0] = -3.0f;
+        t.position[1] =  2.0f;
+        t.position[2] =  0.0f;
+        world.add_component<sc::Transform>(pl_ent, t);
+
+        sc::PointLight pl{};
+        pl.color[0]  = 0.3f;
+        pl.color[1]  = 0.6f;
+        pl.color[2]  = 1.0f;                            // azul frío
+        pl.intensity = 6.0f;
+        pl.range     = 10.f;
+        world.add_component<sc::PointLight>(pl_ent, pl);
+    }
+
+    // Luz puntual 2 — naranja cálido, lado derecho ------------------------------------------------
+    {
+        auto pl_ent = world.create_entity();
+        sc::Transform t{};
+        t.position[0] = 3.0f;
+        t.position[1] = 2.0f;
+        t.position[2] = 0.0f;
+        world.add_component<sc::Transform>(pl_ent, t);
+
+        sc::PointLight pl{};
+        pl.color[0]  = 1.0f;
+        pl.color[1]  = 0.4f;
+        pl.color[2]  = 0.1f;                            // naranja cálido
+        pl.intensity = 6.0f;
+        pl.range     = 10.f;
+        world.add_component<sc::PointLight>(pl_ent, pl);
+    }
+
+    // Geometría del quad PBR -----------------------------------------------------------------------
+    // Quad plano en el plano XY en z=0. La normal mira hacia -Z (hacia la cámara). Tangente = +X,
+    // signo de la bitangente = +1.
+    struct PbrV {
+        float px, py, pz;                               // POSITION
+        float nx, ny, nz;                               // NORMAL
+        float u, v;                                     // TEXCOORD
+        float tx, ty, tz, tw;                           // TANGENT (w = bitangent sign)
     };
-    static constexpr uint32_t k_quad_idx[] = { 0,1,2,  0,2,3 };             // 6 índices
+    static_assert(sizeof(PbrV) == 48);
+
+    // Quad unitario 1×1 centrado en el origen, mirando hacia -Z.
+    const PbrV k_quad_v[] = {
+        { -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f },
+        {  0.5f,  0.5f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f },
+        {  0.5f, -0.5f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f },
+        { -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f },
+    };
+    const uint32_t k_quad_idx[] = { 0,1,2, 0,2,3 };
 
     auto* sr  = render_mod.scene_renderer();
     auto* mgr = render_mod.material_manager();
     auto* tmg = render_mod.texture_manager();
 
-    // Quad izquierdo — unlit, tinte rojo (sin textura) --------------------------------------------
-    if (sr && mgr) {
-        mat::MaterialHandle unlit_mat = mgr->default_unlit();
-        mat::MaterialInstanceHandle red_inst;
-        if (unlit_mat.is_valid()) {
-            red_inst = mgr->create_instance(unlit_mat);
-            mgr->set_base_color(red_inst, 1.0f, 0.3f, 0.3f, 1.0f);
-        }
-
-        auto h   = sr->upload_mesh(k_quad_verts, sizeof(k_quad_verts), k_quad_idx, sizeof(k_quad_idx));
-        auto ent = world.create_entity();
-        sc::Transform t{};
-        t.position[0] = -1.0f;
-        world.add_component<sc::Transform>(ent, t);
-        sc::MeshRenderer mr{};
-        mr.vertex_buffer     = h.vertex_buffer;
-        mr.index_buffer      = h.index_buffer;
-        mr.index_count       = 6;
-        mr.vertex_stride     = sizeof(QuadV);
-        mr.material_instance = red_inst;
-        world.add_component<sc::MeshRenderer>(ent, mr);
+    if (!sr || !mgr || !tmg || !mgr->default_PBR().is_valid()) {
+        LOG_WARNING("PBR", "Material PBR no disponible — demo omitida.");
+        render_mod.set_world(&world);
+        eng.run();
+        render_mod.set_world(nullptr);
+        return;
     }
 
-    // Quad derecho — unlit_textured, textura cargada desde fichero -------------------------------
-    if (sr && mgr && tmg) {
-        mat::MaterialHandle tex_mat = mgr->default_unlit_textured();
-        mat::MaterialInstanceHandle texInst;
-        anxiety::rendering::rhi::TextureHandle checker_tex;
+    // 3 columnas × 2 filas — varía metallic (columna) y roughness (fila).
+    const float metallic_values[3]  = { 0.0f, 0.5f, 1.0f };
+    const float roughness_values[2] = { 0.1f, 0.8f };
 
-        if (tex_mat.is_valid()) {
-            texInst = mgr->create_instance(tex_mat);
+    const float spacing_X = 1.4f;
+    const float spacing_Y = 1.4f;
+    const float start_X   = -(spacing_X * (3 - 1)) * 0.5f;          // centra la rejilla
+    const float start_Y   =  (spacing_Y * (2 - 1)) * 0.5f;
+    
+    for (int row = 0; row < 2; ++row) {
+        for (int col = 0; col < 3; ++col) {
+            auto h   = sr->upload_mesh(k_quad_v, sizeof(k_quad_v), k_quad_idx, sizeof(k_quad_idx));
+            auto ent = world.create_entity();
 
-            // Damero RGBA8 2×2: cian arriba-izquierda/abajo-derecha, magenta en el resto.
-            constexpr uint8_t C = 255, Z = 0;
-            const uint8_t k_pixels[2 * 2 * 4] = {
-                C, Z, C, C,   Z, C, C, C,                       // fila 0: cian, magenta
-                Z, C, C, C,   C, Z, C, C,                       // fila 1: magenta, cian
-            };
-            //checker_tex = tmg->load_from_memory(k_pixels, 2, 2, "CheckerTex");
-            checker_tex = tmg->load("textures/roca.jpg");
-            if (checker_tex.is_valid()) mgr->set_albedo_texture(texInst, checker_tex);
+            sc::Transform t{};
+            t.position[0] = start_X + static_cast<float>(col) * spacing_X;
+            t.position[1] = start_Y - static_cast<float>(row) * spacing_Y;
+            t.position[2] = 0.0f;
+            world.add_component<sc::Transform>(ent, t);
+
+            auto tex = tmg->load("textures/roca.jpg");
+
+            mat::MaterialInstanceHandle mi = mgr->create_instance(mgr->default_PBR());
+            mgr->set_base_color(mi, 0.8f, 0.8f, 0.8f, 1.0f);        // albedo gris claro
+            mgr->set_metallic(mi, metallic_values[col]);
+            mgr->set_roughness(mi, roughness_values[row]);
+            mgr->set_albedo_texture(mi, tex);
+
+            sc::MeshRenderer mr{};
+            mr.vertex_buffer     = h.vertex_buffer;
+            mr.index_buffer      = h.index_buffer;
+            mr.index_count       = 6;
+            mr.vertex_stride     = sizeof(PbrV);
+            mr.material_instance = mi;
+            world.add_component<sc::MeshRenderer>(ent, mr);
         }
-
-        auto h = sr->upload_mesh(k_quad_verts, sizeof(k_quad_verts), k_quad_idx, sizeof(k_quad_idx));
-        auto ent = world.create_entity();
-        sc::Transform t{};
-        t.position[0] = 1.0f;
-        world.add_component<sc::Transform>(ent, t);
-        sc::MeshRenderer mr{};
-        mr.vertex_buffer     = h.vertex_buffer;
-        mr.index_buffer      = h.index_buffer;
-        mr.index_count       = 6;
-        mr.vertex_stride     = sizeof(QuadV);
-        mr.material_instance = texInst;
-        world.add_component<sc::MeshRenderer>(ent, mr);
     }
 
     render_mod.set_world(&world);

@@ -120,14 +120,6 @@ namespace anxiety::rendering {
         anxiety::platform::PlatformModule* m_plat = nullptr;      // nulo en modo ventana embebida
         Config                              m_cfg;
 
-        // Orden de destrucción: recursos de pipeline → graph → cmdBuffer → swapchain → device.
-        std::unique_ptr<rhi::IShader>        m_vertex_shader;
-        std::unique_ptr<rhi::IShader>        m_fragment_shader;
-        std::unique_ptr<rhi::IPipeline>      m_pipeline;
-        rhi::BufferHandle                    m_vertex_buffer;
-        rhi::BufferHandle                    m_constant_buffer;
-        std::unique_ptr<rhi::IDescriptorSet> m_descriptor_set;
-
         // C++ destruye los miembros en orden inverso al de su declaración.
         // Para conseguir: graph → cmdBuffer → swapchain → device (primero en destruirse → último en destruirse)
         // Se declaran en el orden opuesto: device primero, graph al final.
@@ -145,6 +137,14 @@ namespace anxiety::rendering {
         std::unique_ptr<materials::MaterialManager> m_material_manager;
         std::unique_ptr<textures::TextureManager>   m_texture_manager;
         std::unique_ptr<scene::SceneRenderer>       m_scene_renderer;
+
+        // Orden de destrucción: recursos de pipeline → graph → cmdBuffer → swapchain → device.
+        std::unique_ptr<rhi::IShader>        m_vertex_shader;
+        std::unique_ptr<rhi::IShader>        m_fragment_shader;
+        std::unique_ptr<rhi::IPipeline>      m_pipeline;
+        rhi::BufferHandle                    m_vertex_buffer;
+        rhi::BufferHandle                    m_constant_buffer;
+        std::unique_ptr<rhi::IDescriptorSet> m_descriptor_set;
 
         bool init_pipeline();                       // llamado desde on_init() cuando hay un swapchain
     };

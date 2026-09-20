@@ -4,6 +4,7 @@
 #include "MaterialInstance.h"
 #include "rhi/IDevice.h"
 #include "rhi/RHITypes.h"
+#include "rhi/VertexLayout.h"
 
 #include <memory>
 #include <string>
@@ -50,6 +51,11 @@ namespace anxiety::rendering::materials {
         [[nodiscard]] MaterialHandle load_material(std::string_view name, std::string_view shader_path, std::string_view vs_entry = "VSMain", std::string_view ps_entry = "PSMain");
         // Carga (o devuelve el cacheado) un material con textura. Vertex layout: POSITION float3 + COLOR float4 + TEXCOORD float2 (stride 36). Incluye un sampler estático linear-wrap en s0.
         [[nodiscard]] MaterialHandle load_textured_material(std::string_view name, std::string_view shader_path, std::string_view vs_entry = "VSMain", std::string_view ps_entry = "PSMain");
+        // Carga (o devuelve el cacheado) un material PBR.
+        // Vertex layout: POSITION float3 + NORMAL float3 + TEXCOORD float2 + TANGENT float4 (stride 48).
+        // DS layout:     b0 (PerObject 128 B) + b1 (PerMaterial 64 B) + b2 (LightsCB 576 B) + t0 (albedo) + t1 (normal) + t2 (ORM).
+        // Sampler estático s0 linear-wrap.
+        [[nodiscard]] MaterialHandle load_PBR_material(std::string_view name, std::string_view shader_path, std::string_view vs_entry = "VSMain", std::string_view ps_entry = "PSMain");
 
         // Gestión de instancias ---------------------------------------------------------------
         [[nodiscard]] MaterialInstanceHandle create_instance(MaterialHandle mat);
@@ -61,22 +67,28 @@ namespace anxiety::rendering::materials {
         // Setter de conveniencia — equivalente a get_instance(h)->set_base_color(...).
         void set_base_color(MaterialInstanceHandle h, float r, float g, float b, float a) noexcept;
         void set_albedo_texture(MaterialInstanceHandle h, rhi::TextureHandle texture)     noexcept;
+        void set_metallic(MaterialInstanceHandle h, float v)                              noexcept;
+        void set_roughness(MaterialInstanceHandle h, float v)                             noexcept;
+        void set_emissive(MaterialInstanceHandle h, float r, float g, float b)            noexcept;
+        void set_normal_texture(MaterialInstanceHandle h, rhi::TextureHandle texture)     noexcept;
+        void set_orm_texture(MaterialInstanceHandle h, rhi::TextureHandle texture)        noexcept;
 
         // Handles de los materiales incorporados (pueden ser inválidos si la carga falló).
         [[nodiscard]] MaterialHandle default_unlit()          const noexcept { return m_unlit_handle; }
         [[nodiscard]] MaterialHandle default_unlit_textured() const noexcept { return m_unlit_textured_handle; }
+        [[nodiscard]] MaterialHandle default_PBR()            const noexcept { return m_pbr_handle; }
 
     private:
         [[nodiscard]] std::string resolve_path(std::string_view path) const;
 
         // Función interna que hace el trabajo: compila shaders + crea el PSO.
-        [[nodiscard]] MaterialHandle load_material_internal(std::string_view name, std::string_view shader_path, std::string_view vs_entry, std::string_view ps_entry, const rhi::DescriptorSetLayout& ds_layout,
-                                                            uint32_t vertex_stride, bool has_tex_coord, const std::vector<rhi::SamplerDesc>& samplers);
+        [[nodiscard]] MaterialHandle load_material_internal(std::string_view name, std::string_view shader_path, std::string_view vs_entry, std::string_view ps_entry, const rhi::DescriptorSetLayout& ds_layout, const rhi::VertexLayout& vertex_layout, const std::vector<rhi::SamplerDesc>& samplers);
 
         rhi::IDevice&   m_device;
         std::string     m_assets_dir;
         MaterialHandle  m_unlit_handle;
         MaterialHandle  m_unlit_textured_handle;
+        MaterialHandle  m_pbr_handle;
 
         std::vector<std::unique_ptr<Material>>          m_materials;  // indexado por id-1
         std::vector<std::unique_ptr<MaterialInstance>>  m_instances;  // indexado por id-1

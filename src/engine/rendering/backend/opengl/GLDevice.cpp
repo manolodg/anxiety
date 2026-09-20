@@ -524,6 +524,33 @@ namespace anxiety::rendering::backend::opengl {
     // le asigna la unidad de textura N (la misma que usa GLDescriptorSet: GL_TEXTURE0 + binding).
     static constexpr char k_tex_name_prefix[] = "anxiety_tex";
 
+#ifdef ANXIETY_HAVE_SPIRV_CROSS
+    // Cuando SPIRV-Cross no puede expresar un cbuffer en std140 solo dice "Buffer block cannot be
+    // expressed…" sin nombrar el miembro. Aquí se localizan los que rompen la alineación de std140 (un
+    // vec3/vec4/matriz debe empezar en múltiplo de 16, un vec2 en múltiplo de 8): en HLSL un float3
+    // puede empezar, p. ej., en el offset 36 o 52, y en std140 no.
+    static void report_std140_violations(spirv_cross::CompilerGLSL& glsl, const spirv_cross::ShaderResources& res) {
+        for (const auto& ubo : res.uniform_buffers) {
+            const spirv_cross::SPIRType& block = glsl.get_type(ubo.base_type_id);
+            for (uint32_t i = 0; i < block.member_types.size(); ++i) {
+                const spirv_cross::SPIRType& m = glsl.get_type(block.member_types[i]);
+                if (m.basetype == spirv_cross::SPIRType::Struct) continue;
+
+                const uint32_t offset = glsl.get_member_decoration(ubo.base_type_id, i, spv::DecorationOffset);
+                uint32_t       align  = 4;
+                if (m.columns > 1 || m.vecsize >= 3) align = 16;
+                else if (m.vecsize == 2)             align = 8;
+
+                if (offset % align != 0) {
+                    LOGF_ERROR(k_category, "cbuffer '{}': el miembro '{}' está en el offset {} pero std140 (OpenGL) exige alinearlo a {}. "
+                               "Sustituye los float3/vec3 de relleno por escalares (float) o reordena los miembros.",
+                               glsl.get_name(ubo.id), glsl.get_member_name(ubo.base_type_id, i), offset, align);
+                }
+            }
+        }
+    }
+#endif
+
     std::vector<uint8_t> GLDevice::compile_shader_from_source(const char* source, const char* entry_point, rhi::ShaderStage stage) {
         if (!source || source[0] == '\0') {
             LOG_ERROR(k_category, "compile_shader_from_source: source nulo/vacío.");
@@ -559,7 +586,13 @@ namespace anxiety::rendering::backend::opengl {
                 glsl.set_name(remap.combined_id, k_tex_name_prefix + std::to_string(binding - shader::k_srv_binding_base));
             }
 
-            const std::string text = glsl.compile();
+            std::string text;
+            try {
+                text = glsl.compile();
+            } catch (const spirv_cross::CompilerError&) {
+                report_std140_violations(glsl, res);
+                throw;
+            }
             return std::vector<uint8_t>(text.begin(), text.end());
         } catch (const spirv_cross::CompilerError& e) {
             LOGF_ERROR(k_category, "SPIRV-Cross no pudo generar GLSL: {}", e.what());

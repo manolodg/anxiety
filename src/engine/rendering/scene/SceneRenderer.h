@@ -2,6 +2,7 @@
 
 #include "SceneComponents.h"
 #include "SceneMath.h"
+#include "LightData.h"
 #include "materials/MaterialManager.h"
 #include "rhi/IDevice.h"
 #include "rhi/IDescriptorSet.h"
@@ -69,15 +70,15 @@ namespace anxiety::rendering::scene {
     private:
         // Recursos de GPU por entidad ----------------------------------------------------------
         // Dos constant buffers de 256 bytes por entidad:
-        //   wvp_buffer        → b0 (PerObject:   world_view_proj)
-        //   mat_params_buffer → b1 (PerMaterial: base_color + use_texture)
+        //   per_object_buffer → b0 (GpuPerObject: world_view_proj + world_matrix = 128 bytes)
+        //   mat_params_buffer → b1 (PerMaterial : PBR params                     =  64 bytes)
         //
         // El layout del descriptor set depende del material: 2 bindings para unlit, 3 para
         // unlit_textured. last_material registra qué layout está reservado ahora mismo para recrear
         // el DS cuando cambia el material.
         struct PerEntityData {
-            rhi::BufferHandle                    wvp_buffer;
-            rhi::BufferHandle                    mat_params_buffer;
+            rhi::BufferHandle                    per_object_buffer;         // b0: GpuPerObject
+            rhi::BufferHandle                    mat_params_buffer;         // b1: PerMaterial
             std::unique_ptr<rhi::IDescriptorSet> descriptor_set;
             materials::MaterialHandle            last_material;             // {} = DS aún sin construir
         };
@@ -85,8 +86,9 @@ namespace anxiety::rendering::scene {
         // Garantiza que existen los constant buffers; devuelve el slot de datos.
         PerEntityData& ensure_entity_data(uint32_t entity_index);
 
-        // Recrea el descriptor set cuando cambia el material o el binding de textura.
-        void refresh_entity_DS(PerEntityData& data, materials::Material* mat, rhi::TextureHandle albedo_tex);
+        // Recibe el MaterialInstance* completo para poder vincular las tres texturas (albedo,
+        // normal, ORM) en el caso de los materiales PBR.
+        void refresh_entity_DS(PerEntityData& data, materials::Material* mat, const materials::MaterialInstance* inst);
 
         // Miembros ------------------------------------------------------------------------------
         rhi::IDevice&               m_device;
@@ -100,5 +102,9 @@ namespace anxiety::rendering::scene {
 
         // Datos de GPU por entidad, indexados por EntityId::index.
         std::unordered_map<uint32_t, PerEntityData> m_entity_data;
+        // Constant buffer compartido por fotograma para todas las luces (b2, 1024 bytes).
+        // Se crea de forma perezosa en la primera llamada a build_passes cuando existen luces o
+        // materiales PBR.
+        rhi::BufferHandle                           m_lights_buffer;
     };
 } // namespace anxiety::rendering::scene

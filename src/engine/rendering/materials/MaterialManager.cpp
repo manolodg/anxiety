@@ -26,6 +26,14 @@ namespace anxiety::rendering::materials {
         } else {
             LOGF_INFO(k_category, "Material unlit_textured cargado (id={}).", m_unlit_textured_handle.id);
         }
+
+        // Material PBR incorporado (POSITION+NORMAL+UV+TANGENT, DS de 6 bindings, sampler s0).
+        m_pbr_handle = load_PBR_material("pbr", "shaders/pbr.hlsl");
+        if (!m_pbr_handle.is_valid()) {
+            LOGF_WARNING(k_category, "Falló la carga del material PBR por defecto.");
+        } else {
+            LOGF_INFO(k_category, "Material PBR cargado (id={}).", m_pbr_handle.id);
+        }
     }
 
     // Resolución de rutas ----------------------------------------------------------------------
@@ -38,8 +46,7 @@ namespace anxiety::rendering::materials {
     }
 
     // load_material_internal - lógica compartida de creación del PSO ---------------------------
-    MaterialHandle MaterialManager::load_material_internal(std::string_view name, std::string_view shader_path, std::string_view vs_entry, std::string_view ps_entry, const rhi::DescriptorSetLayout& ds_layout,
-        uint32_t vertex_stride, bool has_tex_coord, const std::vector<rhi::SamplerDesc>& samplers) {
+    MaterialHandle MaterialManager::load_material_internal(std::string_view name, std::string_view shader_path, std::string_view vs_entry, std::string_view ps_entry, const rhi::DescriptorSetLayout& ds_layout, const rhi::VertexLayout& vertex_layout, const std::vector<rhi::SamplerDesc>& samplers) {
         // Caché por nombre — devuelve el handle existente si ya se cargó.
         const std::string name_str(name);
         auto it = m_name_cache.find(name_str);
@@ -66,19 +73,10 @@ namespace anxiety::rendering::materials {
             return {};
         }
 
-        // Atributos de vértice
-        rhi::VertexLayout vl;
-        vl.attributes = {
-            { "POSITION", 0, rhi::VertexFormat::Float3, 0,  0 },
-            { "COLOR",    0, rhi::VertexFormat::Float4, 0, 12 },
-        };
-        if (has_tex_coord) vl.attributes.push_back({ "TEXCOORD", 0, rhi::VertexFormat::Float2, 0, 28 });
-        vl.stride_bytes = vertex_stride;
-
         rhi::PipelineDesc pd;
         pd.vertex_shader             = mat->m_vs.get();
         pd.fragment_shader           = mat->m_ps.get();
-        pd.vertex_layout             = vl;
+        pd.vertex_layout             = vertex_layout;
         pd.topology                  = rhi::PrimitiveTopology::TriangleList;
         pd.rasterizer.cull_mode      = rhi::CullMode::Back;
         pd.rasterizer.front_face_CCW = false;           // D3D12 LH: winding CW = cara frontal
@@ -110,7 +108,13 @@ namespace anxiety::rendering::materials {
             { 0, rhi::DescriptorType::UniformBuffer },              // b0 : PerObject   (WVP)
             { 1, rhi::DescriptorType::UniformBuffer }               // b1 : PerMaterial (base_color)
         }};
-        return load_material_internal(name, shader_path, vs_entry, ps_entry, ds_layout, 28u, false, {});
+        rhi::VertexLayout vl;
+        vl.attributes = {
+            { "POSITION", 0, rhi::VertexFormat::Float3, 0,  0 },
+            { "COLOR",    0, rhi::VertexFormat::Float4, 0, 12 },
+        };
+        vl.stride_bytes = 28u;
+        return load_material_internal(name, shader_path, vs_entry, ps_entry, ds_layout, vl, {});
     }
     // load_textured_material — 3 bindings (b0 + b1 + t0) con sampler estático s0 ---------------
     MaterialHandle MaterialManager::load_textured_material(std::string_view name, std::string_view shader_path, std::string_view vs_entry, std::string_view ps_entry) {
@@ -119,8 +123,37 @@ namespace anxiety::rendering::materials {
             { 1, rhi::DescriptorType::UniformBuffer },              // b1: PerMaterial (base_color + use_texture)
             { 0, rhi::DescriptorType::Texture       },              // t0: textura de albedo
         } };
+        rhi::VertexLayout vl;
+        vl.attributes = {
+            { "POSITION", 0, rhi::VertexFormat::Float3, 0,  0 },
+            { "COLOR",    0, rhi::VertexFormat::Float4, 0, 12 },
+            { "TEXCOORD", 0, rhi::VertexFormat::Float2, 0, 28 },
+        };
+        vl.stride_bytes = 36u;
         const std::vector<rhi::SamplerDesc> samplers = { rhi::sampler_linear_wrap(0) };
-        return load_material_internal(name, shader_path, vs_entry, ps_entry, ds_layout, 36u, true, samplers);
+        return load_material_internal(name, shader_path, vs_entry, ps_entry, ds_layout, vl, samplers);
+    }
+
+    // load_PBR_material — 6-binding PBR (b0+b1+b2+t0+t1+t2), stride 48 ---------------------------
+    MaterialHandle MaterialManager::load_PBR_material(std::string_view name, std::string_view shader_path, std::string_view vs_entry, std::string_view ps_entry) {
+        rhi::DescriptorSetLayout dsLayout{ .bindings = {
+            { 0, rhi::DescriptorType::UniformBuffer },              // b0: PerObject  (WVP + worldMat)
+            { 1, rhi::DescriptorType::UniformBuffer },              // b1: PerMaterial (PBR params)
+            { 2, rhi::DescriptorType::UniformBuffer },              // b2: LightsCB
+            { 0, rhi::DescriptorType::Texture       },              // t0: albedo
+            { 1, rhi::DescriptorType::Texture       },              // t1: normal map
+            { 2, rhi::DescriptorType::Texture       },              // t2: ORM
+        } };
+        rhi::VertexLayout vl;
+        vl.attributes = {
+            { "POSITION", 0, rhi::VertexFormat::Float3, 0,  0 },
+            { "NORMAL",   0, rhi::VertexFormat::Float3, 0, 12 },
+            { "TEXCOORD", 0, rhi::VertexFormat::Float2, 0, 24 },
+            { "TANGENT",  0, rhi::VertexFormat::Float4, 0, 32 },
+        };
+        vl.stride_bytes = 48u;
+        const std::vector<rhi::SamplerDesc> samplers = { rhi::sampler_linear_wrap(0) };
+        return load_material_internal(name, shader_path, vs_entry, ps_entry, dsLayout, vl, samplers);
     }
 
     // Gestión de instancias ------------------------------------------------------------------------
@@ -153,5 +186,25 @@ namespace anxiety::rendering::materials {
 
     void MaterialManager::set_albedo_texture(MaterialInstanceHandle h, rhi::TextureHandle texture) noexcept {
         if (auto* inst = get_instance(h)) inst->set_albedo_texture(texture);
+    }
+
+    void MaterialManager::set_metallic(MaterialInstanceHandle h, float v) noexcept {
+        if (auto* inst = get_instance(h)) inst->set_metallic(v);
+    }
+
+    void MaterialManager::set_roughness(MaterialInstanceHandle h, float v) noexcept {
+        if (auto* inst = get_instance(h)) inst->set_roughness(v);
+    }
+
+    void MaterialManager::set_emissive(MaterialInstanceHandle h, float r, float g, float b) noexcept {
+        if (auto* inst = get_instance(h)) inst->set_emissive(r, g, b);
+    }
+
+    void MaterialManager::set_normal_texture(MaterialInstanceHandle h, rhi::TextureHandle texture) noexcept {
+        if (auto* inst = get_instance(h)) inst->set_normal_texture(texture);
+    }
+
+    void MaterialManager::set_orm_texture(MaterialInstanceHandle h, rhi::TextureHandle texture) noexcept {
+        if (auto* inst = get_instance(h)) inst->set_orm_texture(texture);
     }
 } // namespace anxiety::rendering::materials

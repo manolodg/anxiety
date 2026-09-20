@@ -46,4 +46,28 @@ namespace anxiety::rendering::scene {
         float aspect_ratio = 16.0f / 9.0f;          // sobrescrito en tiempo de ejecución desde la extensión del swapchain
 	};
 	static_assert(std::is_trivially_copyable_v<Camera>);
+    
+    // DirectionalLight ---------------------------------------------------------------------------
+    // Luz direccional infinita (p. ej. el sol). direction es un vector unitario que apunta DESDE la
+    // fuente de luz HACIA la escena (es decir, la dirección en la que viaja la luz). El componente
+    // Transform de la misma entidad se ignora a efectos de iluminación.
+    struct DirectionalLight {
+        float direction[3] = { 0.0f, -1.0f,  0.0f };                // apunta hacia abajo por defecto
+        float intensity    = 1.0f;
+        float color[3]     = { 1.0f,  1.0f,  1.0f };                // RGB lineal
+        float _pad         = 0.0f;
+    };
+    static_assert(std::is_trivially_copyable_v<DirectionalLight>);
+
+    // PointLight ---------------------------------------------------------------------------------
+    // Luz puntual omnidireccional. La posición se toma del Transform de la entidad
+    // (Transform::position), no se guarda aquí. range es el radio máximo de influencia en unidades
+    // de mundo; la atenuación llega suavemente a cero en ese radio.
+    struct PointLight {
+        float color[3]  = { 1.0f, 1.0f, 1.0f };                     // RGB lineal
+        float intensity = 1.0f;
+        float range     = 10.0f;
+        float _pad[3]   = {};
+    };
+    static_assert(std::is_trivially_copyable_v<PointLight>);
 } // namespace anxiety::rendering::scene
