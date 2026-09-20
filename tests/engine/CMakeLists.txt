@@ -1,9 +1,12 @@
 add_executable(anxiety_tests
 	tests_main.cpp
 
+    tests_ecs.cpp
     tests_engine.cpp
+    tests_jobs.cpp
 	tests_logger.cpp
-    tests_platform.cpp)
+    tests_platform.cpp
+    tests_rendering.cpp)
 
 enable_testing()
 

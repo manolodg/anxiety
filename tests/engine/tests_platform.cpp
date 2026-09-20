@@ -15,7 +15,7 @@ using namespace anxiety::platform;
 // referencia PlatformModule& para inspección.
 struct HeadlessPlatformFixture {
     anxiety::Engine engine;
-    PlatformModule& mod;
+    PlatformModule&       mod;
 
     HeadlessPlatformFixture() : engine(anxiety::EngineConfig{ .headless = true }) , mod(engine.emplace_module<PlatformModule>()) {
         (void)engine.init();                        // el valor de retorno se verifica por test vía engine.state()
@@ -53,11 +53,11 @@ TEST_CASE("platform_windowed_window_is_not_null", "[platform]") {
     PlatformModule::Config cfg;
     cfg.window = { "PAL Test Window", 640, 480, false };
 
-    anxiety::EngineConfig e_cfg;
-    e_cfg.app_name = "PAL Windowed Test";
-    e_cfg.headless = false;
+    anxiety::EngineConfig eCfg;
+    eCfg.app_name = "PAL Windowed Test";
+    eCfg.headless = false;
 
-    anxiety::Engine engine(e_cfg);
+    anxiety::Engine engine(eCfg);
     auto& platMod = engine.emplace_module<PlatformModule>(cfg);
 
     REQUIRE(engine.init());
@@ -79,10 +79,10 @@ TEST_CASE("platform_windowed_native_handle_is_hwnd", "[platform]") {
     PlatformModule::Config cfg;
     cfg.window = { "HWND Test", 320, 240, false };
 
-    anxiety::EngineConfig e_cfg;
-    e_cfg.headless = false;
+    anxiety::EngineConfig eCfg;
+    eCfg.headless = false;
 
-    anxiety::Engine engine(e_cfg);
+    anxiety::Engine engine(eCfg);
     auto& platMod = engine.emplace_module<PlatformModule>(cfg);
 
     REQUIRE(engine.init());

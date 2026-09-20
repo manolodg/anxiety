@@ -74,7 +74,7 @@ private:
 	anxiety::Engine eng(cfg);
 	auto& plat_mod   = eng.emplace_module<anxiety::platform::PlatformModule>(pal_cfg);
 	rendering::RenderingModule::Config mod_cfg;
-	// mod_cfg.preferred_backend = rendering::rhi::RHIBackend::OpenGL;
+	// mod_cfg.preferred_backend = rendering::rhi::RHIBackend::DirectX11;
 	auto& render_mod = eng.emplace_module<anxiety::rendering::RenderingModule>(plat_mod, mod_cfg);
 	eng.emplace_module<AutoStopModule>(60u);
 
