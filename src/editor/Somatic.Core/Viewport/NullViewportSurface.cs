@@ -13,7 +13,7 @@
             if (height < 0) throw new ArgumentOutOfRangeException(nameof(height), height, "El alto del viewport no puede ser negativo.");
         }
 
-        public void Attach() { }
+        public bool Attach(nint nativeWindowHandle, int width, int height) => false;
         public void Detach() { }
 
         public void Dispose() { }

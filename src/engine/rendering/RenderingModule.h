@@ -5,6 +5,8 @@
 #include "IModule.h"
 #include "PlatformModule.h"
 
+#include <atomic>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 
@@ -91,7 +93,11 @@ namespace anxiety::rendering {
         // único SO de todos modos. Seguro de llamar desde cualquier hilo, en cualquier momento tras
         // on_init(). Falso si el dispositivo todavía no está listo o si la creación del swapchain falla.
         [[nodiscard]] bool attach_window(void* native_window_handle, rhi::Extent2D extent);
-        // Redimensiona el swapchain adjuntado con attach_window(). No-op si no hay ninguno.
+        // Pide redimensionar el swapchain adjuntado con attach_window(). No bloquea: la extensión se
+        // guarda y on_update() la aplica al inicio del siguiente fotograma (así el hilo de UI no espera
+        // a que termine el fotograma en curso, que incluye presentar con vsync). Varias llamadas seguidas
+        // se agrupan en la última. Ignora extensiones con ancho o alto 0 (ventana minimizada). No-op si
+        // no hay swapchain.
         void               resize(rhi::Extent2D new_extent);
         // Destruye el swapchain adjuntado con attach_window(); on_update() vuelve a no hacer nada
         // hasta la siguiente llamada a attach_window().
@@ -133,6 +139,9 @@ namespace anxiety::rendering {
         // attach_window()/resize()/detach_window() (potencialmente llamados desde otro hilo, p.
         // ej. el hilo de UI de Avalonia a través de anxiety_bridge).
         std::mutex m_swapchain_mutex;
+
+        // Extensión pendiente de aplicar por resize(): (ancho << 32) | alto, 0 = ninguna.
+        std::atomic<uint64_t> m_pending_resize{ 0 };
 
         // SceneRenderer opcional — activo cuando se ha llamado a set_world().
         std::unique_ptr<materials::MaterialManager> m_material_manager;

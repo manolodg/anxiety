@@ -6,11 +6,13 @@ using Serilog;
 using Somatic.Core.Configuration;
 using Somatic.Core.Localization;
 using Somatic.Core.Themes;
+using Somatic.Core.Viewport;
 using Somatic.Core.Workspace;
 using Somatic.Infrastructure.Configuration;
 using Somatic.Infrastructure.Localization;
 using Somatic.Infrastructure.Logging;
 using Somatic.Infrastructure.Themes;
+using Somatic.Infrastructure.Viewport;
 using Somatic.Infrastructure.Workspace;
 
 namespace Somatic.Infrastructure.DependencyInjection {
@@ -26,6 +28,7 @@ namespace Somatic.Infrastructure.DependencyInjection {
             services.AddSingleton<IThemeService, ThemeService>();
             services.AddSingleton<IDockSerializer, DockSerializer>();
             services.AddSingleton<IWorkspaceLayoutService, FileWorkspaceLayoutService>();
+            services.AddSingleton<IViewportSurfaceFactory, AnxietyEngineHost>();
 
             return services;
         }

@@ -30,6 +30,8 @@ namespace Somatic {
                 logger.LogInformation("Arrancando el editor Somatic");
                 return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             } finally {
+                // Libera los singletons IDisposable (p. ej. el motor nativo) antes de cerrar el log.
+                (App.Services as IDisposable)?.Dispose();
                 Log.CloseAndFlush();
             }
         }

@@ -39,4 +39,7 @@
 	    <ProjectReference Include="..\Somatic.Themes\Somatic.Themes.csproj" />
 	</ItemGroup>
 
+	<!-- Compila (con CMake) y copia la biblioteca nativa anxiety_bridge junto a Somatic. Ver AnxietyBridge.targets. -->
+	<Import Project="AnxietyBridge.targets" />
+
 </Project>

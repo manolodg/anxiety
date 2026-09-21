@@ -1,0 +1,116 @@
+﻿<Project>
+
+  <!--
+    AnxietyBridge.targets
+    ==============================================================================================
+    Somatic hace P/Invoke a la biblioteca nativa `anxiety_bridge` (C++/CMake, src/bridge). Al compilar
+    el editor desde un IDE o con `dotnet build` sobre Somatic.slnx / Somatic.csproj, nada la construía
+    ni la copiaba junto a Somatic.exe, así que el motor no cargaba.
+
+    Este fichero, importado por Somatic.csproj:
+      1. Compila el target `anxiety_bridge` con CMake (incremental, así nunca queda obsoleta) sobre el
+         árbol de compilación del repo, configurándolo con el preset adecuado si aún no existe.
+      2. Copia la biblioteca a la carpeta de salida de Somatic.
+
+    Biblioteca según SO: anxiety_bridge.dll (Windows), libanxiety_bridge.so (Linux), libanxiety_bridge.dylib (macOS).
+    Árbol de CMake por defecto (out/build/<preset>):
+      Windows -> windows-vs      (generador de Visual Studio: no necesita el entorno de cl.exe, a diferencia de Ninja)
+      Linux   -> linux-debug   / linux-release
+      macOS   -> macos-debug   / macos-release
+
+    Propiedades (se pasan con -p:Nombre=valor):
+      AnxietyBridgeDll         Ruta de una biblioteca ya compilada. Si se define, NO se invoca a CMake y solo se
+                               copia. Es lo que hace el target de CMake (src/editor/CMakeLists.txt), para no crear
+                               un bucle CMake -> dotnet -> CMake.
+      AnxietySkipBridgeBuild   true = no compilar el bridge (útil sin CMake; el editor arranca sin motor).
+      AnxietyCMake             Ejecutable de CMake (por defecto el del PATH o el que trae Visual Studio).
+      AnxietyCMakePreset       Preset de configuración a usar si el árbol no existe.
+      AnxietyCMakeBuildDir     Directorio de compilación de CMake (por defecto out/build/<preset>).
+      AnxietyCMakeConfigureArgs Argumentos extra para la configuración con el preset (p. ej. -DANXIETY_BUILD_EDITOR=OFF).
+
+    Si algo falla (sin CMake, error del compilador), se emite un WARNING y el editor se compila igualmente:
+    arrancará mostrando "Motor no disponible".
+  -->
+
+  <PropertyGroup>
+    <AnxietyRepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..', '..'))</AnxietyRepoRoot>
+    <!-- Para la linea de comandos: la ruta SIN barra final. Una ruta que termine en barra invertida dentro de
+         comillas escapa la comilla de cierre en Windows y rompe el resto de la orden. -->
+    <AnxietyRepoRootArg>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../..'))</AnxietyRepoRootArg>
+
+    <AnxietyOs Condition="$([MSBuild]::IsOSPlatform('Windows'))">windows</AnxietyOs>
+    <AnxietyOs Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux</AnxietyOs>
+    <AnxietyOs Condition="$([MSBuild]::IsOSPlatform('OSX'))">macos</AnxietyOs>
+
+    <AnxietyBridgeFile Condition="'$(AnxietyOs)' == 'windows'">anxiety_bridge.dll</AnxietyBridgeFile>
+    <AnxietyBridgeFile Condition="'$(AnxietyOs)' == 'linux'">libanxiety_bridge.so</AnxietyBridgeFile>
+    <AnxietyBridgeFile Condition="'$(AnxietyOs)' == 'macos'">libanxiety_bridge.dylib</AnxietyBridgeFile>
+
+    <AnxietyConfigLower>debug</AnxietyConfigLower>
+    <AnxietyConfigLower Condition="'$(Configuration)' == 'Release'">release</AnxietyConfigLower>
+
+    <AnxietyCMakePreset Condition="'$(AnxietyCMakePreset)' == '' And '$(AnxietyOs)' == 'windows'">windows-vs</AnxietyCMakePreset>
+    <AnxietyCMakePreset Condition="'$(AnxietyCMakePreset)' == ''">$(AnxietyOs)-$(AnxietyConfigLower)</AnxietyCMakePreset>
+    <AnxietyCMakeBuildDir Condition="'$(AnxietyCMakeBuildDir)' == ''">$(AnxietyRepoRoot)out/build/$(AnxietyCMakePreset)</AnxietyCMakeBuildDir>
+  </PropertyGroup>
+
+  <!-- 1. Compila el bridge con CMake y localiza la biblioteca resultante. -->
+  <Target Name="AnxietyBuildBridge" BeforeTargets="BeforeBuild" Condition="'$(AnxietyBridgeDll)' == '' And '$(AnxietySkipBridgeBuild)' != 'true'">
+
+    <!-- CMake: el indicado, el del PATH, o el que instala Visual Studio (no siempre está en el PATH al compilar desde el IDE). -->
+    <PropertyGroup>
+      <_AnxCMake>$(AnxietyCMake)</_AnxCMake>
+      <_AnxVsCMake Condition="'$(VSINSTALLDIR)' != ''">$(VSINSTALLDIR)Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe</_AnxVsCMake>
+    </PropertyGroup>
+    <Exec Condition="'$(_AnxCMake)' == ''" Command="cmake --version" IgnoreExitCode="true" ContinueOnError="true" StandardOutputImportance="low" StandardErrorImportance="low" IgnoreStandardErrorWarningFormat="true">
+      <Output TaskParameter="ExitCode" PropertyName="_AnxCMakeProbe" />
+    </Exec>
+    <PropertyGroup>
+      <_AnxCMake Condition="'$(_AnxCMake)' == '' And '$(_AnxCMakeProbe)' == '0'">cmake</_AnxCMake>
+      <_AnxCMake Condition="'$(_AnxCMake)' == '' And '$(_AnxVsCMake)' != '' And Exists('$(_AnxVsCMake)')">$(_AnxVsCMake)</_AnxCMake>
+    </PropertyGroup>
+
+    <Warning Condition="'$(_AnxCMake)' == ''" Code="ANX0001"
+             Text="No se encontró CMake: no se compila anxiety_bridge y el editor arrancará sin motor. Instala CMake (o define -p:AnxietyCMake=ruta), o compila el bridge con CMake y pasa -p:AnxietyBridgeDll=ruta." />
+
+    <!-- Configura el árbol si todavía no existe (la primera vez puede tardar: descarga dependencias y configura todo el motor). -->
+    <Message Condition="'$(_AnxCMake)' != '' And !Exists('$(AnxietyCMakeBuildDir)/CMakeCache.txt')" Importance="high"
+             Text="[anxiety] Configurando CMake ($(AnxietyCMakePreset)) en $(AnxietyCMakeBuildDir)..." />
+    <Exec Condition="'$(_AnxCMake)' != '' And !Exists('$(AnxietyCMakeBuildDir)/CMakeCache.txt')"
+          Command="&quot;$(_AnxCMake)&quot; --preset $(AnxietyCMakePreset) -S &quot;$(AnxietyRepoRootArg)&quot; -B &quot;$(AnxietyCMakeBuildDir)&quot; $(AnxietyCMakeConfigureArgs)"
+          WorkingDirectory="$(AnxietyRepoRoot)" IgnoreExitCode="true" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_AnxConfigureExit" />
+    </Exec>
+    <Warning Condition="'$(_AnxConfigureExit)' != '' And '$(_AnxConfigureExit)' != '0'" Code="ANX0002"
+             Text="CMake no pudo configurar $(AnxietyCMakeBuildDir) (código $(_AnxConfigureExit)); el editor arrancará sin motor." />
+
+    <!-- Compila solo el bridge (y lo que necesita). Incremental: si nada cambió, es casi instantáneo. -->
+    <Message Condition="'$(_AnxCMake)' != '' And Exists('$(AnxietyCMakeBuildDir)/CMakeCache.txt')" Importance="high"
+             Text="[anxiety] Compilando anxiety_bridge ($(Configuration)) con CMake..." />
+    <Exec Condition="'$(_AnxCMake)' != '' And Exists('$(AnxietyCMakeBuildDir)/CMakeCache.txt')"
+          Command="&quot;$(_AnxCMake)&quot; --build &quot;$(AnxietyCMakeBuildDir)&quot; --config $(Configuration) --target anxiety_bridge --parallel"
+          WorkingDirectory="$(AnxietyRepoRoot)" IgnoreExitCode="true" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_AnxBuildExit" />
+    </Exec>
+    <Warning Condition="'$(_AnxBuildExit)' != '' And '$(_AnxBuildExit)' != '0'" Code="ANX0003"
+             Text="CMake no pudo compilar anxiety_bridge (código $(_AnxBuildExit)); el editor arrancará sin motor." />
+
+    <!-- Dónde deja CMake la biblioteca: multi-config de Windows (bin/&lt;Config&gt;), Ninja de Windows (bin),
+         Linux/macOS (lib) y multi-config de macOS/Xcode (lib/&lt;Config&gt;). -->
+    <PropertyGroup Condition="'$(_AnxBuildExit)' == '0'">
+      <AnxietyBridgeDll Condition="Exists('$(AnxietyCMakeBuildDir)/bin/$(Configuration)/$(AnxietyBridgeFile)')">$(AnxietyCMakeBuildDir)/bin/$(Configuration)/$(AnxietyBridgeFile)</AnxietyBridgeDll>
+      <AnxietyBridgeDll Condition="'$(AnxietyBridgeDll)' == '' And Exists('$(AnxietyCMakeBuildDir)/bin/$(AnxietyBridgeFile)')">$(AnxietyCMakeBuildDir)/bin/$(AnxietyBridgeFile)</AnxietyBridgeDll>
+      <AnxietyBridgeDll Condition="'$(AnxietyBridgeDll)' == '' And Exists('$(AnxietyCMakeBuildDir)/lib/$(Configuration)/$(AnxietyBridgeFile)')">$(AnxietyCMakeBuildDir)/lib/$(Configuration)/$(AnxietyBridgeFile)</AnxietyBridgeDll>
+      <AnxietyBridgeDll Condition="'$(AnxietyBridgeDll)' == '' And Exists('$(AnxietyCMakeBuildDir)/lib/$(AnxietyBridgeFile)')">$(AnxietyCMakeBuildDir)/lib/$(AnxietyBridgeFile)</AnxietyBridgeDll>
+    </PropertyGroup>
+    <Warning Condition="'$(_AnxBuildExit)' == '0' And '$(AnxietyBridgeDll)' == ''" Code="ANX0004"
+             Text="CMake compiló, pero no se encontró $(AnxietyBridgeFile) bajo $(AnxietyCMakeBuildDir); el editor arrancará sin motor." />
+  </Target>
+
+  <!-- 2. Copia la biblioteca junto a Somatic (ejecutable). -->
+  <Target Name="AnxietyCopyBridge" AfterTargets="Build" Condition="'$(AnxietyBridgeDll)' != '' And Exists('$(AnxietyBridgeDll)')">
+    <Copy SourceFiles="$(AnxietyBridgeDll)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="[anxiety] $(AnxietyBridgeFile) copiada a $(OutDir)" />
+  </Target>
+
+</Project>

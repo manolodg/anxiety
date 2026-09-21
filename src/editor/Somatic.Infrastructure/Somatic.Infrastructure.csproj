@@ -4,6 +4,8 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<!-- Requerido por LibraryImportAttribute (P/Invoke hacia anxiety_bridge, Viewport/AnxietyBridgeInterop.cs). -->
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>

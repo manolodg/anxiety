@@ -5,10 +5,16 @@
   <Border Background="{DynamicResource ViewportBackgroundBrush}"
           BorderBrush="{DynamicResource ViewportBorderBrush}"
           BorderThickness="{DynamicResource EditorBorderThickness}">
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
-      <PathIcon Data="{StaticResource IconCube}" Width="32" Height="32" Foreground="{DynamicResource EditorTextDisabledBrush}" HorizontalAlignment="Center" />
-      <TextBlock Text="Scene view placeholder" Foreground="{DynamicResource EditorTextDisabledBrush}" HorizontalAlignment="Center" />
-    </StackPanel>
+    <Grid>
+      <!-- Fallback: se ve cuando el motor no está disponible (o en SO sin viewport nativo). -->
+      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+        <PathIcon Data="{StaticResource IconCube}" Width="32" Height="32" Foreground="{DynamicResource EditorTextDisabledBrush}" HorizontalAlignment="Center" />
+        <TextBlock x:Name="PlaceholderText" Text="Scene view placeholder" Foreground="{DynamicResource EditorTextDisabledBrush}" HorizontalAlignment="Center" />
+      </StackPanel>
+
+      <!-- Aquí se inserta EngineViewportHost (ventana nativa del motor) cuando hay motor. -->
+      <Border x:Name="ViewportHostContainer" />
+    </Grid>
   </Border>
 
 </UserControl>

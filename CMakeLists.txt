@@ -23,12 +23,17 @@ option(ANXIETY_DX11                 "Activa el backend de DirectX 11"           
 option(ANXIETY_VULKAN               "Activa el backend de Vulkan"                         ON)
 option(ANXIETY_OPENGL               "Activa el backend de OpenGL 4.x"                     ON)
 option(ANXIETY_GLES                 "Activa el backend de OpenGL ES 3.x"                  OFF)
+option(ANXIETY_BUILD_EDITOR         "Compila el editor Somatic (C#/Avalonia; requiere .NET)"  ON)
 # =================================================================================================
 
 # Estándar global C++ -----------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD          20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS        OFF)
+
+# Código independiente de posición para todos los targets - necesario para que las librerías
+# estáticas del motor puedan enlazarse dentro de anxiety_bridge (SHARED).
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Tipo de construcción por defecto ----------------------------------------------------------------
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

@@ -199,6 +199,11 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
         // Nada que renderizar en modo headless, o en modo embebido antes de attach_window().
         if (!m_swapchain) return;
 
+        // Aplica el último resize() pedido desde otro hilo (ver resize()).
+        if (const uint64_t pending = m_pending_resize.exchange(0); pending != 0) {
+            m_swapchain->resize({ static_cast<uint32_t>(pending >> 32), static_cast<uint32_t>(pending & 0xFFFFFFFFu) });
+        }
+
         // Construye el render graph de este fotograma ---------------------------------------------
         m_graph.reset();
 
@@ -311,9 +316,16 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
         sc_desc.vsync                = true;
 
         m_swapchain = m_device->create_swapchain(sc_desc);
+        m_pending_resize.store(0);                  // el swapchain nuevo ya nace con la extensión actual
         if (!m_swapchain) {
             LOG_ERROR(k_category, "attach_window: no se pudo crear el swapchain para la ventana externa.");
             return false;
+        }
+
+        // En modo embebido no había swapchain en on_init(), así que el pipeline del triángulo de fallback
+        // todavía no existe: se crea aquí, la primera vez que hay ventana.
+        if (!m_pipeline && !init_pipeline()) {
+            LOG_WARNING(k_category, "Falló la inicialización del pipeline — pase de triángulo desactivado.");
         }
 
         LOGF_INFO(k_category, "Ventana externa adjuntada ({}×{}).", extent.width, extent.height);
@@ -321,8 +333,12 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
     }
 
     void RenderingModule::resize(rhi::Extent2D new_extent) {
-        std::lock_guard lock(m_swapchain_mutex);
-        if (m_swapchain) m_swapchain->resize(new_extent);
+        // Con ancho o alto 0 (p. ej. ventana minimizada) no hay nada que redimensionar.
+        if (new_extent.width == 0 || new_extent.height == 0) return;
+
+        // No se toma m_swapchain_mutex: on_update() lo mantiene durante todo el fotograma (incluida la
+        // espera de present con vsync) y bloquearía aquí al hilo de UI. La extensión se aplica en on_update().
+        m_pending_resize.store((static_cast<uint64_t>(new_extent.width) << 32) | new_extent.height);
     }
 
     void RenderingModule::detach_window() {
@@ -331,6 +347,7 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
 
         if (m_device) m_device->wait_idle();
         m_swapchain.reset();
+        m_pending_resize.store(0);
 
         LOG_INFO(k_category, "Ventana externa desadjuntada.");
     }
