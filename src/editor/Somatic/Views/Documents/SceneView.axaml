@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Somatic.Views.Documents.SceneView">
+
+  <Border Background="{DynamicResource ViewportBackgroundBrush}"
+          BorderBrush="{DynamicResource ViewportBorderBrush}"
+          BorderThickness="{DynamicResource EditorBorderThickness}">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+      <PathIcon Data="{StaticResource IconCube}" Width="32" Height="32" Foreground="{DynamicResource EditorTextDisabledBrush}" HorizontalAlignment="Center" />
+      <TextBlock Text="Scene view placeholder" Foreground="{DynamicResource EditorTextDisabledBrush}" HorizontalAlignment="Center" />
+    </StackPanel>
+  </Border>
+
+</UserControl>

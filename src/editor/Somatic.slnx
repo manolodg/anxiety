@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Somatic.Core/Somatic.Core.csproj" Id="a722fcb6-77db-4182-80f3-a528dd6bedcd" />
+  <Project Path="Somatic.Infrastructure/Somatic.Infrastructure.csproj" Id="97003e31-fe13-489b-a9f7-9489efc9a6f8" />
+  <Project Path="Somatic.Themes/Somatic.Themes.csproj" Id="5dee4b3f-a783-47f3-a245-a4a1620629b6" />
+  <Project Path="Somatic/Somatic.csproj" Id="c6fed7ed-6936-4d35-937c-0d874a5cb524" />
+</Solution>

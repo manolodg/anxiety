@@ -1,0 +1,43 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:core="using:Dock.Model.Core"
+			 x:Class="Somatic.App"
+			 xmlns:local="using:Somatic"
+			 RequestedThemeVariant="Dark">
+	<Application.DataTemplates>
+		<local:ViewLocator />
+	</Application.DataTemplates>
+
+	<Application.Styles>
+		<FluentTheme />
+		<DockFluentTheme />
+		<StyleInclude Source="avares://Somatic.Themes/Controls/ControlStyles.axaml" />
+
+		<!-- Vincula el texto del encabezado (panel/pestaña) propio del Dock al sistema de diseño, en lugar de
+			 a los valores predeterminados independientes de DockFluentTheme, siguiendo el patrón de personalización
+			 de HeaderTemplate de los propios ejemplos de Dock. El fondo y la altura se
+			 mantienen con los valores predeterminados de Dock - que ya son compactos y coherentes -; se consideró que rediseñar
+			 aún más el chrome interno de Dock quedaba fuera del alcance de una revisión visual básica. -->
+		<Style Selector="ToolControl">
+			<Setter Property="HeaderTemplate">
+				<DataTemplate DataType="core:IDockable">
+					<TextBlock Text="{Binding Title}"
+							   FontSize="{DynamicResource FontSizeSmall}"
+							   Foreground="{DynamicResource EditorTextPrimaryBrush}"
+							   VerticalAlignment="Center"/>
+				</DataTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="DocumentControl">
+			<Setter Property="HeaderTemplate">
+				<DataTemplate DataType="core:IDockable">
+					<TextBlock Text="{Binding Title}"
+							   FontSize="{DynamicResource FontSizeSmall}"
+							   Foreground="{DynamicResource EditorTextPrimaryBrush}"
+							   VerticalAlignment="Center"/>
+				</DataTemplate>
+			</Setter>
+		</Style>
+	</Application.Styles>
+</Application>

@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Somatic.Views.Panels.ProjectView">
+
+  <Border Background="{DynamicResource EditorSurfaceElevatedBrush}">
+    <WrapPanel Margin="8">
+      <StackPanel Width="64" Margin="0,0,16,12" Spacing="4" HorizontalAlignment="Center">
+        <PathIcon Data="{StaticResource IconFolder}" Width="28" Height="28" Foreground="{DynamicResource EditorTextSecondaryBrush}" HorizontalAlignment="Center" />
+        <TextBlock Text="Scenes" FontSize="{DynamicResource FontSizeSmall}" HorizontalAlignment="Center" TextAlignment="Center" />
+      </StackPanel>
+      <StackPanel Width="64" Margin="0,0,16,12" Spacing="4" HorizontalAlignment="Center">
+        <PathIcon Data="{StaticResource IconFolder}" Width="28" Height="28" Foreground="{DynamicResource EditorTextSecondaryBrush}" HorizontalAlignment="Center" />
+        <TextBlock Text="Prefabs" FontSize="{DynamicResource FontSizeSmall}" HorizontalAlignment="Center" TextAlignment="Center" />
+      </StackPanel>
+      <StackPanel Width="64" Margin="0,0,16,12" Spacing="4" HorizontalAlignment="Center">
+        <PathIcon Data="{StaticResource IconFolder}" Width="28" Height="28" Foreground="{DynamicResource EditorTextSecondaryBrush}" HorizontalAlignment="Center" />
+        <TextBlock Text="Materials" FontSize="{DynamicResource FontSizeSmall}" HorizontalAlignment="Center" TextAlignment="Center" />
+      </StackPanel>
+      <StackPanel Width="64" Margin="0,0,16,12" Spacing="4" HorizontalAlignment="Center">
+        <PathIcon Data="{StaticResource IconDocument}" Width="28" Height="28" Foreground="{DynamicResource EditorTextSecondaryBrush}" HorizontalAlignment="Center" />
+        <TextBlock Text="Main.scene" FontSize="{DynamicResource FontSizeSmall}" HorizontalAlignment="Center" TextAlignment="Center" />
+      </StackPanel>
+      <StackPanel Width="64" Margin="0,0,16,12" Spacing="4" HorizontalAlignment="Center">
+        <PathIcon Data="{StaticResource IconDocument}" Width="28" Height="28" Foreground="{DynamicResource EditorTextSecondaryBrush}" HorizontalAlignment="Center" />
+        <TextBlock Text="Player.cs" FontSize="{DynamicResource FontSizeSmall}" HorizontalAlignment="Center" TextAlignment="Center" />
+      </StackPanel>
+    </WrapPanel>
+  </Border>
+
+</UserControl>

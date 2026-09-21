@@ -1,0 +1,56 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Somatic.ViewModels"
+        xmlns:dock="using:Dock.Avalonia.Controls"
+        x:Class="Somatic.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding ApplicationTitle}"
+        Icon="/Assets/AppIcon.ico"
+        Width="1440"
+        Height="900"
+        MinWidth="1024"
+        MinHeight="640">
+
+  <DockPanel LastChildFill="True">
+
+    <Menu DockPanel.Dock="Top"
+          Height="{DynamicResource MainMenuHeight}"
+          Background="{DynamicResource EditorSurfaceBrush}">
+      <MenuItem Header="{Binding FileMenuText}" />
+      <MenuItem Header="{Binding EditMenuText}" />
+      <MenuItem Header="{Binding AssetsMenuText}" />
+      <MenuItem Header="{Binding WindowMenuText}" />
+      <MenuItem Header="{Binding HelpMenuText}" />
+    </Menu>
+
+    <Border DockPanel.Dock="Top"
+            Height="{DynamicResource ToolbarHeight}"
+            Background="{DynamicResource EditorSurfaceBrush}"
+            BorderBrush="{DynamicResource EditorBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="8,0"
+            ToolTip.Tip="{Binding ToolbarAccessibleName}">
+      <StackPanel Orientation="Horizontal"
+                  Spacing="{DynamicResource SmallSpacing}"
+                  VerticalAlignment="Center">
+        <Button Classes="ToolbarButton">
+          <PathIcon Data="{StaticResource IconPlay}" Width="14" Height="14" />
+        </Button>
+        <Button Classes="ToolbarButton">
+          <PathIcon Data="{StaticResource IconSave}" Width="14" Height="14" />
+        </Button>
+        <Rectangle Width="1" Height="18" Fill="{DynamicResource EditorBorderBrush}" Margin="4,0" />
+        <Button Classes="ToolbarButton">
+          <PathIcon Data="{StaticResource IconSearch}" Width="14" Height="14" />
+        </Button>
+        <Button Classes="ToolbarButton">
+          <PathIcon Data="{StaticResource IconSettings}" Width="14" Height="14" />
+        </Button>
+      </StackPanel>
+    </Border>
+
+    <dock:DockControl Layout="{Binding Layout}" />
+
+  </DockPanel>
+
+</Window>

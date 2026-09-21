@@ -1,0 +1,26 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+		<ResourceInclude Source="avares://Somatic.Themes/Colors/DarkColors.axaml" />
+        <ResourceInclude Source="avares://Somatic.Themes/Typography/Typography.axaml" />
+        <ResourceInclude Source="avares://Somatic.Themes/Layout/Dimensions.axaml" />
+        <ResourceInclude Source="avares://Somatic.Themes/Icons/IconGeometries.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <SolidColorBrush x:Key="EditorBackgroundBrush" Color="{DynamicResource EditorBackgroundColor}" />
+    <SolidColorBrush x:Key="EditorSurfaceBrush" Color="{DynamicResource EditorSurfaceColor}" />
+    <SolidColorBrush x:Key="EditorSurfaceElevatedBrush" Color="{DynamicResource EditorSurfaceElevatedColor}" />
+    <SolidColorBrush x:Key="EditorBorderBrush" Color="{DynamicResource EditorBorderColor}" />
+    <SolidColorBrush x:Key="EditorTextPrimaryBrush" Color="{DynamicResource EditorTextPrimaryColor}" />
+    <SolidColorBrush x:Key="EditorTextSecondaryBrush" Color="{DynamicResource EditorTextSecondaryColor}" />
+    <SolidColorBrush x:Key="EditorTextDisabledBrush" Color="{DynamicResource EditorTextDisabledColor}" />
+    <SolidColorBrush x:Key="EditorAccentBrush" Color="{DynamicResource EditorAccentColor}" />
+    <SolidColorBrush x:Key="EditorSelectionBrush" Color="{DynamicResource EditorSelectionColor}" />
+    <SolidColorBrush x:Key="EditorHoverBrush" Color="{DynamicResource EditorHoverColor}" />
+    <SolidColorBrush x:Key="EditorPressedBrush" Color="{DynamicResource EditorPressedColor}" />
+    <SolidColorBrush x:Key="EditorWarningBrush" Color="{DynamicResource EditorWarningColor}" />
+    <SolidColorBrush x:Key="EditorErrorBrush" Color="{DynamicResource EditorErrorColor}" />
+
+    <SolidColorBrush x:Key="ViewportBackgroundBrush" Color="{DynamicResource ViewportBackgroundColor}" />
+    <SolidColorBrush x:Key="ViewportBorderBrush" Color="{DynamicResource ViewportBorderColor}" />
+</ResourceDictionary>

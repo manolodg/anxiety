@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="12.1.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="**\*.axaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AvaloniaXaml Remove="Colors\DarkColors.axaml" />
+		<AvaloniaXaml Remove="Colors\LightColors.axaml" />
+		<AvaloniaXaml Remove="Controls\ControlStyles.axaml" />
+		<AvaloniaXaml Remove="Dark.axaml" />
+		<AvaloniaXaml Remove="Icons\IconGeometries.axaml" />
+		<AvaloniaXaml Remove="Layout\Dimensions.axaml" />
+		<AvaloniaXaml Remove="Light.axaml" />
+		<AvaloniaXaml Remove="Typography\Typography.axaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Update="Colors\DarkColors.axaml">
+		  <SubType>Designer</SubType>
+		</AvaloniaResource>
+		<AvaloniaResource Update="Colors\LightColors.axaml">
+		  <SubType>Designer</SubType>
+		</AvaloniaResource>
+		<AvaloniaResource Update="Controls\ControlStyles.axaml">
+		  <SubType>Designer</SubType>
+		</AvaloniaResource>
+		<AvaloniaResource Update="Dark.axaml">
+			<SubType>Designer</SubType>
+		</AvaloniaResource>
+		<AvaloniaResource Update="Icons\IconGeometries.axaml">
+		  <SubType>Designer</SubType>
+		</AvaloniaResource>
+		<AvaloniaResource Update="Layout\Dimensions.axaml">
+		  <SubType>Designer</SubType>
+		</AvaloniaResource>
+		<AvaloniaResource Update="Light.axaml">
+			<SubType>Designer</SubType>
+		</AvaloniaResource>
+		<AvaloniaResource Update="Typography\Typography.axaml">
+		  <SubType>Designer</SubType>
+		</AvaloniaResource>
+	</ItemGroup>
+</Project>

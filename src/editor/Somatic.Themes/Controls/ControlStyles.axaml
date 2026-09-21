@@ -1,0 +1,45 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource EditorBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource EditorTextPrimaryBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource EditorFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+  </Style>
+
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource EditorTextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Menu">
+    <Setter Property="Background" Value="{DynamicResource EditorSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="MenuItem">
+    <Setter Property="Foreground" Value="{DynamicResource EditorTextPrimaryBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}" />
+    <Setter Property="Padding" Value="8,2" />
+  </Style>
+
+  <Style Selector="Button.ToolbarButton">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="6" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Foreground" Value="{DynamicResource EditorTextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Button.ToolbarButton:pointerover">
+    <Setter Property="Background" Value="{DynamicResource EditorHoverBrush}" />
+  </Style>
+
+  <Style Selector="Button.ToolbarButton:pressed">
+    <Setter Property="Background" Value="{DynamicResource EditorPressedBrush}" />
+  </Style>
+
+  <Style Selector="ScrollBar">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+</Styles>

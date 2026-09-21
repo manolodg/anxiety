@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Somatic.Views.Panels.InspectorView">
+
+  <Border Background="{DynamicResource EditorSurfaceElevatedBrush}">
+    <StackPanel Margin="8" Spacing="8">
+
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <PathIcon Data="{StaticResource IconCube}" Width="14" Height="14" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+        <TextBlock Text="Player" FontWeight="{DynamicResource FontWeightSemiBold}" />
+      </StackPanel>
+
+      <Border BorderBrush="{DynamicResource EditorBorderBrush}" BorderThickness="0,1,0,0" />
+
+      <TextBlock Text="Transform" FontSize="{DynamicResource FontSizeSmall}" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+
+      <Grid ColumnDefinitions="60,*" RowDefinitions="Auto,Auto,Auto" >
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Position" FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" />
+        <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource EditorBackgroundBrush}" BorderBrush="{DynamicResource EditorBorderBrush}" BorderThickness="1" Padding="6,3">
+          <TextBlock Text="0, 0, 0" FontSize="{DynamicResource FontSizeSmall}" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+        </Border>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Rotation" FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" Margin="0,4,0,0" />
+        <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource EditorBackgroundBrush}" BorderBrush="{DynamicResource EditorBorderBrush}" BorderThickness="1" Padding="6,3" Margin="0,4,0,0">
+          <TextBlock Text="0, 0, 0" FontSize="{DynamicResource FontSizeSmall}" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+        </Border>
+
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Scale" FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" Margin="0,4,0,0" />
+        <Border Grid.Row="2" Grid.Column="1" Background="{DynamicResource EditorBackgroundBrush}" BorderBrush="{DynamicResource EditorBorderBrush}" BorderThickness="1" Padding="6,3" Margin="0,4,0,0">
+          <TextBlock Text="1, 1, 1" FontSize="{DynamicResource FontSizeSmall}" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+        </Border>
+      </Grid>
+
+    </StackPanel>
+  </Border>
+
+</UserControl>

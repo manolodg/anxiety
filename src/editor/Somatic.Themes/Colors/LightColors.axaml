@@ -1,0 +1,20 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Color x:Key="EditorBackgroundColor">#FFECECEC</Color>
+  <Color x:Key="EditorSurfaceColor">#FFF3F3F3</Color>
+  <Color x:Key="EditorSurfaceElevatedColor">#FFFFFFFF</Color>
+  <Color x:Key="EditorBorderColor">#FFC9C9C9</Color>
+  <Color x:Key="EditorTextPrimaryColor">#FF1E1E1E</Color>
+  <Color x:Key="EditorTextSecondaryColor">#FF5F5F5F</Color>
+  <Color x:Key="EditorTextDisabledColor">#FFA0A0A0</Color>
+  <Color x:Key="EditorAccentColor">#FF0067C0</Color>
+  <Color x:Key="EditorSelectionColor">#FFCCE4F7</Color>
+  <Color x:Key="EditorHoverColor">#FFE5E5E5</Color>
+  <Color x:Key="EditorPressedColor">#FFCFE8FA</Color>
+  <Color x:Key="EditorWarningColor">#FFB8790A</Color>
+  <Color x:Key="EditorErrorColor">#FFC4314B</Color>
+  <Color x:Key="ViewportBackgroundColor">#FFD6D6D6</Color>
+  <Color x:Key="ViewportBorderColor">#FFB0B0B0</Color>
+
+</ResourceDictionary>

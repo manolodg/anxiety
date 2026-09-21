@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:panels="using:Somatic.ViewModels.Panels"
+             x:Class="Somatic.Views.Panels.ConsoleView"
+             x:DataType="panels:ConsoleToolViewModel">
+
+  <Border Background="{DynamicResource EditorSurfaceElevatedBrush}">
+    <StackPanel Margin="6" Spacing="2">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <PathIcon Data="{StaticResource IconInfo}" Width="12" Height="12" Foreground="{DynamicResource EditorAccentBrush}" />
+        <TextBlock Text="Somatic editor shell initialized." FontSize="{DynamicResource FontSizeSmall}" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <PathIcon Data="{StaticResource IconInfo}" Width="12" Height="12" Foreground="{DynamicResource EditorAccentBrush}" />
+        <TextBlock Text="Dark theme applied." FontSize="{DynamicResource FontSizeSmall}" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <PathIcon Data="{StaticResource IconWarning}" Width="12" Height="12" Foreground="{DynamicResource EditorWarningBrush}" />
+        <TextBlock Text="Asset database not yet available in this build." FontSize="{DynamicResource FontSizeSmall}" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <PathIcon Data="{StaticResource IconErrorCircle}" Width="12" Height="12" Foreground="{DynamicResource EditorErrorBrush}" />
+        <TextBlock Text="No runtime connection configured." FontSize="{DynamicResource FontSizeSmall}" />
+      </StackPanel>
+    </StackPanel>
+  </Border>
+
+</UserControl>
