@@ -5,6 +5,8 @@
 #include "RenderingModule.h"
 #include "World.h"
 
+#include "Renderer2D.h"
+
 #include "scene/SceneComponents.h"
 #include "scene/SceneRenderer.h"
 #include "textures/TextureManager.h"
@@ -231,12 +233,33 @@ private:
     render_mod.set_world(nullptr);
 }
 
+[[maybe_unused]] static void run_renderer2d() {
+    rendering2d::Renderer2D renderer;
+    rendering2d::Camera2D camera;
+    camera.position = { 0.0f, 0.0f };
+    camera.zoom     = 1.0f;
+    camera.vp_x = 0;    camera.vp_y = 0;
+    camera.vp_w = 1920; camera.vp_h = 1080;
+
+    rendering2d::TextureAtlas atlas;
+    std::vector<uint8_t> dummy32(32 * 32 * 4, 255);
+    std::vector<uint8_t> dummy64(64 * 64 * 4, 255);
+    std::vector<uint8_t> dummy128(128 * 128 * 4, 255);
+
+    auto particle_region = atlas.pack("particle", dummy32.data(),   32,  32);
+    auto hero_region     = atlas.pack("hero",     dummy64.data(),   64,  64);
+    auto tileset_region  = atlas.pack("tileset",  dummy128.data(), 128, 128);
+    atlas.flush_to_GPU();
+    (void)hero_region; (void)tileset_region; (void)particle_region;
+}
+
 // main ===========================================================================================
 int main() {
 	logs::Logger::get().set_level(logs::LogLevel::Trace);
 	LOG_INFO(k_category, "=== Ejemplo de Anxiety -> ECS + Jobs + PAL ===");
 
-	run_scene_demo();
+	//run_scene_demo();
+    run_renderer2d();
 
 	LOG_INFO(k_category, "=== Cerrando la aplicación de ejemplo ===");
 	return 0;

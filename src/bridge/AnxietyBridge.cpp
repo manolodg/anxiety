@@ -9,10 +9,10 @@
 #include <thread>
 
 struct AnxietyEngineHandle_ {
-    std::unique_ptr<anxiety::Engine>  engine;
-    anxiety::rendering::RenderingModule* rendering = nullptr;   // propiedad de engine
-    std::string                       backend_name;
-    std::thread                       run_thread;
+    std::unique_ptr<anxiety::Engine>     engine;
+    anxiety::rendering::RenderingModule* rendering     = nullptr;   // propiedad de engine
+    std::string                          backend_name;
+    std::thread                          run_thread;
 };
 
 AnxietyEngineHandle anxiety_bridge_create(void) {

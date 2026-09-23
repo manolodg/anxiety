@@ -223,8 +223,7 @@ float4 PSMain(VSOut i) : SV_Target { return i.col; }
         // Camino del SceneRenderer (cuando hay un world adjuntado) --------------------------------
         if (m_scene_renderer && m_scene_renderer->world()) {
             m_scene_renderer->build_passes(m_graph, bb_graph, bb, m_cfg.clear_color, aspect);
-        }
-        else {
+        } else {
             // Fallback — clear + triángulo RGB incorporados ---------------------------------------
             const rhi::ClearColor clearColor = m_cfg.clear_color;
             m_graph.add_pass({

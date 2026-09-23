@@ -1,6 +1,7 @@
 add_subdirectory(core)
 add_subdirectory(platform)
 add_subdirectory(rendering)
+add_subdirectory(rendering2d)
 
 # anxiety::main -----------------------------------------------------------------------------------
 #	Con este único target se incluye el motor completo.
@@ -12,4 +13,5 @@ add_library(anxiety::main ALIAS anxiety_main)
 target_link_libraries(anxiety_main INTERFACE
 	anxiety::core
 	anxiety::platform
-	anxiety::rendering)
+	anxiety::rendering
+	anxiety::rendering2d)
