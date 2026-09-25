@@ -80,12 +80,14 @@ namespace anxiety::rendering::backend::vulkan {
 #  endif
 #elif defined(__APPLE__)
         @autoreleasepool{
-            NSWindow * win = (__bridge NSWindow*)desc.native_window_handle;
-            if (!win) {
+            // native_window_handle es una NSView* (tanto en modo "ventana propia" como "embebida" —
+            // ver el comentario equivalente en GLDevice.cpp), no una NSWindow*: no se puede reparentar
+            // la contentView de una NSWindow standalone dentro del árbol de vistas de otra ventana.
+            NSView* view = (__bridge NSView*)desc.native_window_handle;
+            if (!view) {
                 LOG_ERROR("VulkanSwapchain", "native_window_handle es nil.");
                 return;
             }
-            NSView* view = [win contentView];
 
             // MoltenVK (VK_EXT_metal_surface) renderiza a través de un CAMetalLayer, igual que el
             // backend nativo de Metal — se adjunta uno a la content view de la ventana para que el

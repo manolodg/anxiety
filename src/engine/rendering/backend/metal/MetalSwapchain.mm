@@ -16,14 +16,13 @@ namespace anxiety::rendering::backend::metal {
         @autoreleasepool {
             id<MTLDevice> dev = (__bridge id<MTLDevice>)device->mtl_device();
 
-            // Obtiene el NSWindow a partir del handle nativo y engancha un CAMetalLayer a su content view.
-            NSWindow* win = (__bridge NSWindow*)desc.native_window_handle;
-            if (!win) {
+            // native_window_handle es una NSView* (tanto en modo "ventana propia" como "embebida" —
+            // ver el comentario equivalente en GLDevice.cpp) — se le engancha un CAMetalLayer directamente.
+            NSView* view = (__bridge NSView*)desc.native_window_handle;
+            if (!view) {
                 LOGF_ERROR("Metal", "MetalSwapchain: nativeWindowHandle es nil");
                 return;
             }
-
-            NSView* view = [win contentView];
 
             CAMetalLayer* layer = [CAMetalLayer layer];
             layer.device               = dev;

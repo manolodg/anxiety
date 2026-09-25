@@ -101,7 +101,10 @@ namespace anxiety::platform {
     bool     MacosWindow::is_open()       const noexcept { return m_open;   }
     uint32_t MacosWindow::width()         const noexcept { return m_width;  }
     uint32_t MacosWindow::height()        const noexcept { return m_height; }
-    void*    MacosWindow::native_handle() const noexcept { return m_window; }
+    // Se entrega la vista, no la ventana: los backends de rendering (GL/Vulkan/Metal) dibujan
+    // directamente sobre una NSView — el mismo contrato que usa el modo "ventana embebida"
+    // (attach_window), de modo que ambos modos comparten idéntico código de creación de contexto.
+    void*    MacosWindow::native_handle() const noexcept { return m_view; }
 
     void MacosWindow::on_closed() { m_open = false; }
 } // namespace anxiety::platform

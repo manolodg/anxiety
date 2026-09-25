@@ -144,8 +144,12 @@ namespace anxiety::rendering::backend::opengl {
     #elif defined(__APPLE__)
         if (native_window) {
             @autoreleasepool {
-                NSWindow* win  = (__bridge NSWindow*)native_window;
-                NSView*   view = [win contentView];
+                // native_window es siempre una NSView* — tanto en modo "ventana propia" (MacosWindow::
+                // native_handle()) como en modo "ventana embebida" (attach_window() desde el editor),
+                // que necesita una vista porque el handle que entrega Avalonia al hospedar un control
+                // nativo es una NSView, no una NSWindow (no se puede reparentar la contentView de una
+                // NSWindow standalone dentro del árbol de vistas de otra ventana).
+                NSView* view = (__bridge NSView*)native_window;
 
                 NSOpenGLPixelFormatAttribute attrs[] = {
                     NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,

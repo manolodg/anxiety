@@ -10,9 +10,6 @@ namespace Somatic.Views.Documents {
 
             if (Design.IsDesignMode) return;
 
-            // Por ahora el viewport nativo solo existe en Windows (HWND hijo).
-            if (!OperatingSystem.IsWindows()) return;
-
             IViewportSurfaceFactory? factory = App.Services?.GetService<IViewportSurfaceFactory>();
             if (factory is null) return;
 

@@ -14,7 +14,8 @@ namespace Somatic.Controls {
     // Regla crítica: la superficie se suelta ANTES de destruir la ventana, si no el swapchain del motor
     // quedaría apuntando a un HWND muerto.
     //
-    // Solo Windows por ahora; en otros SO no se crea ventana nativa (ver SceneView, que no lo usa).
+    // Windows (HWND), Linux/X11 (XID) y macOS (NSView) — ver Win32ViewportWindow, X11ViewportWindow y
+    // MacosViewportWindow respectivamente para el detalle específico de cada plataforma.
     // ---------------------------------------------------------------------------------------------
     internal sealed class EngineViewportHost : NativeControlHost {
         private IViewportSurface? _surface;
@@ -49,14 +50,27 @@ namespace Somatic.Controls {
         }
 
         protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent) {
-            if (!OperatingSystem.IsWindows() || _surface is null) return base.CreateNativeControlCore(parent);
+            if (_surface is null) return base.CreateNativeControlCore(parent);
 
-            _hwnd         = Win32ViewportWindow.Create(parent.Handle);
+            string descriptor;
+            if (OperatingSystem.IsWindows()) {
+                _hwnd      = Win32ViewportWindow.Create(parent.Handle);
+                descriptor = "HWND";
+            } else if (OperatingSystem.IsLinux()) {
+                _hwnd      = X11ViewportWindow.Create(parent.Handle);
+                descriptor = "XID";
+            } else if (OperatingSystem.IsMacOS()) {
+                _hwnd      = MacosViewportWindow.Create(parent.Handle);
+                descriptor = "NSView";
+            } else {
+                return base.CreateNativeControlCore(parent);
+            }
+
             _attachFailed = false;
             _lastWidth    = 0;
             _lastHeight   = 0;
 
-            return new PlatformHandle(_hwnd, "HWND");
+            return new PlatformHandle(_hwnd, descriptor);
         }
 
         protected override void DestroyNativeControlCore(IPlatformHandle control) {
@@ -67,7 +81,11 @@ namespace Somatic.Controls {
 
             // Primero se suelta la superficie (síncrono) y solo después se destruye la ventana.
             _surface?.Detach();
-            Win32ViewportWindow.Destroy(_hwnd);
+
+            if (OperatingSystem.IsWindows()) Win32ViewportWindow.Destroy(_hwnd);
+            else if (OperatingSystem.IsLinux()) X11ViewportWindow.Destroy(_hwnd);
+            else if (OperatingSystem.IsMacOS()) MacosViewportWindow.Destroy(_hwnd);
+
             _hwnd = 0;
         }
 
@@ -92,6 +110,11 @@ namespace Somatic.Controls {
             int    width  = (int)Math.Round(_lastSize.Width  * scale);
             int    height = (int)Math.Round(_lastSize.Height * scale);
             if (width <= 0 || height <= 0) return;
+
+            // En X11, Avalonia redimensiona el XID por su propia conexión Xlib; el motor consulta la
+            // geometría de la ventana por otra distinta (ver X11ViewportWindow). Sin este XSync explícito
+            // aquí, el motor podía ver todavía el tamaño de creación (1x1) al crear el swapchain.
+            if (OperatingSystem.IsLinux()) X11ViewportWindow.Resize(_hwnd, width, height);
 
             if (_surface.State == ViewportState.Attached) {
                 if (width == _lastWidth && height == _lastHeight) return;
