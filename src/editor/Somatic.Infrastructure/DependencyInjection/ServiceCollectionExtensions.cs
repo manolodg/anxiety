@@ -4,13 +4,17 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Somatic.Core.Configuration;
+using Somatic.Core.History;
 using Somatic.Core.Localization;
+using Somatic.Core.Scene;
 using Somatic.Core.Themes;
 using Somatic.Core.Viewport;
 using Somatic.Core.Workspace;
 using Somatic.Infrastructure.Configuration;
+using Somatic.Infrastructure.History;
 using Somatic.Infrastructure.Localization;
 using Somatic.Infrastructure.Logging;
+using Somatic.Infrastructure.Scene;
 using Somatic.Infrastructure.Themes;
 using Somatic.Infrastructure.Viewport;
 using Somatic.Infrastructure.Workspace;
@@ -29,6 +33,8 @@ namespace Somatic.Infrastructure.DependencyInjection {
             services.AddSingleton<IDockSerializer, DockSerializer>();
             services.AddSingleton<IWorkspaceLayoutService, FileWorkspaceLayoutService>();
             services.AddSingleton<IViewportSurfaceFactory, AnxietyEngineHost>();
+            services.AddSingleton<IUndoService, UndoService>();
+            services.AddSingleton<ISceneService, SceneService>();
 
             return services;
         }

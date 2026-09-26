@@ -1,0 +1,22 @@
+<inspector:ComponentEditor xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:inspector="using:Somatic.Controls.Inspector"
+                           xmlns:components="using:Somatic.Core.Scene.Components"
+                           xmlns:loc="using:Somatic.Localization"
+                           x:Class="Somatic.Views.Inspector.MeshRendererComponentEditor"
+                           x:DataType="components:MeshRendererComponent">
+  <StackPanel>
+    <inspector:PropertyRow Label="{loc:Localize MeshAsset}">
+      <TextBox Classes="InspectorField" Text="{Binding Mesh}" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize MaterialAsset}">
+      <TextBox Classes="InspectorField" Text="{Binding Material}" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize CastShadows}">
+      <CheckBox Classes="Compact" IsChecked="{Binding CastShadows}" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize ReceiveShadows}">
+      <CheckBox Classes="Compact" IsChecked="{Binding ReceiveShadows}" />
+    </inspector:PropertyRow>
+  </StackPanel>
+</inspector:ComponentEditor>

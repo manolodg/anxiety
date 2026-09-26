@@ -25,6 +25,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="Somatic.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\Somatic.Core\Somatic.Core.csproj" />
 	</ItemGroup>
 </Project>

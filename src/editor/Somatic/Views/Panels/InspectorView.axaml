@@ -1,37 +1,74 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Somatic.Views.Panels.InspectorView">
+             xmlns:panels="using:Somatic.ViewModels.Panels"
+             xmlns:inspector="using:Somatic.Views.Inspector"
+             xmlns:conv="using:Somatic.Converters"
+             xmlns:loc="using:Somatic.Localization"
+             x:Class="Somatic.Views.Panels.InspectorView"
+             x:DataType="panels:InspectorToolViewModel">
 
   <Border Background="{DynamicResource EditorSurfaceElevatedBrush}">
-    <StackPanel Margin="8" Spacing="8">
+    <Grid>
 
-      <StackPanel Orientation="Horizontal" Spacing="6">
-        <PathIcon Data="{StaticResource IconCube}" Width="14" Height="14" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-        <TextBlock Text="Player" FontWeight="{DynamicResource FontWeightSemiBold}" />
-      </StackPanel>
+      <TextBlock Text="{Binding NoSelectionText}"
+                 IsVisible="{Binding !HasEntity}"
+                 FontSize="{DynamicResource FontSizeSmall}"
+                 Foreground="{DynamicResource EditorTextDisabledBrush}"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center" />
 
-      <Border BorderBrush="{DynamicResource EditorBorderBrush}" BorderThickness="0,1,0,0" />
+      <DockPanel IsVisible="{Binding HasEntity}">
 
-      <TextBlock Text="Transform" FontSize="{DynamicResource FontSizeSmall}" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-
-      <Grid ColumnDefinitions="60,*" RowDefinitions="Auto,Auto,Auto" >
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="Position" FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" />
-        <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource EditorBackgroundBrush}" BorderBrush="{DynamicResource EditorBorderBrush}" BorderThickness="1" Padding="6,3">
-          <TextBlock Text="0, 0, 0" FontSize="{DynamicResource FontSizeSmall}" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+        <!-- Cabecera de la entidad: activa + icono + nombre. -->
+        <Border DockPanel.Dock="Top"
+                BorderBrush="{DynamicResource EditorBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="6,4">
+          <Grid ColumnDefinitions="Auto,Auto,*">
+            <CheckBox Grid.Column="0"
+                      Classes="Compact"
+                      IsChecked="{Binding Entity.IsActive}"
+                      ToolTip.Tip="{loc:Localize EntityActive}" />
+            <PathIcon Grid.Column="1"
+                      Data="{Binding Entity.Kind, Converter={x:Static conv:EntityIconConverter.Instance}}"
+                      Width="14" Height="14" Margin="4,0,6,0"
+                      Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+            <TextBox Grid.Column="2"
+                     Classes="InspectorField"
+                     Text="{Binding Entity.Name}"
+                     FontWeight="{DynamicResource FontWeightSemiBold}"
+                     ToolTip.Tip="{loc:Localize EntityName}" />
+          </Grid>
         </Border>
 
-        <TextBlock Grid.Row="1" Grid.Column="0" Text="Rotation" FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" Margin="0,4,0,0" />
-        <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource EditorBackgroundBrush}" BorderBrush="{DynamicResource EditorBorderBrush}" BorderThickness="1" Padding="6,3" Margin="0,4,0,0">
-          <TextBlock Text="0, 0, 0" FontSize="{DynamicResource FontSizeSmall}" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-        </Border>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel>
 
-        <TextBlock Grid.Row="2" Grid.Column="0" Text="Scale" FontSize="{DynamicResource FontSizeSmall}" VerticalAlignment="Center" Margin="0,4,0,0" />
-        <Border Grid.Row="2" Grid.Column="1" Background="{DynamicResource EditorBackgroundBrush}" BorderBrush="{DynamicResource EditorBorderBrush}" BorderThickness="1" Padding="6,3" Margin="0,4,0,0">
-          <TextBlock Text="1, 1, 1" FontSize="{DynamicResource FontSizeSmall}" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-        </Border>
-      </Grid>
+            <!-- Stack de componentes: un editor (derivado de ComponentEditor) por componente. -->
+            <ItemsControl ItemsSource="{Binding Entity.Components}">
+              <ItemsControl.ItemTemplate>
+                <inspector:ComponentEditorLocator />
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
-    </StackPanel>
+            <Button HorizontalAlignment="Center"
+                    Margin="0,10"
+                    Padding="12,3"
+                    FontSize="{DynamicResource FontSizeSmall}"
+                    IsEnabled="{Binding CanAddComponent}"
+                    Content="{loc:Localize AddComponent}">
+              <Button.Flyout>
+                <MenuFlyout Placement="BottomEdgeAlignedLeft"
+                            ItemsSource="{Binding AddComponentOptions}"
+                            ItemContainerTheme="{StaticResource MenuOptionItemTheme}" />
+              </Button.Flyout>
+            </Button>
+
+          </StackPanel>
+        </ScrollViewer>
+
+      </DockPanel>
+    </Grid>
   </Border>
 
 </UserControl>

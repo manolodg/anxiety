@@ -1,32 +1,130 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Somatic.Views.Panels.HierarchyView">
-    <Border Background="{DynamicResource EditorSurfaceElevatedBrush}">
-		<StackPanel Margin="6" Spacing="3">
-			<StackPanel Orientation="Horizontal" Spacing="6">
-				<PathIcon Data="{StaticResource IconCube}" Width="12" Height="12" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-                <TextBlock Text="MainCamera" FontSize="{DynamicResource FontSizeSmall}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="6">
-                <PathIcon Data="{StaticResource IconLightbulb}" Width="12" Height="12" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-                <TextBlock Text="Directional Light" FontSize="{DynamicResource FontSizeSmall}" />
-              </StackPanel>
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-                <TextBlock Text="Environment" FontSize="{DynamicResource FontSizeSmall}" />
-              </StackPanel>
-              <StackPanel Orientation="Horizontal" Spacing="6" Margin="18,0,0,0">
-                <PathIcon Data="{StaticResource IconCube}" Width="12" Height="12" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-                <TextBlock Text="Terrain" FontSize="{DynamicResource FontSizeSmall}" />
-              </StackPanel>
-              <StackPanel Orientation="Horizontal" Spacing="6" Margin="18,0,0,0">
-                <PathIcon Data="{StaticResource IconCube}" Width="12" Height="12" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-                <TextBlock Text="Props" FontSize="{DynamicResource FontSizeSmall}" />
-              </StackPanel>
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <PathIcon Data="{StaticResource IconCamera}" Width="12" Height="12" Foreground="{DynamicResource EditorTextSecondaryBrush}" />
-                <TextBlock Text="Player" FontSize="{DynamicResource FontSizeSmall}" />
-              </StackPanel>
+             xmlns:panels="using:Somatic.ViewModels.Panels"
+             xmlns:scene="using:Somatic.Core.Scene"
+             xmlns:conv="using:Somatic.Converters"
+             xmlns:loc="using:Somatic.Localization"
+             x:Class="Somatic.Views.Panels.HierarchyView"
+             x:DataType="panels:HierarchyToolViewModel">
+
+  <UserControl.Resources>
+    <x:Double x:Key="TreeViewItemMinHeight">22</x:Double>
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <Style Selector="TreeViewItem" x:DataType="scene:Entity">
+      <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+    </Style>
+    <Style Selector="StackPanel.Inactive">
+      <Setter Property="Opacity" Value="0.45" />
+    </Style>
+
+    <!-- Indicadores de arrastrar y soltar: línea encima/debajo (reordenar) o recuadro (hacer hija). -->
+    <Style Selector="Border.EntityRow">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource EditorAccentBrush}" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0,2" />
+    </Style>
+    <Style Selector="Border.EntityRow.DropBefore">
+      <Setter Property="BorderThickness" Value="0,2,0,0" />
+      <Setter Property="Padding" Value="0,0,0,2" />
+    </Style>
+    <Style Selector="Border.EntityRow.DropAfter">
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+      <Setter Property="Padding" Value="0,2,0,0" />
+    </Style>
+    <Style Selector="Border.EntityRow.DropInto">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="0,1" />
+      <Setter Property="Background" Value="{DynamicResource EditorHoverBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border Background="{DynamicResource EditorSurfaceElevatedBrush}">
+    <DockPanel>
+
+      <!-- Barra superior: crear entidad en la raíz. -->
+      <Border DockPanel.Dock="Top"
+              BorderBrush="{DynamicResource EditorBorderBrush}"
+              BorderThickness="0,0,0,1"
+              Padding="4,2">
+        <StackPanel Orientation="Horizontal">
+          <Button Classes="ToolbarButton" Padding="4" ToolTip.Tip="{loc:Localize CreateEntity}">
+            <PathIcon Data="{StaticResource IconAdd}" Width="12" Height="12" />
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft"
+                          ItemsSource="{Binding CreateRootOptions}"
+                          ItemContainerTheme="{StaticResource MenuOptionItemTheme}" />
+            </Button.Flyout>
+          </Button>
         </StackPanel>
-    </Border>
+      </Border>
+
+      <TreeView Name="EntityTree"
+                DragDrop.AllowDrop="True"
+                ItemsSource="{Binding RootEntities}"
+                SelectedItem="{Binding SelectedEntity, Mode=TwoWay}"
+                Background="Transparent"
+                Padding="0,2">
+
+        <TreeView.KeyBindings>
+          <KeyBinding Gesture="Delete" Command="{Binding DeleteEntityCommand}" />
+          <KeyBinding Gesture="F2" Command="{Binding RenameEntityCommand}" />
+        </TreeView.KeyBindings>
+
+        <TreeView.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="{loc:Localize CreateEntity}"
+                      ItemsSource="{Binding CreateRootOptions}"
+                      ItemContainerTheme="{StaticResource MenuOptionItemTheme}">
+              <MenuItem.Icon>
+                <PathIcon Data="{StaticResource IconAdd}" Width="12" Height="12" />
+              </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="{loc:Localize CreateChildEntity}"
+                      IsEnabled="{Binding HasSelection}"
+                      ItemsSource="{Binding CreateChildOptions}"
+                      ItemContainerTheme="{StaticResource MenuOptionItemTheme}" />
+            <Separator />
+            <MenuItem Header="{loc:Localize RenameEntity}"
+                      Command="{Binding RenameEntityCommand}"
+                      InputGesture="F2" />
+            <MenuItem Header="{loc:Localize DeleteEntity}"
+                      Command="{Binding DeleteEntityCommand}"
+                      InputGesture="Delete">
+              <MenuItem.Icon>
+                <PathIcon Data="{StaticResource IconDismiss}" Width="12" Height="12" />
+              </MenuItem.Icon>
+            </MenuItem>
+          </ContextMenu>
+        </TreeView.ContextMenu>
+
+        <TreeView.ItemTemplate>
+          <TreeDataTemplate DataType="scene:Entity" ItemsSource="{Binding Children}">
+            <Border Classes="EntityRow">
+              <StackPanel Classes.Inactive="{Binding !IsActive}"
+                          Orientation="Horizontal"
+                          Spacing="6">
+                <PathIcon Data="{Binding Kind, Converter={x:Static conv:EntityIconConverter.Instance}}"
+                          Width="12" Height="12"
+                          Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+                <TextBlock Name="NameText"
+                           Text="{Binding Name}"
+                           FontSize="{DynamicResource FontSizeSmall}"
+                           VerticalAlignment="Center" />
+                <!-- Edición en línea del nombre (F2 / doble clic); la gestiona HierarchyView.axaml.cs. -->
+                <TextBox Name="RenameBox"
+                         Classes="InspectorField"
+                         MinWidth="120"
+                         IsVisible="False" />
+              </StackPanel>
+            </Border>
+          </TreeDataTemplate>
+        </TreeView.ItemTemplate>
+      </TreeView>
+
+    </DockPanel>
+  </Border>
 </UserControl>

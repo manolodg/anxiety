@@ -12,6 +12,7 @@
 		<FluentTheme />
 		<DockFluentTheme />
 		<StyleInclude Source="avares://Somatic.Themes/Controls/ControlStyles.axaml" />
+		<StyleInclude Source="avares://Somatic/Controls/Inspector/InspectorTheme.axaml" />
 
 		<!-- Vincula el texto del encabezado (panel/pestaña) propio del Dock al sistema de diseño, en lugar de
 			 a los valores predeterminados independientes de DockFluentTheme, siguiendo el patrón de personalización

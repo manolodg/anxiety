@@ -11,13 +11,23 @@
         MinWidth="1024"
         MinHeight="640">
 
+  <!-- A nivel de ventana: si el foco está en una caja de texto, ésta gestiona antes su propio Ctrl+Z. -->
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+Z"       Command="{Binding UndoCommand}" />
+    <KeyBinding Gesture="Ctrl+Y"       Command="{Binding RedoCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding RedoCommand}" />
+  </Window.KeyBindings>
+
   <DockPanel LastChildFill="True">
 
     <Menu DockPanel.Dock="Top"
           Height="{DynamicResource MainMenuHeight}"
           Background="{DynamicResource EditorSurfaceBrush}">
       <MenuItem Header="{Binding FileMenuText}" />
-      <MenuItem Header="{Binding EditMenuText}" />
+      <MenuItem Header="{Binding EditMenuText}">
+        <MenuItem Header="{Binding UndoHeader}" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z" />
+        <MenuItem Header="{Binding RedoHeader}" Command="{Binding RedoCommand}" InputGesture="Ctrl+Y" />
+      </MenuItem>
       <MenuItem Header="{Binding AssetsMenuText}" />
       <MenuItem Header="{Binding WindowMenuText}" />
       <MenuItem Header="{Binding HelpMenuText}" />

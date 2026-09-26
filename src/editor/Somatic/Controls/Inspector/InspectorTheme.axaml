@@ -1,0 +1,177 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:inspector="using:Somatic.Controls.Inspector"
+        xmlns:components="using:Somatic.Core.Scene.Components"
+        xmlns:vm="using:Somatic.ViewModels"
+        xmlns:conv="using:Somatic.Converters"
+        xmlns:loc="using:Somatic.Localization">
+
+  <Styles.Resources>
+
+    <!-- Chrome común de todos los editores de componente: cabecera + cuerpo desplegable. -->
+    <ControlTheme x:Key="{x:Type inspector:ComponentEditor}" TargetType="inspector:ComponentEditor">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border x:DataType="components:Component"
+                  BorderBrush="{DynamicResource EditorBorderBrush}"
+                  BorderThickness="0,0,0,1">
+            <DockPanel>
+              <Border DockPanel.Dock="Top"
+                      Background="{DynamicResource EditorSurfaceBrush}"
+                      Height="{DynamicResource PanelHeaderHeight}"
+                      Padding="2,0,2,0">
+                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto">
+                  <ToggleButton Grid.Column="0"
+                                Classes="ComponentExpander"
+                                IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                    <PathIcon Data="{StaticResource IconChevronRight}" Width="10" Height="10" />
+                  </ToggleButton>
+                  <CheckBox Grid.Column="1"
+                            Classes="Compact"
+                            IsChecked="{Binding IsEnabled}"
+                            IsVisible="{Binding CanDisable}" />
+                  <PathIcon Grid.Column="2"
+                            Data="{TemplateBinding Icon}"
+                            Width="12" Height="12" Margin="4,0,6,0"
+                            Foreground="{DynamicResource EditorTextSecondaryBrush}" />
+                  <TextBlock Grid.Column="3"
+                             Text="{TemplateBinding Header}"
+                             FontSize="{DynamicResource FontSizeSmall}"
+                             FontWeight="{DynamicResource FontWeightSemiBold}"
+                             VerticalAlignment="Center"
+                             TextTrimming="CharacterEllipsis" />
+                  <Button Grid.Column="4"
+                          Name="PART_RemoveButton"
+                          Classes="ToolbarButton"
+                          Padding="3"
+                          IsVisible="{Binding CanRemove}"
+                          ToolTip.Tip="{loc:Localize RemoveComponent}">
+                    <PathIcon Data="{StaticResource IconDismiss}" Width="10" Height="10" />
+                  </Button>
+                </Grid>
+              </Border>
+              <ContentPresenter Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="8,4,8,6"
+                                IsVisible="{TemplateBinding IsExpanded}" />
+            </DockPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+
+    <!-- Fila "etiqueta | editor". -->
+    <ControlTheme x:Key="{x:Type inspector:PropertyRow}" TargetType="inspector:PropertyRow">
+      <Setter Property="Margin" Value="0,1" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid ColumnDefinitions="96,*" MinHeight="22">
+            <TextBlock Grid.Column="0"
+                       Text="{TemplateBinding Label}"
+                       FontSize="{DynamicResource FontSizeSmall}"
+                       Foreground="{DynamicResource EditorTextSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="0,0,6,0"
+                       ToolTip.Tip="{TemplateBinding Label}" />
+            <ContentPresenter Grid.Column="1"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              VerticalAlignment="Center" />
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+
+    <!-- Elemento de menú generado a partir de un MenuOption (menús de crear entidad / añadir componente). -->
+    <ControlTheme x:Key="MenuOptionItemTheme"
+                  TargetType="MenuItem"
+                  BasedOn="{StaticResource {x:Type MenuItem}}"
+                  x:DataType="vm:MenuOption">
+      <Setter Property="Header" Value="{Binding Title}" />
+      <Setter Property="Command" Value="{Binding Command}" />
+      <Setter Property="CommandParameter" Value="{Binding CommandParameter}" />
+      <Setter Property="Icon">
+        <Template>
+          <PathIcon Data="{Binding IconKey, Converter={x:Static conv:IconResourceConverter.Instance}}" Width="12" Height="12" />
+        </Template>
+      </Setter>
+    </ControlTheme>
+
+  </Styles.Resources>
+
+  <!-- Controles compactos dentro del inspector. -->
+  <Style Selector="TextBox.InspectorField">
+    <Setter Property="MinHeight" Value="20" />
+    <Setter Property="Height" Value="20" />
+    <Setter Property="Padding" Value="4,1" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+
+  <Style Selector="ComboBox.InspectorField">
+    <Setter Property="MinHeight" Value="20" />
+    <Setter Property="Height" Value="22" />
+    <Setter Property="Padding" Value="6,0" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+
+  <!-- Casilla compacta de 14px: la de Fluent reserva 32px de alto y descuadra las filas. -->
+  <Style Selector="CheckBox.Compact">
+    <Setter Property="Margin" Value="2,0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="Box"
+                Width="14" Height="14"
+                CornerRadius="2"
+                BorderThickness="1"
+                BorderBrush="{DynamicResource EditorBorderBrush}"
+                Background="{DynamicResource EditorBackgroundBrush}">
+          <Path Name="Check"
+                Data="M2.5 6.5L5.5 9.5L10.5 3.5"
+                Stroke="White"
+                StrokeThickness="1.5"
+                IsVisible="False" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="CheckBox.Compact:pointerover /template/ Border#Box">
+    <Setter Property="BorderBrush" Value="{DynamicResource EditorAccentBrush}" />
+  </Style>
+  <Style Selector="CheckBox.Compact:checked /template/ Border#Box">
+    <Setter Property="Background" Value="{DynamicResource EditorAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource EditorAccentBrush}" />
+  </Style>
+  <Style Selector="CheckBox.Compact:checked /template/ Path#Check">
+    <Setter Property="IsVisible" Value="True" />
+  </Style>
+
+  <Style Selector="ToggleButton.ComponentExpander">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Foreground" Value="{DynamicResource EditorTextSecondaryBrush}" />
+  </Style>
+  <Style Selector="ToggleButton.ComponentExpander:checked /template/ ContentPresenter, ToggleButton.ComponentExpander:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource EditorTextPrimaryBrush}" />
+  </Style>
+  <Style Selector="ToggleButton.ComponentExpander PathIcon">
+    <Setter Property="RenderTransform" Value="rotate(0deg)" />
+  </Style>
+  <Style Selector="ToggleButton.ComponentExpander:checked PathIcon">
+    <Setter Property="RenderTransform" Value="rotate(90deg)" />
+  </Style>
+
+</Styles>

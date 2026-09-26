@@ -1,0 +1,45 @@
+<inspector:ComponentEditor xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:inspector="using:Somatic.Controls.Inspector"
+                           xmlns:controls="using:Somatic.Controls"
+                           xmlns:components="using:Somatic.Core.Scene.Components"
+                           xmlns:views="using:Somatic.Views.Inspector"
+                           xmlns:conv="using:Somatic.Converters"
+                           xmlns:loc="using:Somatic.Localization"
+                           x:Class="Somatic.Views.Inspector.LightComponentEditor"
+                           x:DataType="components:LightComponent">
+  <StackPanel>
+    <inspector:PropertyRow Label="{loc:Localize LightType}">
+      <ComboBox Classes="InspectorField"
+                ItemsSource="{x:Static views:LightComponentEditor.LightTypes}"
+                SelectedItem="{Binding Type}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="components:LightType">
+            <TextBlock Text="{Binding Converter={x:Static conv:LocalizedEnumConverter.Instance}}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </inspector:PropertyRow>
+
+    <inspector:PropertyRow Label="{loc:Localize Color}">
+      <controls:ColorField Value="{Binding Color}" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize Intensity}">
+      <controls:FloatField Value="{Binding Intensity}" Minimum="0" />
+    </inspector:PropertyRow>
+
+    <!-- El alcance no aplica a la direccional; el ángulo sólo al foco. -->
+    <inspector:PropertyRow Label="{loc:Localize Range}"
+                           IsVisible="{Binding Type, Converter={x:Static conv:EnumMatchConverter.Instance}, ConverterParameter='Point,Spot'}">
+      <controls:FloatField Value="{Binding Range}" Minimum="0" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize SpotAngle}"
+                           IsVisible="{Binding Type, Converter={x:Static conv:EnumMatchConverter.Instance}, ConverterParameter=Spot}">
+      <controls:FloatField Value="{Binding SpotAngle}" Minimum="1" Maximum="179" />
+    </inspector:PropertyRow>
+
+    <inspector:PropertyRow Label="{loc:Localize CastShadows}">
+      <CheckBox Classes="Compact" IsChecked="{Binding CastShadows}" />
+    </inspector:PropertyRow>
+  </StackPanel>
+</inspector:ComponentEditor>

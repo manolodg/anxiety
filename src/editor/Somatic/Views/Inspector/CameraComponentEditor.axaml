@@ -1,0 +1,40 @@
+<inspector:ComponentEditor xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:inspector="using:Somatic.Controls.Inspector"
+                           xmlns:controls="using:Somatic.Controls"
+                           xmlns:components="using:Somatic.Core.Scene.Components"
+                           xmlns:views="using:Somatic.Views.Inspector"
+                           xmlns:conv="using:Somatic.Converters"
+                           xmlns:loc="using:Somatic.Localization"
+                           x:Class="Somatic.Views.Inspector.CameraComponentEditor"
+                           x:DataType="components:CameraComponent">
+  <StackPanel>
+    <inspector:PropertyRow Label="{loc:Localize Projection}">
+      <ComboBox Classes="InspectorField"
+                ItemsSource="{x:Static views:CameraComponentEditor.Projections}"
+                SelectedItem="{Binding Projection}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="components:CameraProjection">
+            <TextBlock Text="{Binding Converter={x:Static conv:LocalizedEnumConverter.Instance}}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </inspector:PropertyRow>
+
+    <inspector:PropertyRow Label="{loc:Localize FieldOfView}"
+                           IsVisible="{Binding Projection, Converter={x:Static conv:EnumMatchConverter.Instance}, ConverterParameter=Perspective}">
+      <controls:FloatField Value="{Binding FieldOfView}" Minimum="1" Maximum="179" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize OrthographicSize}"
+                           IsVisible="{Binding Projection, Converter={x:Static conv:EnumMatchConverter.Instance}, ConverterParameter=Orthographic}">
+      <controls:FloatField Value="{Binding OrthographicSize}" Minimum="0.001" />
+    </inspector:PropertyRow>
+
+    <inspector:PropertyRow Label="{loc:Localize NearPlane}">
+      <controls:FloatField Value="{Binding NearPlane}" Minimum="0.001" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize FarPlane}">
+      <controls:FloatField Value="{Binding FarPlane}" Minimum="0.01" />
+    </inspector:PropertyRow>
+  </StackPanel>
+</inspector:ComponentEditor>

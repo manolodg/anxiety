@@ -171,4 +171,145 @@
   <data name="DeleteEntity" xml:space="preserve">
     <value>Eliminar entidad</value>
   </data>
+  <data name="EntityKindEmpty" xml:space="preserve">
+    <value>Entidad vacía</value>
+  </data>
+  <data name="EntityKindGroup" xml:space="preserve">
+    <value>Grupo</value>
+  </data>
+  <data name="EntityKindCamera" xml:space="preserve">
+    <value>Cámara</value>
+  </data>
+  <data name="EntityKindLight" xml:space="preserve">
+    <value>Luz</value>
+  </data>
+  <data name="EntityKindMesh" xml:space="preserve">
+    <value>Malla</value>
+  </data>
+  <data name="CreateChildEntity" xml:space="preserve">
+    <value>Crear hija</value>
+  </data>
+  <data name="NoEntitySelected" xml:space="preserve">
+    <value>Ninguna entidad seleccionada</value>
+  </data>
+  <data name="EntityName" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="EntityActive" xml:space="preserve">
+    <value>Activa</value>
+  </data>
+  <data name="AddComponent" xml:space="preserve">
+    <value>Añadir componente</value>
+  </data>
+  <data name="RemoveComponent" xml:space="preserve">
+    <value>Quitar componente</value>
+  </data>
+  <data name="ComponentTransform" xml:space="preserve">
+    <value>Transformación</value>
+  </data>
+  <data name="ComponentCamera" xml:space="preserve">
+    <value>Cámara</value>
+  </data>
+  <data name="ComponentLight" xml:space="preserve">
+    <value>Luz</value>
+  </data>
+  <data name="ComponentMeshRenderer" xml:space="preserve">
+    <value>Renderizador de malla</value>
+  </data>
+  <data name="Position" xml:space="preserve">
+    <value>Posición</value>
+  </data>
+  <data name="Rotation" xml:space="preserve">
+    <value>Rotación</value>
+  </data>
+  <data name="Scale" xml:space="preserve">
+    <value>Escala</value>
+  </data>
+  <data name="Projection" xml:space="preserve">
+    <value>Proyección</value>
+  </data>
+  <data name="FieldOfView" xml:space="preserve">
+    <value>Campo de visión</value>
+  </data>
+  <data name="OrthographicSize" xml:space="preserve">
+    <value>Tamaño</value>
+  </data>
+  <data name="NearPlane" xml:space="preserve">
+    <value>Plano cercano</value>
+  </data>
+  <data name="FarPlane" xml:space="preserve">
+    <value>Plano lejano</value>
+  </data>
+  <data name="LightType" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="Color" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="Intensity" xml:space="preserve">
+    <value>Intensidad</value>
+  </data>
+  <data name="Range" xml:space="preserve">
+    <value>Alcance</value>
+  </data>
+  <data name="SpotAngle" xml:space="preserve">
+    <value>Ángulo del foco</value>
+  </data>
+  <data name="CastShadows" xml:space="preserve">
+    <value>Proyectar sombras</value>
+  </data>
+  <data name="ReceiveShadows" xml:space="preserve">
+    <value>Recibir sombras</value>
+  </data>
+  <data name="MeshAsset" xml:space="preserve">
+    <value>Malla</value>
+  </data>
+  <data name="MaterialAsset" xml:space="preserve">
+    <value>Material</value>
+  </data>
+  <data name="Perspective" xml:space="preserve">
+    <value>Perspectiva</value>
+  </data>
+  <data name="Orthographic" xml:space="preserve">
+    <value>Ortográfica</value>
+  </data>
+  <data name="Directional" xml:space="preserve">
+    <value>Direccional</value>
+  </data>
+  <data name="Point" xml:space="preserve">
+    <value>Puntual</value>
+  </data>
+  <data name="Spot" xml:space="preserve">
+    <value>Foco</value>
+  </data>
+  <data name="RenameEntity" xml:space="preserve">
+    <value>Renombrar</value>
+  </data>
+  <data name="Undo" xml:space="preserve">
+    <value>Deshacer</value>
+  </data>
+  <data name="Redo" xml:space="preserve">
+    <value>Rehacer</value>
+  </data>
+  <data name="HistoryCreate" xml:space="preserve">
+    <value>Crear «{0}»</value>
+  </data>
+  <data name="HistoryDelete" xml:space="preserve">
+    <value>Eliminar «{0}»</value>
+  </data>
+  <data name="HistoryMove" xml:space="preserve">
+    <value>Mover «{0}»</value>
+  </data>
+  <data name="HistoryRename" xml:space="preserve">
+    <value>Renombrar «{0}»</value>
+  </data>
+  <data name="HistoryEdit" xml:space="preserve">
+    <value>Editar «{0}»</value>
+  </data>
+  <data name="HistoryAddComponent" xml:space="preserve">
+    <value>Añadir componente a «{0}»</value>
+  </data>
+  <data name="HistoryRemoveComponent" xml:space="preserve">
+    <value>Quitar componente de «{0}»</value>
+  </data>
 </root>

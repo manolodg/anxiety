@@ -1,0 +1,20 @@
+<inspector:ComponentEditor xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:inspector="using:Somatic.Controls.Inspector"
+                           xmlns:controls="using:Somatic.Controls"
+                           xmlns:components="using:Somatic.Core.Scene.Components"
+                           xmlns:loc="using:Somatic.Localization"
+                           x:Class="Somatic.Views.Inspector.TransformComponentEditor"
+                           x:DataType="components:TransformComponent">
+  <StackPanel>
+    <inspector:PropertyRow Label="{loc:Localize Position}">
+      <controls:Vector3Field Value="{Binding Position}" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize Rotation}">
+      <controls:Vector3Field Value="{Binding Rotation}" />
+    </inspector:PropertyRow>
+    <inspector:PropertyRow Label="{loc:Localize Scale}">
+      <controls:Vector3Field Value="{Binding Scale}" />
+    </inspector:PropertyRow>
+  </StackPanel>
+</inspector:ComponentEditor>
